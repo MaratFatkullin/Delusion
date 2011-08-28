@@ -6,6 +6,8 @@ using System.Web.Mvc;
 using System.Web.Routing;
 using System.Web.Security;
 using AI_.Studmix.WebApplication.Models;
+using AI_.Studmix.WebApplication.Models.ViewModels;
+using AI_.Studmix.WebApplication.Models.ViewModels.Account;
 
 namespace AI_.Studmix.WebApplication.Controllers
 {
@@ -24,13 +26,13 @@ namespace AI_.Studmix.WebApplication.Controllers
         // POST: /Account/LogOn
 
         [HttpPost]
-        public ActionResult LogOn(LogOnModel model, string returnUrl)
+        public ActionResult LogOn(LogOnViewModel viewModel, string returnUrl)
         {
             if (ModelState.IsValid)
             {
-                if (Membership.ValidateUser(model.UserName, model.Password))
+                if (Membership.ValidateUser(viewModel.UserName, viewModel.Password))
                 {
-                    FormsAuthentication.SetAuthCookie(model.UserName, model.RememberMe);
+                    FormsAuthentication.SetAuthCookie(viewModel.UserName, viewModel.RememberMe);
                     if (Url.IsLocalUrl(returnUrl) && returnUrl.Length > 1 && returnUrl.StartsWith("/")
                         && !returnUrl.StartsWith("//") && !returnUrl.StartsWith("/\\"))
                     {
@@ -48,7 +50,7 @@ namespace AI_.Studmix.WebApplication.Controllers
             }
 
             // If we got this far, something failed, redisplay form
-            return View(model);
+            return View(viewModel);
         }
 
         //
@@ -73,7 +75,7 @@ namespace AI_.Studmix.WebApplication.Controllers
         // POST: /Account/Register
 
         [HttpPost]
-        public ActionResult Register(RegisterModel model)
+        public ActionResult Register(RegisterViewModel model)
         {
             if (ModelState.IsValid)
             {
@@ -110,7 +112,7 @@ namespace AI_.Studmix.WebApplication.Controllers
 
         [Authorize]
         [HttpPost]
-        public ActionResult ChangePassword(ChangePasswordModel model)
+        public ActionResult ChangePassword(ChangePasswordViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
@@ -121,7 +123,7 @@ namespace AI_.Studmix.WebApplication.Controllers
                 try
                 {
                     MembershipUser currentUser = Membership.GetUser(User.Identity.Name, true /* userIsOnline */);
-                    changePasswordSucceeded = currentUser.ChangePassword(model.OldPassword, model.NewPassword);
+                    changePasswordSucceeded = currentUser.ChangePassword(viewModel.OldPassword, viewModel.NewPassword);
                 }
                 catch (Exception)
                 {
@@ -139,7 +141,7 @@ namespace AI_.Studmix.WebApplication.Controllers
             }
 
             // If we got this far, something failed, redisplay form
-            return View(model);
+            return View(viewModel);
         }
 
         //
