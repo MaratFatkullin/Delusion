@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_.Studmix.WebApplication.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Studmix", "..\studmixOld\Studmix.csproj", "{7F5B7E1A-F00C-4DB0-BD2D-1AEFE82C059E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_.Security", "AI_.Security\AI_.Security.csproj", "{7EB7BBAE-6081-47CE-B829-35B03CCA6AB2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_.Security.Tests", "AI_.Security.Tests\AI_.Security.Tests.csproj", "{B3B53467-BD87-4CBF-9CC0-29F74854F17B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,12 +35,22 @@ Global
 		{7F5B7E1A-F00C-4DB0-BD2D-1AEFE82C059E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F5B7E1A-F00C-4DB0-BD2D-1AEFE82C059E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F5B7E1A-F00C-4DB0-BD2D-1AEFE82C059E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7EB7BBAE-6081-47CE-B829-35B03CCA6AB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7EB7BBAE-6081-47CE-B829-35B03CCA6AB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7EB7BBAE-6081-47CE-B829-35B03CCA6AB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7EB7BBAE-6081-47CE-B829-35B03CCA6AB2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3B53467-BD87-4CBF-9CC0-29F74854F17B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3B53467-BD87-4CBF-9CC0-29F74854F17B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3B53467-BD87-4CBF-9CC0-29F74854F17B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3B53467-BD87-4CBF-9CC0-29F74854F17B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{3E226B5B-B15F-4A58-8521-CF7522DD0568} = {681FF81A-E354-40E6-9E6F-FA67AA6B18F3}
+		{7EB7BBAE-6081-47CE-B829-35B03CCA6AB2} = {2F9EDD2D-F6BE-499A-8BD3-86863F893E6E}
 		{2995E2BE-D2B6-4424-82E5-0C114F837409} = {C90D2127-2721-4612-BD25-854A2984C8FD}
+		{B3B53467-BD87-4CBF-9CC0-29F74854F17B} = {C90D2127-2721-4612-BD25-854A2984C8FD}
 	EndGlobalSection
 EndGlobal
