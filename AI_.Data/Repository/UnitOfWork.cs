@@ -1,20 +1,14 @@
 ﻿using System;
 using System.Data.Entity;
-using System.Security;
 
-
-namespace AI_.Security
+namespace AI_.Data.Repository
 {
-    public class GenericUnitOfWork<TContext> : IDisposable
+    public class UnitOfWork<TContext>
+        : IDisposable
         where TContext : DbContext, new()
     {
         private readonly TContext _context = new TContext();
         private bool _disposed;
-
-        public void Save()
-        {
-            _context.SaveChanges();
-        }
 
         #region IDisposable Members
 
@@ -25,6 +19,11 @@ namespace AI_.Security
         }
 
         #endregion
+
+        public void Save()
+        {
+            _context.SaveChanges();
+        }
 
         protected virtual void Dispose(bool disposing)
         {

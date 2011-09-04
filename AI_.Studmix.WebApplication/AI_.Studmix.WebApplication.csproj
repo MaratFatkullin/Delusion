@@ -149,6 +149,16 @@
   <ItemGroup>
     <Content Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AI_.Data\AI_.Data.csproj">
+      <Project>{470062CF-2970-4CC2-8F66-665D2DB88562}</Project>
+      <Name>AI_.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AI_.Security\AI_.Security.csproj">
+      <Project>{7EB7BBAE-6081-47CE-B829-35B03CCA6AB2}</Project>
+      <Name>AI_.Security</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
