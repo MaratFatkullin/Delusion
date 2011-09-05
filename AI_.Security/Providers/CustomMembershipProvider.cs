@@ -264,13 +264,15 @@ namespace AI_.Security.Providers
                 return false;
             var args = new ValidatePasswordEventArgs(username, newPassword, true);
 
+            OnValidatingPassword(args);
+
             if (args.Cancel)
                 if (args.FailureInformation != null)
                     throw args.FailureInformation;
                 else
                     throw new MembershipPasswordException(
                         "Change password canceled due to new password validation failure.");
-            var user = _unitOfWork.UserRepository.Get(usr=>usr.UserName == username).Single();
+            var user = _unitOfWork.UserRepository.Get(usr => usr.UserName == username).Single();
             user.Password = newPassword;
             _unitOfWork.Save();
             return true;
@@ -325,6 +327,10 @@ namespace AI_.Security.Providers
         public override void UpdateUser(MembershipUser user)
         {
             var existingUser = GetUser(user.UserName);
+            if (existingUser == null)
+            {
+                throw new ProviderException("The supplied user name is not found.");
+            }
             existingUser.Email = user.Email;
             existingUser.IsApproved = user.IsApproved;
             //todo:использовать автомэппер.
@@ -341,6 +347,11 @@ namespace AI_.Security.Providers
         public override bool UnlockUser(string userName)
         {
             var user = GetUser(userName);
+            if (user == null)
+            {
+                throw new ProviderException("The supplied user name is not found.");
+            }
+
             if (!user.IsLocked)
             {
                 throw new ProviderException("The supplied user is not locked out.");
