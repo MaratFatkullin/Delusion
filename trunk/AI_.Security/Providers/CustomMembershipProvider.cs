@@ -382,6 +382,7 @@ namespace AI_.Security.Providers
 
         public override int GetNumberOfUsersOnline()
         {
+            //note: пока не трогаем.
             throw new NotImplementedException();
         }
 
