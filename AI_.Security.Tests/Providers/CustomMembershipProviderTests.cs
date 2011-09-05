@@ -335,5 +335,117 @@ namespace AI_.Security.Tests.Providers
             var membershipUser = _provider.GetUser(user.ProviderUserKey, false);
             Assert.Equal(user.UserName, membershipUser.UserName);
         }
+
+        [Fact]
+        //todo: via theory (userIsOnLine)
+        public void getUserFact2()
+        {
+            var user = GetUser();
+            var membershipUser = _provider.GetUser(user.UserName, false);
+            Assert.Null(membershipUser);
+        }
+
+        [Fact]
+        public void getUserFact3()
+        {
+            var user = GetUser();
+            AddUser(user);
+            var membershipUser = _provider.GetUser(user.UserName, false);
+            Assert.Equal(user.UserName,membershipUser.UserName);
+        }
+
+
+        [Fact]
+        public void getUsernameByEMFact1()
+        {
+            var user = GetUser();
+            var username = _provider.GetUserNameByEmail(user.Email);
+            Assert.Null(username);
+        }
+
+        [Fact]
+        public void getUsernameByEMFact2()
+        {
+            var user = GetUser();
+            AddUser(user);
+            var username = _provider.GetUserNameByEmail(user.Email);
+            Assert.Equal(user.UserName,username);
+        }
+
+        [Fact]
+        //todo:theory
+        public void deleteUserFact1()
+        {
+            var user = GetUser();
+            var userDeleted = _provider.DeleteUser(user.UserName, false);
+            Assert.False(userDeleted);
+        }
+
+        [Fact]
+        public void deleteuserFact2()
+        {
+            var user = GetUser();
+            AddUser(user);
+            var userDeleted = _provider.DeleteUser(user.UserName,false);
+            Assert.True(userDeleted);
+        }
+
+        [Fact]
+        public void getAllUserFact1()
+        {
+            int totalRecords;
+            var membershipUserCollection = _provider.GetAllUsers(0, 1, out totalRecords);
+            Assert.Equal(0,membershipUserCollection.Count);
+            Assert.Equal(0,totalRecords);
+        }
+
+        [Fact]
+        //todo:theory
+        public void getAllUserFact2()
+        {
+            int totalRecords;
+            AddUser(GetUser());
+            AddUser(GetUser());
+            var membershipUserCollection = _provider.GetAllUsers(0, 1, out totalRecords);
+
+            Assert.Equal(1,membershipUserCollection.Count);
+            Assert.Equal(2,totalRecords);
+        }
+
+        [Fact]
+        //todo:theory
+        public void findUsersByNameFact1()
+        {
+            var user = GetUser();
+            int totalRecords;
+            var membershipUserCollection = _provider.FindUsersByName(user.UserName, 0, 1, out totalRecords);
+            Assert.Equal(0,totalRecords);
+            Assert.Equal(null,membershipUserCollection);
+        }
+
+        [Fact]
+        //todo:theory
+        public void findUsersByNameFact2()
+        {
+            var user = GetUser();
+            int totalRecords;
+            AddUser(user);
+            var membershipUserCollection = _provider.FindUsersByName(user.UserName, 0, 1, out totalRecords);
+            Assert.Equal(1, totalRecords);
+            Assert.Equal(1, membershipUserCollection.Count);
+        }
+
+        
+        [Fact]
+        //todo:theory
+        public void findUsersByEMailFact2()
+        {
+            var user = GetUser();
+            int totalRecords;
+            AddUser(user);
+            var membershipUserCollection = _provider.FindUsersByEmail(user.Email, 0, 1, out totalRecords);
+            Assert.Equal(1, totalRecords);
+            Assert.Equal(1, membershipUserCollection.Count);
+        }
     }
 }
