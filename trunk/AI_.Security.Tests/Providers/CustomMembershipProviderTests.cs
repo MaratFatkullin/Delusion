@@ -9,6 +9,7 @@ using AI_.Security.Providers;
 using AI_.Security.Tests.Mocks;
 using AI_.Security.Tests.UtilityClasses;
 using Xunit;
+using Xunit.Extensions;
 
 namespace AI_.Security.Tests.Providers
 {
@@ -82,6 +83,26 @@ namespace AI_.Security.Tests.Providers
                                       DateTime.MinValue);
         }
 
+        private void AddUsers(int count,Func<object, User> func)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                UserStorage.Add(func(i));
+            }
+        }
+
+        public static IEnumerable<object[]> PagingTestData
+        {
+            get
+            {
+                // { pageSize, pageIndex, expectedItemsInPage }
+                yield return new object[] { 1, 0, 1 };
+                yield return new object[] { 1, 1, 1 };
+                yield return new object[] { 2, 0, 2 };
+                yield return new object[] { 2, 1, 0 };
+            }
+        }
+
         #endregion
 
         [Fact]
@@ -94,7 +115,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void CreateUser_UserWithSameUserNameExists_DuplicateUserNameCreateStatusGot()
+        public void CreateUser_UserWithSameUserNameExists_DuplicateUserNameCreateStatusReturned()
         {
             AddUser(GetUser());
             AddUser(GetUser());
@@ -103,14 +124,14 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void CreateUser_UniqueEmailConstraintEnabled_DuplicateEmailCreateStatusGot()
+        public void CreateUser_UniqueEmailConstraintEnabled_DuplicateEmailCreateStatusReturned()
         {
             var config = new NameValueCollection();
             config.Add("requiresUniqueEmail", "true");
             _provider.Initialize("name", config);
 
-            AddUser(GetUser(username: "user1"));
-            AddUser(GetUser(username: "user2"));
+            AddUser(GetUser("user1"));
+            AddUser(GetUser("user2"));
 
             Assert.Equal(MembershipCreateStatus.DuplicateEmail, _membershipCreateStatus);
         }
@@ -129,7 +150,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void ChangePasswordQuestionAndAnswer_ValidUserDataProvided_PasswordQuestionAndAnswerChanged()
+        public void ChangePasswordQuestionAndAnswer_ValidUserDataProvided_PasswordQuestionChanged()
         {
             var user = GetUser();
             AddUser(user);
@@ -142,11 +163,26 @@ namespace AI_.Security.Tests.Providers
                                                       newPasswordAnswer);
 
             Assert.Equal(UserStorage.Single().PasswordQuestion, newPasswordQuestion);
+        }
+
+        [Fact]
+        public void ChangePasswordQuestionAndAnswer_ValidUserDataProvided_PasswordAnswerChanged()
+        {
+            var user = GetUser();
+            AddUser(user);
+            var newPasswordQuestion = "newPasswordQuestion";
+            var newPasswordAnswer = "newPasswordAnswer";
+
+            _provider.ChangePasswordQuestionAndAnswer(user.UserName,
+                                                      user.Password,
+                                                      newPasswordQuestion,
+                                                      newPasswordAnswer);
+
             Assert.Equal(UserStorage.Single().PasswordAnswer, newPasswordAnswer);
         }
 
         [Fact]
-        public void ChangePasswordQuestionAndAnswer_InvalidUserDataProvided_PasswordQuestionAndAnswerNotChanged()
+        public void ChangePasswordQuestionAndAnswer_InvalidUserDataProvided_PasswordQuestionNotChanged()
         {
             var user = GetUser();
             AddUser(user);
@@ -159,9 +195,23 @@ namespace AI_.Security.Tests.Providers
                                                       newPasswordAnswer);
 
             Assert.Equal(UserStorage.Single().PasswordQuestion, user.PasswordQuestion);
-            Assert.Equal(UserStorage.Single().PasswordAnswer, user.PasswordAnswer);
         }
 
+        [Fact]
+        public void ChangePasswordQuestionAndAnswer_InvalidUserDataProvided_PasswordAnswerNotChanged()
+        {
+            var user = GetUser();
+            AddUser(user);
+            var newPasswordQuestion = "newPasswordQuestion";
+            var newPasswordAnswer = "newPasswordAnswer";
+
+            _provider.ChangePasswordQuestionAndAnswer(user.UserName,
+                                                      "invalidPassword",
+                                                      newPasswordQuestion,
+                                                      newPasswordAnswer);
+
+            Assert.Equal(UserStorage.Single().PasswordAnswer, user.PasswordAnswer);
+        }
 
         [Fact]
         public void ChangePassword_ValidPasswordProvided_PasswordChanged()
@@ -259,16 +309,16 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void GetUserByProviderUserKey_UserExists_UserGot()
+        public void GetUserByProviderUserKey_UserExists_UserReturned()
         {
             var user = GetUser();
-            AddUser(GetUser());
+            AddUser(user);
             var membershipUser = _provider.GetUser(user.ProviderUserKey, false);
             Assert.Equal(user.UserName, membershipUser.UserName);
         }
 
         [Fact]
-        public void GetUserByProviderUserKey_UserDoesNotExists_NullGot()
+        public void GetUserByProviderUserKey_UserDoesNotExists_NullReturned()
         {
             var user = GetUser();
             var membershipUser = _provider.GetUser(user.ProviderUserKey, false);
@@ -347,7 +397,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void GetPassword_PasswordRetrievalOptionIsEnabled_PasswordGot()
+        public void GetPassword_PasswordRetrievalOptionIsEnabled_PasswordReturned()
         {
             var config = new NameValueCollection();
             config.Add("enablePasswordRetrieval", "true");
@@ -358,7 +408,6 @@ namespace AI_.Security.Tests.Providers
             var password = _provider.GetPassword(user.UserName, user.PasswordAnswer);
             Assert.Equal(user.Password, password);
         }
-
 
         [Fact]
         public void GetPassword_UserDoesNotExists_ExceptionThrown()
@@ -385,7 +434,7 @@ namespace AI_.Security.Tests.Providers
 
         [Fact]
         //todo: via theory (userIsOnLine) evrywhere
-        public void GetUserByUsername_UserDoesNotExists_NullGot()
+        public void GetUserByUsername_UserDoesNotExists_NullReturned()
         {
             var user = GetUser();
             var membershipUser = _provider.GetUser(user.UserName, false);
@@ -393,7 +442,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void GetUserByUsername_UserExists_UserGot()
+        public void GetUserByUsername_UserExists_UserReturned()
         {
             var user = GetUser();
             AddUser(user);
@@ -402,7 +451,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void GetUserNameByEmail_UserDoesNotExists_NullGot()
+        public void GetUserNameByEmail_UserDoesNotExists_NullReturned()
         {
             var user = GetUser();
             var username = _provider.GetUserNameByEmail(user.Email);
@@ -410,7 +459,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void GetUserNameByEmail_UserExists_UserNameGot()
+        public void GetUserNameByEmail_UserExists_UserNameReturned()
         {
             var user = GetUser();
             AddUser(user);
@@ -419,7 +468,6 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        //todo:theory
         public void DeleteUser_UserDoesNotExists_UserNotDeleted()
         {
             var user = GetUser();
@@ -432,78 +480,117 @@ namespace AI_.Security.Tests.Providers
         {
             var user = GetUser();
             AddUser(user);
-            var userDeleted = _provider.DeleteUser(user.UserName, false);
-            Assert.True(userDeleted);
+            _provider.DeleteUser(user.UserName, false);
             Assert.Equal(0, UserStorage.Count);
         }
 
         [Fact]
-        public void GetAllUsers_NoUsersExist_EmptyCollectionGot()
+        public void DeleteUser_UserExists_TrueReturned()
+        {
+            var user = GetUser();
+            AddUser(user);
+            var userDeleted = _provider.DeleteUser(user.UserName, false);
+            Assert.True(userDeleted);
+        }
+
+        [Fact]
+        public void GetAllUsers_NoUsersExist_EmptyCollectionReturned()
         {
             int totalRecords;
             var membershipUserCollection = _provider.GetAllUsers(0, 1, out totalRecords);
             Assert.Equal(0, membershipUserCollection.Count);
-            Assert.Equal(0, totalRecords);
+        }
+
+        [Theory]
+        [PropertyData("PagingTestData")]
+        public void GetAllUsers_UsersExist_MaxUsersCountPerPageReturned(int pageSize,
+                                                                   int pageIndex,
+                                                                   int expectedFoundMemberships)
+        {
+            int totalRecords;
+            AddUsers(3, i => GetUser());
+            var membershipUserCollection = _provider.GetAllUsers(pageIndex,
+                                                                 pageSize, 
+                                                                 out totalRecords);
+
+            Assert.Equal(expectedFoundMemberships, membershipUserCollection.Count);
         }
 
         [Fact]
-        //todo:theory
-        public void GetAllUsers_UsersExist_MaxUsersCountPerPageGot()
+        public void GetAllUsers_UsersExist_TotalRecordsCountEquelsUsersCount()
         {
             int totalRecords;
-            AddUser(GetUser());
-            AddUser(GetUser());
-            var membershipUserCollection = _provider.GetAllUsers(0, 1, out totalRecords);
+            AddUsers(3, i => GetUser());
+            _provider.GetAllUsers(0, 1, out totalRecords);
 
-            Assert.Equal(1, membershipUserCollection.Count);
-            Assert.Equal(2, totalRecords);
+            Assert.Equal(3, totalRecords);
         }
 
         [Fact]
-        //todo:theory
-        public void FindUsersByName_NoUsersExist_EmptyCollectionGot()
+        public void FindUsersByName_NoUsersExist_EmptyCollectionReturned()
         {
-            var user = GetUser();
             int totalRecords;
-            var membershipUserCollection = _provider.FindUsersByName(user.UserName, 0, 1, out totalRecords);
-            Assert.Equal(0, totalRecords);
+            var membershipUserCollection = _provider.FindUsersByName("user0", 0, 1, out totalRecords);
             Assert.Equal(0, membershipUserCollection.Count);
         }
 
-        [Fact]
-        //todo:theory
-        public void FindUsersByName_UsersExist_MaxUsersCountPerPageGot()
+        [Theory]
+        [PropertyData("PagingTestData")]
+        public void FindUsersByName_UsersExist_MaxUsersCountPerPageReturned(int pageSize,
+                                                                       int pageIndex,
+                                                                       int expectedFoundMemberships)
         {
-            var user = GetUser();
             int totalRecords;
-            AddUser(user);
-            var membershipUserCollection = _provider.FindUsersByName(user.UserName, 0, 1, out totalRecords);
-            Assert.Equal(1, totalRecords);
-            Assert.Equal(1, membershipUserCollection.Count);
+            AddUsers(3, i => GetUser("user"));
+            var membershipUserCollection = _provider.FindUsersByName("user",
+                                                                     pageIndex,
+                                                                     pageSize,
+                                                                     out totalRecords);
+            Assert.Equal(expectedFoundMemberships, membershipUserCollection.Count);
         }
 
         [Fact]
-        //todo:theory
-        public void FindUsersByEmail_NoUsersExist_EmptyCollectionGot()
+        public void FindUsersByName_UsersExist_TotalRecordsCountEquelsMatchingUsersCount()
         {
-            var user = GetUser();
             int totalRecords;
-            var membershipUserCollection = _provider.FindUsersByEmail(user.Email, 0, 1, out totalRecords);
-            Assert.Equal(0, totalRecords);
+            AddUsers(3, i => GetUser("user1"));
+            AddUsers(1, i => GetUser("user2"));
+            _provider.FindUsersByName("user1", 0, 1, out totalRecords);
+            Assert.Equal(3, totalRecords);
+        }
+
+        [Fact]
+        public void FindUsersByEmail_NoUsersExist_EmptyCollectionReturned()
+        {
+            int totalRecords;
+            var membershipUserCollection = _provider.FindUsersByEmail("a@b.c", 0, 1, out totalRecords);
             Assert.Equal(0, membershipUserCollection.Count);
         }
 
 
-        [Fact]
-        //todo:theory
-        public void FindUsersByEmail_UsersExist_MaxUsersCountPerPageGot()
+        [Theory]
+        [PropertyData("PagingTestData")]
+        public void FindUsersByEmail_UsersExist_MaxUsersCountPerPageReturned(int pageSize,
+                                                                        int pageIndex,
+                                                                        int expectedFoundMemberships)
         {
-            var user = GetUser();
             int totalRecords;
-            AddUser(user);
-            var membershipUserCollection = _provider.FindUsersByEmail(user.Email, 0, 1, out totalRecords);
-            Assert.Equal(1, totalRecords);
-            Assert.Equal(1, membershipUserCollection.Count);
+            AddUsers(3, i => GetUser(email: "a@b.c"));
+            var membershipUserCollection = _provider.FindUsersByEmail("a@b.c",
+                                                                      pageIndex,
+                                                                      pageSize,
+                                                                      out totalRecords);
+            Assert.Equal(expectedFoundMemberships, membershipUserCollection.Count);
+        }
+
+        [Fact]
+        public void FindUsersByEmail_UsersExist_TotalRecordsCountEquelsMatchingUsersCount()
+        {
+            int totalRecords;
+            AddUsers(3, i => GetUser(email: "a@b.c"));
+            AddUsers(1, i => GetUser(email: "b@b.c"));
+            _provider.FindUsersByEmail("a@b.c",0,1,out totalRecords);
+            Assert.Equal(3, totalRecords);
         }
     }
 }
