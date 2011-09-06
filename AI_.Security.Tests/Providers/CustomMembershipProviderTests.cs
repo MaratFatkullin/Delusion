@@ -10,6 +10,7 @@ using AI_.Security.Tests.Mocks;
 using AI_.Security.Tests.UtilityClasses;
 using Xunit;
 using Xunit.Extensions;
+using FluentAssertions;
 
 namespace AI_.Security.Tests.Providers
 {
@@ -66,6 +67,14 @@ namespace AI_.Security.Tests.Providers
                                         out _membershipCreateStatus);
         }
 
+        private void AddUsers(int count,Func<object, User> func)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                UserStorage.Add(func(i));
+            }
+        }
+
         private static MembershipUser GetMembershipUser()
         {
             return new MembershipUser("providerName",
@@ -83,14 +92,6 @@ namespace AI_.Security.Tests.Providers
                                       DateTime.MinValue);
         }
 
-        private void AddUsers(int count,Func<object, User> func)
-        {
-            for (int i = 0; i < count; i++)
-            {
-                UserStorage.Add(func(i));
-            }
-        }
-
         public static IEnumerable<object[]> PagingTestData
         {
             get
@@ -106,12 +107,19 @@ namespace AI_.Security.Tests.Providers
         #endregion
 
         [Fact]
-        public void CreateUser_DefaultConfiguration_UserCreated()
+        public void CreateUser_Simple_UserCreated()
         {
-            User user = GetUser();
+            var user = GetUser();
             AddUser(user);
+            UserStorage.Should().HaveCount(1).And.Contain(user);
+        }
 
-            UserStorage.ShouldContainExactlyOneItem(user);
+        [Fact]
+        public void CreateUser_Simple_SuccessCreateStatusReturned()
+        {
+            var user = GetUser();
+            AddUser(user);
+            _membershipCreateStatus.Should().Be(MembershipCreateStatus.Success);
         }
 
         [Fact]
@@ -119,8 +127,15 @@ namespace AI_.Security.Tests.Providers
         {
             AddUser(GetUser());
             AddUser(GetUser());
+            _membershipCreateStatus.Should().Be(MembershipCreateStatus.DuplicateUserName);
+        }
 
-            Assert.Equal(MembershipCreateStatus.DuplicateUserName, _membershipCreateStatus);
+        [Fact]
+        public void CreateUser_UserWithSameUserNameExists_UserNotCreated()
+        {
+            AddUser(GetUser());
+            AddUser(GetUser());
+            UserStorage.Should().HaveCount(1);
         }
 
         [Fact]
@@ -132,21 +147,28 @@ namespace AI_.Security.Tests.Providers
 
             AddUser(GetUser("user1"));
             AddUser(GetUser("user2"));
-
-            Assert.Equal(MembershipCreateStatus.DuplicateEmail, _membershipCreateStatus);
+            _membershipCreateStatus.Should().Be(MembershipCreateStatus.DuplicateEmail);
         }
 
         [Fact]
-        public void CreateUser_UniqueEmailConstraintDisabled_UserCreated()
+        public void CreateUser_UniqueEmailConstraintEnabled_UserWithSameEmailNotCreated()
         {
             var config = new NameValueCollection();
             config.Add("requiresUniqueEmail", "true");
             _provider.Initialize("name", config);
 
+            AddUser(GetUser("user1"));
+            AddUser(GetUser("user2"));
+            UserStorage.Should().HaveCount(1);
+        }
+
+        [Fact]
+        public void CreateUser_UniqueEmailConstraintDisabled_UserWithSameEmailCreated()
+        {
             AddUser(GetUser(username: "user1"));
             AddUser(GetUser(username: "user2"));
 
-            Assert.Equal(MembershipCreateStatus.DuplicateEmail, _membershipCreateStatus);
+            _membershipCreateStatus.Should().Be(MembershipCreateStatus.Success);
         }
 
         [Fact]
@@ -162,7 +184,7 @@ namespace AI_.Security.Tests.Providers
                                                       newPasswordQuestion,
                                                       newPasswordAnswer);
 
-            Assert.Equal(UserStorage.Single().PasswordQuestion, newPasswordQuestion);
+            UserStorage.Single().PasswordQuestion.Should().Be(newPasswordQuestion);
         }
 
         [Fact]
@@ -178,7 +200,7 @@ namespace AI_.Security.Tests.Providers
                                                       newPasswordQuestion,
                                                       newPasswordAnswer);
 
-            Assert.Equal(UserStorage.Single().PasswordAnswer, newPasswordAnswer);
+            UserStorage.Single().PasswordAnswer.Should().Be(newPasswordAnswer);
         }
 
         [Fact]
@@ -194,7 +216,7 @@ namespace AI_.Security.Tests.Providers
                                                       newPasswordQuestion,
                                                       newPasswordAnswer);
 
-            Assert.Equal(UserStorage.Single().PasswordQuestion, user.PasswordQuestion);
+            UserStorage.Single().PasswordQuestion.Should().Be(user.PasswordQuestion);
         }
 
         [Fact]
@@ -210,7 +232,7 @@ namespace AI_.Security.Tests.Providers
                                                       newPasswordQuestion,
                                                       newPasswordAnswer);
 
-            Assert.Equal(UserStorage.Single().PasswordAnswer, user.PasswordAnswer);
+            UserStorage.Single().PasswordAnswer.Should().Be(user.PasswordAnswer);
         }
 
         [Fact]
@@ -221,7 +243,7 @@ namespace AI_.Security.Tests.Providers
             var newPassword = "newPassword";
             _provider.ChangePassword(user.UserName, user.Password, newPassword);
 
-            Assert.Equal(UserStorage.Single().Password, newPassword);
+            UserStorage.Single().Password.Should().Be(newPassword);
         }
 
         [Fact]
@@ -231,7 +253,7 @@ namespace AI_.Security.Tests.Providers
             AddUser(user);
             _provider.ChangePassword(user.UserName, "invalidPassword", "newPassword");
 
-            Assert.Equal(UserStorage.Single().Password, user.Password);
+            UserStorage.Single().Password.Should().Be(user.Password);
         }
 
         [Fact]
@@ -241,8 +263,8 @@ namespace AI_.Security.Tests.Providers
             AddUser(user);
             var newPassword = "";
 
-            Assert.Throws<MembershipPasswordException>(
-                () => _provider.ChangePassword(user.UserName, user.Password, newPassword));
+            _provider.Invoking(p => p.ChangePassword(user.UserName, user.Password, newPassword))
+                .ShouldThrow<MembershipPasswordException>();
         }
 
         [Fact]
@@ -591,6 +613,51 @@ namespace AI_.Security.Tests.Providers
             AddUsers(1, i => GetUser(email: "b@b.c"));
             _provider.FindUsersByEmail("a@b.c",0,1,out totalRecords);
             Assert.Equal(3, totalRecords);
+        }
+
+        [Fact]
+        public void ValidateUser_UserIsLocked_UserNotValid()
+        {
+            var user = GetUser();
+            AddUser(user);
+            UserStorage.Single().IsLocked = true;
+            var isValid = _provider.ValidateUser(user.UserName, user.Password);
+            Assert.False(isValid);
+        }
+
+        [Fact]
+        public void ValidateUser_UserDoesNotExists_UserNotValid()
+        {
+            var isValid = _provider.ValidateUser("username", "password");
+            Assert.False(isValid);
+        }
+
+        [Fact]
+        public void ValidateUser_UserIsNotApproved_UserNotValid()
+        {
+            var user = GetUser();
+            AddUser(user);
+            UserStorage.Single().IsApproved = false;
+            var isValid = _provider.ValidateUser(user.UserName, user.Password);
+            Assert.False(isValid);
+        }
+
+        [Fact]
+        public void ValidateUser_InvalidPasswordProvided_UserNotValid()
+        {
+            var user = GetUser();
+            AddUser(user);
+            var isValid = _provider.ValidateUser(user.UserName, "invalidPassword");
+            Assert.False(isValid);
+        }
+
+        [Fact]
+        public void ValidateUser_Simple_UserValid()
+        {
+            var user = GetUser();
+            AddUser(user);
+            var isValid = _provider.ValidateUser(user.UserName, user.Password);
+            Assert.True(isValid);
         }
     }
 }
