@@ -25,6 +25,12 @@ namespace AI_.Security.Models
 
         public DateTime LastActivityDate { get; set; }
 
+        public DateTime LastLoginDate { get; set; }
+
+        public DateTime LastLockoutDate { get; set; }
+
+        public DateTime LastPasswordChangedDate { get; set; }
+
         #region Equality members
 
         public bool Equals(User other)
