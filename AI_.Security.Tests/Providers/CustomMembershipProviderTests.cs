@@ -97,10 +97,9 @@ namespace AI_.Security.Tests.Providers
             get
             {
                 // { pageSize, pageIndex, expectedItemsInPage }
-                yield return new object[] { 1, 0, 1 };
-                yield return new object[] { 1, 1, 1 };
                 yield return new object[] { 2, 0, 2 };
-                yield return new object[] { 2, 1, 0 };
+                yield return new object[] { 2, 1, 1 };
+                yield return new object[] { 2, 2, 0 };
             }
         }
 
@@ -111,6 +110,7 @@ namespace AI_.Security.Tests.Providers
         {
             var user = GetUser();
             AddUser(user);
+
             UserStorage.Should().HaveCount(1).And.Contain(user);
         }
 
@@ -119,6 +119,7 @@ namespace AI_.Security.Tests.Providers
         {
             var user = GetUser();
             AddUser(user);
+
             _membershipCreateStatus.Should().Be(MembershipCreateStatus.Success);
         }
 
@@ -127,6 +128,7 @@ namespace AI_.Security.Tests.Providers
         {
             AddUser(GetUser());
             AddUser(GetUser());
+
             _membershipCreateStatus.Should().Be(MembershipCreateStatus.DuplicateUserName);
         }
 
@@ -135,6 +137,7 @@ namespace AI_.Security.Tests.Providers
         {
             AddUser(GetUser());
             AddUser(GetUser());
+
             UserStorage.Should().HaveCount(1);
         }
 
@@ -147,6 +150,7 @@ namespace AI_.Security.Tests.Providers
 
             AddUser(GetUser("user1"));
             AddUser(GetUser("user2"));
+
             _membershipCreateStatus.Should().Be(MembershipCreateStatus.DuplicateEmail);
         }
 
@@ -159,6 +163,7 @@ namespace AI_.Security.Tests.Providers
 
             AddUser(GetUser("user1"));
             AddUser(GetUser("user2"));
+
             UserStorage.Should().HaveCount(1);
         }
 
@@ -178,7 +183,6 @@ namespace AI_.Security.Tests.Providers
             AddUser(user);
             var newPasswordQuestion = "newPasswordQuestion";
             var newPasswordAnswer = "newPasswordAnswer";
-
             _provider.ChangePasswordQuestionAndAnswer(user.UserName,
                                                       user.Password,
                                                       newPasswordQuestion,
@@ -194,7 +198,6 @@ namespace AI_.Security.Tests.Providers
             AddUser(user);
             var newPasswordQuestion = "newPasswordQuestion";
             var newPasswordAnswer = "newPasswordAnswer";
-
             _provider.ChangePasswordQuestionAndAnswer(user.UserName,
                                                       user.Password,
                                                       newPasswordQuestion,
@@ -210,7 +213,6 @@ namespace AI_.Security.Tests.Providers
             AddUser(user);
             var newPasswordQuestion = "newPasswordQuestion";
             var newPasswordAnswer = "newPasswordAnswer";
-
             _provider.ChangePasswordQuestionAndAnswer(user.UserName,
                                                       "invalidPassword",
                                                       newPasswordQuestion,
@@ -226,7 +228,6 @@ namespace AI_.Security.Tests.Providers
             AddUser(user);
             var newPasswordQuestion = "newPasswordQuestion";
             var newPasswordAnswer = "newPasswordAnswer";
-
             _provider.ChangePasswordQuestionAndAnswer(user.UserName,
                                                       "invalidPassword",
                                                       newPasswordQuestion,
@@ -275,7 +276,7 @@ namespace AI_.Security.Tests.Providers
             var newPassword = "newPassword";
             _provider.ChangePassword(user.UserName, user.Password, newPassword);
 
-            Assert.Equal(UserStorage.Single().Password, user.Password);
+            UserStorage.Single().Password.Should().Be(user.Password);
         }
 
         [Fact]
@@ -287,7 +288,7 @@ namespace AI_.Security.Tests.Providers
             _provider.UpdateUser(membershipUser);
             var updatedUser = _provider.GetUser(membershipUser.UserName, false);
 
-            Assert.Equal(membershipUser, updatedUser);
+            updatedUser.Should().Be(membershipUser);
         }
 
         [Fact]
@@ -296,8 +297,9 @@ namespace AI_.Security.Tests.Providers
             var user = GetUser();
             AddUser(user);
             var membershipUser = GetMembershipUser();
-            Assert.Throws<ProviderException>(
-                () => _provider.UpdateUser(membershipUser));
+
+            _provider.Invoking(p => p.UpdateUser(membershipUser))
+                .ShouldThrow<ProviderException>();
         }
 
         [Fact]
@@ -305,8 +307,8 @@ namespace AI_.Security.Tests.Providers
         {
             var user = GetUser();
 
-            Assert.Throws<ProviderException>(
-                () => _provider.UnlockUser(user.UserName));
+            _provider.Invoking(p => p.UnlockUser(user.UserName))
+                .ShouldThrow<ProviderException>();
         }
 
         [Fact]
@@ -315,8 +317,8 @@ namespace AI_.Security.Tests.Providers
             var user = GetUser();
             AddUser(user);
 
-            Assert.Throws<ProviderException>(
-                () => _provider.UnlockUser(user.UserName));
+            _provider.Invoking(p => p.UnlockUser(user.UserName))
+                .ShouldThrow<ProviderException>();
         }
 
         [Fact]
@@ -327,7 +329,7 @@ namespace AI_.Security.Tests.Providers
             UserStorage.Single().IsLocked = true;
             _provider.UnlockUser(user.UserName);
 
-            Assert.False(UserStorage.Single().IsLocked);
+            UserStorage.Single().IsLocked.Should().BeFalse();
         }
 
         [Fact]
@@ -336,7 +338,8 @@ namespace AI_.Security.Tests.Providers
             var user = GetUser();
             AddUser(user);
             var membershipUser = _provider.GetUser(user.ProviderUserKey, false);
-            Assert.Equal(user.UserName, membershipUser.UserName);
+
+            membershipUser.UserName.Should().Be(user.UserName);
         }
 
         [Fact]
@@ -344,7 +347,8 @@ namespace AI_.Security.Tests.Providers
         {
             var user = GetUser();
             var membershipUser = _provider.GetUser(user.ProviderUserKey, false);
-            Assert.Equal(null, membershipUser);
+
+            membershipUser.Should().BeNull();
         }
 
         [Fact]
@@ -352,8 +356,9 @@ namespace AI_.Security.Tests.Providers
         {
             var user = GetUser();
             AddUser(user);
-            Assert.Throws<NotSupportedException>(
-                () => _provider.ResetPassword(user.UserName, user.PasswordAnswer));
+
+            _provider.Invoking(p => p.ResetPassword(user.UserName,user.PasswordAnswer))
+                .ShouldThrow<NotSupportedException>();
         }
 
         [Fact]
@@ -363,10 +368,12 @@ namespace AI_.Security.Tests.Providers
             config.Add("enablePasswordReset", "true");
             config.Add("requiresQuestionAndAnswer", "true");
             _provider.Initialize("name", config);
+
             var user = GetUser();
             AddUser(user);
-            Assert.Throws<ProviderException>(
-                () => _provider.ResetPassword(user.UserName, null));
+
+            _provider.Invoking(p => p.ResetPassword(user.UserName, null))
+                .ShouldThrow<ProviderException>();
         }
 
         [Fact]
@@ -376,9 +383,11 @@ namespace AI_.Security.Tests.Providers
             config.Add("enablePasswordReset", "true");
             config.Add("requiresQuestionAndAnswer", "true");
             _provider.Initialize("name", config);
+
             var user = GetUser();
-            Assert.Throws<MembershipPasswordException>(
-                () => _provider.ResetPassword(user.UserName, user.PasswordAnswer));
+
+            _provider.Invoking(p => p.ResetPassword(user.UserName, user.PasswordAnswer))
+                .ShouldThrow<MembershipPasswordException>();
         }
 
         [Fact]
@@ -388,11 +397,13 @@ namespace AI_.Security.Tests.Providers
             config.Add("enablePasswordReset", "true");
             config.Add("requiresQuestionAndAnswer", "true");
             _provider.Initialize("name", config);
+
             var user = GetUser();
             AddUser(user);
             UserStorage.Single().IsLocked = true;
-            Assert.Throws<MembershipPasswordException>(
-                () => _provider.ResetPassword(user.UserName, user.PasswordAnswer));
+
+            _provider.Invoking(p => p.ResetPassword(user.UserName, user.PasswordAnswer))
+                .ShouldThrow<MembershipPasswordException>();
         }
 
         [Fact]
@@ -402,10 +413,12 @@ namespace AI_.Security.Tests.Providers
             config.Add("enablePasswordReset", "true");
             config.Add("requiresQuestionAndAnswer", "true");
             _provider.Initialize("name", config);
+
             var user = GetUser();
             AddUser(user);
             _provider.ResetPassword(user.UserName, user.PasswordAnswer);
-            Assert.NotEqual(user.Password, UserStorage.Single().Password);
+
+            UserStorage.Single().Password.Should().NotBe(user.Password);
         }
 
         [Fact]
@@ -414,8 +427,8 @@ namespace AI_.Security.Tests.Providers
             var user = GetUser();
             AddUser(user);
 
-            Assert.Throws<ProviderException>(
-                () => _provider.GetPassword(user.UserName, user.PasswordAnswer));
+            _provider.Invoking(p => p.GetPassword(user.UserName,user.PasswordAnswer))
+                .ShouldThrow<ProviderException>();
         }
 
         [Fact]
@@ -428,7 +441,8 @@ namespace AI_.Security.Tests.Providers
             var user = GetUser();
             AddUser(user);
             var password = _provider.GetPassword(user.UserName, user.PasswordAnswer);
-            Assert.Equal(user.Password, password);
+
+            password.Should().Be(user.Password);
         }
 
         [Fact]
@@ -438,8 +452,8 @@ namespace AI_.Security.Tests.Providers
             config.Add("enablePasswordRetrieval", "true");
             _provider.Initialize("name", config);
 
-            Assert.Throws<MembershipPasswordException>(
-                () => _provider.GetPassword("username", "passwordanswer"));
+            _provider.Invoking(p => p.GetPassword("username", "passwordanswer"))
+                .ShouldThrow<MembershipPasswordException>();
         }
 
         [Fact]
@@ -450,8 +464,8 @@ namespace AI_.Security.Tests.Providers
 
             UserStorage.Single().IsLocked = true;
 
-            Assert.Throws<MembershipPasswordException>(
-                () => _provider.GetPassword(user.UserName, user.PasswordAnswer));
+            _provider.Invoking(p => p.GetPassword(user.UserName, user.PasswordAnswer))
+                .ShouldThrow<MembershipPasswordException>();
         }
 
         [Fact]
@@ -460,7 +474,8 @@ namespace AI_.Security.Tests.Providers
         {
             var user = GetUser();
             var membershipUser = _provider.GetUser(user.UserName, false);
-            Assert.Null(membershipUser);
+
+            membershipUser.Should().BeNull();
         }
 
         [Fact]
@@ -469,7 +484,8 @@ namespace AI_.Security.Tests.Providers
             var user = GetUser();
             AddUser(user);
             var membershipUser = _provider.GetUser(user.UserName, false);
-            Assert.Equal(user.UserName, membershipUser.UserName);
+
+            membershipUser.UserName.Should().Be(user.UserName);
         }
 
         [Fact]
@@ -477,7 +493,8 @@ namespace AI_.Security.Tests.Providers
         {
             var user = GetUser();
             var username = _provider.GetUserNameByEmail(user.Email);
-            Assert.Null(username);
+
+            username.Should().BeNull();
         }
 
         [Fact]
@@ -486,7 +503,8 @@ namespace AI_.Security.Tests.Providers
             var user = GetUser();
             AddUser(user);
             var username = _provider.GetUserNameByEmail(user.Email);
-            Assert.Equal(user.UserName, username);
+
+            username.Should().Be(user.UserName);
         }
 
         [Fact]
@@ -494,7 +512,8 @@ namespace AI_.Security.Tests.Providers
         {
             var user = GetUser();
             var userDeleted = _provider.DeleteUser(user.UserName, false);
-            Assert.False(userDeleted);
+
+            userDeleted.Should().BeFalse();
         }
 
         [Fact]
@@ -503,7 +522,8 @@ namespace AI_.Security.Tests.Providers
             var user = GetUser();
             AddUser(user);
             _provider.DeleteUser(user.UserName, false);
-            Assert.Equal(0, UserStorage.Count);
+
+            UserStorage.Should().HaveCount(0);
         }
 
         [Fact]
@@ -512,7 +532,8 @@ namespace AI_.Security.Tests.Providers
             var user = GetUser();
             AddUser(user);
             var userDeleted = _provider.DeleteUser(user.UserName, false);
-            Assert.True(userDeleted);
+
+            userDeleted.Should().BeTrue();
         }
 
         [Fact]
@@ -520,7 +541,8 @@ namespace AI_.Security.Tests.Providers
         {
             int totalRecords;
             var membershipUserCollection = _provider.GetAllUsers(0, 1, out totalRecords);
-            Assert.Equal(0, membershipUserCollection.Count);
+
+            membershipUserCollection.Should().HaveCount(0);
         }
 
         [Theory]
@@ -535,7 +557,7 @@ namespace AI_.Security.Tests.Providers
                                                                  pageSize, 
                                                                  out totalRecords);
 
-            Assert.Equal(expectedFoundMemberships, membershipUserCollection.Count);
+            membershipUserCollection.Should().HaveCount(expectedFoundMemberships);
         }
 
         [Fact]
@@ -545,7 +567,7 @@ namespace AI_.Security.Tests.Providers
             AddUsers(3, i => GetUser());
             _provider.GetAllUsers(0, 1, out totalRecords);
 
-            Assert.Equal(3, totalRecords);
+            totalRecords.Should().Be(3);
         }
 
         [Fact]
@@ -553,7 +575,8 @@ namespace AI_.Security.Tests.Providers
         {
             int totalRecords;
             var membershipUserCollection = _provider.FindUsersByName("user0", 0, 1, out totalRecords);
-            Assert.Equal(0, membershipUserCollection.Count);
+
+            membershipUserCollection.Should().HaveCount(0);
         }
 
         [Theory]
@@ -568,7 +591,8 @@ namespace AI_.Security.Tests.Providers
                                                                      pageIndex,
                                                                      pageSize,
                                                                      out totalRecords);
-            Assert.Equal(expectedFoundMemberships, membershipUserCollection.Count);
+
+            membershipUserCollection.Should().HaveCount(expectedFoundMemberships);
         }
 
         [Fact]
@@ -578,7 +602,8 @@ namespace AI_.Security.Tests.Providers
             AddUsers(3, i => GetUser("user1"));
             AddUsers(1, i => GetUser("user2"));
             _provider.FindUsersByName("user1", 0, 1, out totalRecords);
-            Assert.Equal(3, totalRecords);
+
+            totalRecords.Should().Be(3);
         }
 
         [Fact]
@@ -586,7 +611,8 @@ namespace AI_.Security.Tests.Providers
         {
             int totalRecords;
             var membershipUserCollection = _provider.FindUsersByEmail("a@b.c", 0, 1, out totalRecords);
-            Assert.Equal(0, membershipUserCollection.Count);
+
+            membershipUserCollection.Should().HaveCount(3);
         }
 
 
@@ -602,7 +628,8 @@ namespace AI_.Security.Tests.Providers
                                                                       pageIndex,
                                                                       pageSize,
                                                                       out totalRecords);
-            Assert.Equal(expectedFoundMemberships, membershipUserCollection.Count);
+
+            membershipUserCollection.Should().HaveCount(expectedFoundMemberships);
         }
 
         [Fact]
@@ -612,7 +639,8 @@ namespace AI_.Security.Tests.Providers
             AddUsers(3, i => GetUser(email: "a@b.c"));
             AddUsers(1, i => GetUser(email: "b@b.c"));
             _provider.FindUsersByEmail("a@b.c",0,1,out totalRecords);
-            Assert.Equal(3, totalRecords);
+
+            totalRecords.Should().Be(3);
         }
 
         [Fact]
@@ -622,14 +650,16 @@ namespace AI_.Security.Tests.Providers
             AddUser(user);
             UserStorage.Single().IsLocked = true;
             var isValid = _provider.ValidateUser(user.UserName, user.Password);
-            Assert.False(isValid);
+
+            isValid.Should().BeFalse();
         }
 
         [Fact]
         public void ValidateUser_UserDoesNotExists_UserNotValid()
         {
             var isValid = _provider.ValidateUser("username", "password");
-            Assert.False(isValid);
+
+            isValid.Should().BeFalse();
         }
 
         [Fact]
@@ -639,7 +669,8 @@ namespace AI_.Security.Tests.Providers
             AddUser(user);
             UserStorage.Single().IsApproved = false;
             var isValid = _provider.ValidateUser(user.UserName, user.Password);
-            Assert.False(isValid);
+
+            isValid.Should().BeFalse();
         }
 
         [Fact]
@@ -648,7 +679,8 @@ namespace AI_.Security.Tests.Providers
             var user = GetUser();
             AddUser(user);
             var isValid = _provider.ValidateUser(user.UserName, "invalidPassword");
-            Assert.False(isValid);
+
+            isValid.Should().BeFalse();
         }
 
         [Fact]
@@ -657,7 +689,8 @@ namespace AI_.Security.Tests.Providers
             var user = GetUser();
             AddUser(user);
             var isValid = _provider.ValidateUser(user.UserName, user.Password);
-            Assert.True(isValid);
+
+            isValid.Should().BeTrue();
         }
     }
 }
