@@ -23,6 +23,8 @@ namespace AI_.Security.Models
 
         public bool IsLocked { get; set; }
 
+        public DateTime LastActivityDate { get; set; }
+
         #region Equality members
 
         public bool Equals(User other)
