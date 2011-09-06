@@ -29,6 +29,61 @@ namespace AI_.Security.Tests.Providers
             _provider = new CustomMembershipProvider(_unitOfWork);
         }
 
+        #region Utility methods
+
+        private User GetUser(string username = "username",
+                             string password = "password",
+                             string email = "email",
+                             string passwordQuestion = "passwordQuestion",
+                             string passwordAnswer = "passwordAnswer",
+                             bool isApproved = true,
+                             object providerUserKey = null)
+        {
+            var user = new User
+                           {
+                               UserName = username,
+                               Password = password,
+                               Email = email,
+                               PasswordQuestion = passwordQuestion,
+                               PasswordAnswer = passwordAnswer,
+                               IsApproved = isApproved,
+                               ProviderUserKey = providerUserKey
+                           };
+
+            return user;
+        }
+
+        private MembershipUser AddUser(User user)
+        {
+            return _provider.CreateUser(user.UserName,
+                                        user.Password,
+                                        user.Email,
+                                        user.PasswordQuestion,
+                                        user.PasswordAnswer,
+                                        user.IsApproved,
+                                        user.ProviderUserKey,
+                                        out _membershipCreateStatus);
+        }
+
+        private static MembershipUser GetMembershipUser()
+        {
+            return new MembershipUser("providerName",
+                                      "username",
+                                      Guid.NewGuid(),
+                                      "a@b.c",
+                                      "passwordQuestion",
+                                      "comment",
+                                      true,
+                                      false,
+                                      DateTime.Now,
+                                      DateTime.Now,
+                                      DateTime.Now,
+                                      DateTime.Now,
+                                      DateTime.MinValue);
+        }
+
+        #endregion
+
         [Fact]
         public void CreateUser_DefaultConfiguration_UserCreated()
         {
@@ -86,8 +141,8 @@ namespace AI_.Security.Tests.Providers
                                                       newPasswordQuestion,
                                                       newPasswordAnswer);
 
-            Assert.Equal(UserStorage.SingleOrDefault().PasswordQuestion, newPasswordQuestion);
-            Assert.Equal(UserStorage.SingleOrDefault().PasswordAnswer, newPasswordAnswer);
+            Assert.Equal(UserStorage.Single().PasswordQuestion, newPasswordQuestion);
+            Assert.Equal(UserStorage.Single().PasswordAnswer, newPasswordAnswer);
         }
 
         [Fact]
@@ -103,8 +158,8 @@ namespace AI_.Security.Tests.Providers
                                                       newPasswordQuestion,
                                                       newPasswordAnswer);
 
-            Assert.Equal(UserStorage.SingleOrDefault().PasswordQuestion, user.PasswordQuestion);
-            Assert.Equal(UserStorage.SingleOrDefault().PasswordAnswer, user.PasswordAnswer);
+            Assert.Equal(UserStorage.Single().PasswordQuestion, user.PasswordQuestion);
+            Assert.Equal(UserStorage.Single().PasswordAnswer, user.PasswordAnswer);
         }
 
 
@@ -137,10 +192,7 @@ namespace AI_.Security.Tests.Providers
             var newPassword = "";
 
             Assert.Throws<MembershipPasswordException>(
-                delegate
-                {
-                    _provider.ChangePassword(user.UserName, user.Password, newPassword);
-                });
+                () => _provider.ChangePassword(user.UserName, user.Password, newPassword));
         }
 
         [Fact]
@@ -172,7 +224,8 @@ namespace AI_.Security.Tests.Providers
             var user = GetUser();
             AddUser(user);
             var membershipUser = GetMembershipUser();
-            Assert.Throws<ProviderException>(() => _provider.UpdateUser(membershipUser));
+            Assert.Throws<ProviderException>(
+                () => _provider.UpdateUser(membershipUser));
         }
 
         [Fact]
@@ -180,7 +233,8 @@ namespace AI_.Security.Tests.Providers
         {
             var user = GetUser();
 
-            Assert.Throws<ProviderException>(() => _provider.UnlockUser(user.UserName));
+            Assert.Throws<ProviderException>(
+                () => _provider.UnlockUser(user.UserName));
         }
 
         [Fact]
@@ -189,7 +243,8 @@ namespace AI_.Security.Tests.Providers
             var user = GetUser();
             AddUser(user);
 
-            Assert.Throws<ProviderException>(() => _provider.UnlockUser(user.UserName));
+            Assert.Throws<ProviderException>(
+                () => _provider.UnlockUser(user.UserName));
         }
 
         [Fact]
@@ -204,7 +259,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void GetUser_UserExists_UserGot()
+        public void GetUserByProviderUserKey_UserExists_UserGot()
         {
             var user = GetUser();
             AddUser(GetUser());
@@ -212,14 +267,21 @@ namespace AI_.Security.Tests.Providers
             Assert.Equal(user.UserName, membershipUser.UserName);
         }
 
-        #region ResetPassword
+        [Fact]
+        public void GetUserByProviderUserKey_UserDoesNotExists_NullGot()
+        {
+            var user = GetUser();
+            var membershipUser = _provider.GetUser(user.ProviderUserKey, false);
+            Assert.Equal(null, membershipUser);
+        }
 
         [Fact]
         public void ResetPassword_PasswordResetOptionIsDisabled_ExceptionThrown()
         {
             var user = GetUser();
             AddUser(user);
-            Assert.Throws<NotSupportedException>(() => _provider.ResetPassword(user.UserName, user.PasswordAnswer));
+            Assert.Throws<NotSupportedException>(
+                () => _provider.ResetPassword(user.UserName, user.PasswordAnswer));
         }
 
         [Fact]
@@ -271,67 +333,8 @@ namespace AI_.Security.Tests.Providers
             var user = GetUser();
             AddUser(user);
             _provider.ResetPassword(user.UserName, user.PasswordAnswer);
-            Assert.NotEqual(user.Password,UserStorage.Single().Password);
+            Assert.NotEqual(user.Password, UserStorage.Single().Password);
         }
-
-        #endregion
-
-        #region Utility methods
-
-        private User GetUser(string username = "username",
-                             string password = "password",
-                             string email = "email",
-                             string passwordQuestion = "passwordQuestion",
-                             string passwordAnswer = "passwordAnswer",
-                             bool isApproved = true,
-                             object providerUserKey = null)
-        {
-            var user = new User
-                       {
-                           UserName = username,
-                           Password = password,
-                           Email = email,
-                           PasswordQuestion = passwordQuestion,
-                           PasswordAnswer = passwordAnswer,
-                           IsApproved = isApproved,
-                           ProviderUserKey = providerUserKey
-                       };
-
-            return user;
-        }
-
-        private MembershipUser AddUser(User user)
-        {
-            return _provider.CreateUser(user.UserName,
-                                        user.Password,
-                                        user.Email,
-                                        user.PasswordQuestion,
-                                        user.PasswordAnswer,
-                                        user.IsApproved,
-                                        user.ProviderUserKey,
-                                        out _membershipCreateStatus);
-        }
-
-        private static MembershipUser GetMembershipUser()
-        {
-            return new MembershipUser("providerName",
-                                      "username",
-                                      Guid.NewGuid(),
-                                      "a@b.c",
-                                      "passwordQuestion",
-                                      "comment",
-                                      true,
-                                      false,
-                                      DateTime.Now,
-                                      DateTime.Now,
-                                      DateTime.Now,
-                                      DateTime.Now,
-                                      DateTime.MinValue);
-        }
-
-        #endregion
-
-        #region GetPassword
 
         [Fact]
         public void GetPassword_PasswordRetrievalOptionIsDisabled_ExceptionThrown()
@@ -356,36 +359,20 @@ namespace AI_.Security.Tests.Providers
             Assert.Equal(user.Password, password);
         }
 
+
         [Fact]
-        public void gpFact3()
+        public void GetPassword_UserDoesNotExists_ExceptionThrown()
         {
             var config = new NameValueCollection();
             config.Add("enablePasswordRetrieval", "true");
-
             _provider.Initialize("name", config);
-            var user = GetUser();
-            AddUser(user);
 
-            Assert.Throws<ProviderException>(
-                delegate
-                {
-                    _provider.GetPassword(user.UserName, user.PasswordAnswer);
-                });
-        }
-
-
-        [Fact]
-        public void gpFact4()
-        {
             Assert.Throws<MembershipPasswordException>(
-                delegate
-                {
-                    _provider.GetPassword("username", "passwordanswer");
-                });
+                () => _provider.GetPassword("username", "passwordanswer"));
         }
 
         [Fact]
-        public void gpFact5()
+        public void GetPassword_UserIsLocked_ExceptionThrown()
         {
             var user = GetUser();
             AddUser(user);
@@ -393,17 +380,12 @@ namespace AI_.Security.Tests.Providers
             UserStorage.Single().IsLocked = true;
 
             Assert.Throws<MembershipPasswordException>(
-                delegate
-                {
-                    _provider.GetPassword(user.UserName, user.PasswordAnswer);
-                });
+                () => _provider.GetPassword(user.UserName, user.PasswordAnswer));
         }
 
-        #endregion
-
         [Fact]
-        //todo: via theory (userIsOnLine)
-        public void getUserFact2()
+        //todo: via theory (userIsOnLine) evrywhere
+        public void GetUserByUsername_UserDoesNotExists_NullGot()
         {
             var user = GetUser();
             var membershipUser = _provider.GetUser(user.UserName, false);
@@ -411,17 +393,16 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void getUserFact3()
+        public void GetUserByUsername_UserExists_UserGot()
         {
             var user = GetUser();
             AddUser(user);
             var membershipUser = _provider.GetUser(user.UserName, false);
-            Assert.Equal(user.UserName,membershipUser.UserName);
+            Assert.Equal(user.UserName, membershipUser.UserName);
         }
 
-
         [Fact]
-        public void getUsernameByEMFact1()
+        public void GetUserNameByEmail_UserDoesNotExists_NullGot()
         {
             var user = GetUser();
             var username = _provider.GetUserNameByEmail(user.Email);
@@ -429,17 +410,17 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void getUsernameByEMFact2()
+        public void GetUserNameByEmail_UserExists_UserNameGot()
         {
             var user = GetUser();
             AddUser(user);
             var username = _provider.GetUserNameByEmail(user.Email);
-            Assert.Equal(user.UserName,username);
+            Assert.Equal(user.UserName, username);
         }
 
         [Fact]
         //todo:theory
-        public void deleteUserFact1()
+        public void DeleteUser_UserDoesNotExists_UserNotDeleted()
         {
             var user = GetUser();
             var userDeleted = _provider.DeleteUser(user.UserName, false);
@@ -447,50 +428,51 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void deleteuserFact2()
+        public void DeleteUser_UserExists_UserDeleted()
         {
             var user = GetUser();
             AddUser(user);
-            var userDeleted = _provider.DeleteUser(user.UserName,false);
+            var userDeleted = _provider.DeleteUser(user.UserName, false);
             Assert.True(userDeleted);
+            Assert.Equal(0, UserStorage.Count);
         }
 
         [Fact]
-        public void getAllUserFact1()
+        public void GetAllUsers_NoUsersExist_EmptyCollectionGot()
         {
             int totalRecords;
             var membershipUserCollection = _provider.GetAllUsers(0, 1, out totalRecords);
-            Assert.Equal(0,membershipUserCollection.Count);
-            Assert.Equal(0,totalRecords);
+            Assert.Equal(0, membershipUserCollection.Count);
+            Assert.Equal(0, totalRecords);
         }
 
         [Fact]
         //todo:theory
-        public void getAllUserFact2()
+        public void GetAllUsers_UsersExist_MaxUsersCountPerPageGot()
         {
             int totalRecords;
             AddUser(GetUser());
             AddUser(GetUser());
             var membershipUserCollection = _provider.GetAllUsers(0, 1, out totalRecords);
 
-            Assert.Equal(1,membershipUserCollection.Count);
-            Assert.Equal(2,totalRecords);
+            Assert.Equal(1, membershipUserCollection.Count);
+            Assert.Equal(2, totalRecords);
         }
 
         [Fact]
         //todo:theory
-        public void findUsersByNameFact1()
+        public void FindUsersByName_NoUsersExist_EmptyCollectionGot()
         {
             var user = GetUser();
             int totalRecords;
             var membershipUserCollection = _provider.FindUsersByName(user.UserName, 0, 1, out totalRecords);
-            Assert.Equal(0,totalRecords);
-            Assert.Equal(null,membershipUserCollection);
+            Assert.Equal(0, totalRecords);
+            Assert.Equal(0, membershipUserCollection.Count);
         }
 
         [Fact]
         //todo:theory
-        public void findUsersByNameFact2()
+        public void FindUsersByName_UsersExist_MaxUsersCountPerPageGot()
         {
             var user = GetUser();
             int totalRecords;
@@ -500,10 +482,21 @@ namespace AI_.Security.Tests.Providers
             Assert.Equal(1, membershipUserCollection.Count);
         }
 
-        
         [Fact]
         //todo:theory
-        public void findUsersByEMailFact2()
+        public void FindUsersByEmail_NoUsersExist_EmptyCollectionGot()
+        {
+            var user = GetUser();
+            int totalRecords;
+            var membershipUserCollection = _provider.FindUsersByEmail(user.Email, 0, 1, out totalRecords);
+            Assert.Equal(0, totalRecords);
+            Assert.Equal(0, membershipUserCollection.Count);
+        }
+
+
+        [Fact]
+        //todo:theory
+        public void FindUsersByEmail_UsersExist_MaxUsersCountPerPageGot()
         {
             var user = GetUser();
             int totalRecords;
