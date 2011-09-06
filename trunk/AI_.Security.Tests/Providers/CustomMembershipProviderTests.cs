@@ -7,7 +7,6 @@ using System.Web.Security;
 using AI_.Security.Models;
 using AI_.Security.Providers;
 using AI_.Security.Tests.Mocks;
-using AI_.Security.Tests.UtilityClasses;
 using Xunit;
 using Xunit.Extensions;
 using FluentAssertions;
@@ -29,6 +28,7 @@ namespace AI_.Security.Tests.Providers
         {
             _unitOfWork = new SecurityUnitOfWorkMock();
             _provider = new CustomMembershipProvider(_unitOfWork);
+            _provider.Initialize(null, new NameValueCollection());
         }
 
         #region Utility methods
@@ -67,11 +67,16 @@ namespace AI_.Security.Tests.Providers
                                         out _membershipCreateStatus);
         }
 
+        private void AddUserDirectly(User user)
+        {
+            UserStorage.Add(user);
+        }
+
         private void AddUsers(int count,Func<object, User> func)
         {
             for (int i = 0; i < count; i++)
             {
-                UserStorage.Add(func(i));
+                AddUserDirectly(func(i));
             }
         }
 
@@ -110,8 +115,12 @@ namespace AI_.Security.Tests.Providers
         {
             var user = GetUser();
             AddUser(user);
-
-            UserStorage.Should().HaveCount(1).And.Contain(user);
+            //Assert.Equal(UserStorage.Single(),user);
+            UserStorage.Single()
+                .ShouldHave()
+                .AllPropertiesBut(us => us.ProviderUserKey, us => us.CreateDate)
+                .EqualTo(user);
+            //UserStorage.Should().HaveCount(1).And.Contain(user);
         }
 
         [Fact]
@@ -647,7 +656,7 @@ namespace AI_.Security.Tests.Providers
         public void ValidateUser_UserIsLocked_UserNotValid()
         {
             var user = GetUser();
-            AddUser(user);
+            AddUserDirectly(user);
             UserStorage.Single().IsLocked = true;
             var isValid = _provider.ValidateUser(user.UserName, user.Password);
 
@@ -666,7 +675,7 @@ namespace AI_.Security.Tests.Providers
         public void ValidateUser_UserIsNotApproved_UserNotValid()
         {
             var user = GetUser();
-            AddUser(user);
+            AddUserDirectly(user);
             UserStorage.Single().IsApproved = false;
             var isValid = _provider.ValidateUser(user.UserName, user.Password);
 
@@ -677,7 +686,7 @@ namespace AI_.Security.Tests.Providers
         public void ValidateUser_InvalidPasswordProvided_UserNotValid()
         {
             var user = GetUser();
-            AddUser(user);
+            AddUserDirectly(user);
             var isValid = _provider.ValidateUser(user.UserName, "invalidPassword");
 
             isValid.Should().BeFalse();
@@ -687,7 +696,7 @@ namespace AI_.Security.Tests.Providers
         public void ValidateUser_Simple_UserValid()
         {
             var user = GetUser();
-            AddUser(user);
+            AddUserDirectly(user);
             var isValid = _provider.ValidateUser(user.UserName, user.Password);
 
             isValid.Should().BeTrue();

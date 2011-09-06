@@ -5,6 +5,7 @@ using System.Linq;
 using System.Web.Security;
 using AI_.Security.DAL;
 using AI_.Security.Models;
+using AutoMapper;
 
 namespace AI_.Security.Providers
 {
@@ -87,11 +88,29 @@ namespace AI_.Security.Providers
         public CustomMembershipProvider(ISecurityUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
+            ConfigureMapping();
         }
 
-        public CustomMembershipProvider()
+        public CustomMembershipProvider() : this(new SecurityUnitOfWork())
         {
-            _unitOfWork = new SecurityUnitOfWork();
+        }
+
+        private void ConfigureMapping()
+        {
+            Mapper.CreateMap<User, MembershipUser>()
+                .ConstructUsing(usr => new MembershipUser(Name,
+                                                          usr.UserName,
+                                                          usr.ProviderUserKey,
+                                                          usr.Email,
+                                                          usr.PasswordQuestion,
+                                                          string.Empty,
+                                                          usr.IsApproved,
+                                                          usr.IsLocked,
+                                                          usr.CreateDate,
+                                                          usr.LastLoginDate,
+                                                          usr.LastActivityDate,
+                                                          usr.LastPasswordChangedDate,
+                                                          usr.LastLockoutDate));
         }
 
         private string GetConfigValue(string configValue, string defaultValue)
@@ -107,6 +126,10 @@ namespace AI_.Security.Providers
             if (config == null)
                 throw new ArgumentNullException("config");
 
+            if (string.IsNullOrEmpty(name))
+            {
+                name = "CustomMembershipProvider";
+            }
             base.Initialize(name, config);
 
             //_applicationName = GetConfigValue(config["applicationName"],
@@ -181,6 +204,7 @@ namespace AI_.Security.Providers
             var user = new User
                        {
                            UserName = username,
+                           Password = password,
                            Email = email,
                            IsApproved = isApproved,
                            PasswordQuestion = passwordQuestion,
@@ -188,7 +212,6 @@ namespace AI_.Security.Providers
                            ProviderUserKey = providerUserKey,
                            CreateDate = createDate
                        };
-
 
             try
             {
@@ -341,7 +364,10 @@ namespace AI_.Security.Providers
 
         public override bool ValidateUser(string username, string password)
         {
-            throw new NotImplementedException();
+            var user = GetUser(username);
+            if (user == null || user.IsLocked || !user.IsApproved)
+                return false;
+            return ValidatePassword(user.Password, password);
         }
 
         public override bool UnlockUser(string userName)
@@ -371,7 +397,10 @@ namespace AI_.Security.Providers
 
         public override MembershipUser GetUser(string username, bool userIsOnline)
         {
-            throw new NotImplementedException();
+            var user = GetUser(username);
+            if (user == null)
+                return null;
+            return Mapper.Map<User, MembershipUser>(user);
         }
 
         public override string GetUserNameByEmail(string email)
@@ -416,6 +445,11 @@ namespace AI_.Security.Providers
         protected User GetUser(string username)
         {
             return _unitOfWork.UserRepository.Get(user => user.UserName == username).SingleOrDefault();
+        }
+
+        private static bool ValidatePassword(string storedPassword, string providedPassword)
+        {
+            return providedPassword == storedPassword;
         }
     }
 }
