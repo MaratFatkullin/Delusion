@@ -187,8 +187,6 @@ namespace AI_.Security.Providers
                 return null;
             }
 
-            DateTime createDate = DateTime.Now;
-
             if (providerUserKey == null)
             {
                 providerUserKey = Guid.NewGuid();
@@ -211,7 +209,11 @@ namespace AI_.Security.Providers
                            PasswordQuestion = passwordQuestion,
                            PasswordAnswer = passwordAnswer,
                            ProviderUserKey = providerUserKey,
-                           CreateDate = createDate
+                           LastPasswordChangedDate = DateTime.Now,
+                           CreateDate = DateTime.Now,
+                           LastActivityDate = DateTime.Now,
+                           LastLockoutDate = DateTime.MinValue.ToLocalTime(),
+                           LastLoginDate = DateTime.MinValue.ToLocalTime(),
                        };
 
             try
