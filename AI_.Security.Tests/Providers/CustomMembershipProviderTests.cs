@@ -81,23 +81,6 @@ namespace AI_.Security.Tests.Providers
             }
         }
 
-        private static MembershipUser GetMembershipUser()
-        {
-            return new MembershipUser("providerName",
-                                      "username",
-                                      Guid.NewGuid(),
-                                      "a@b.c",
-                                      "passwordQuestion",
-                                      "comment",
-                                      true,
-                                      false,
-                                      DateTime.Now,
-                                      DateTime.Now,
-                                      DateTime.Now,
-                                      DateTime.Now,
-                                      DateTime.MinValue);
-        }
-
         public static IEnumerable<object[]> PagingTestData
         {
             get
@@ -116,12 +99,16 @@ namespace AI_.Security.Tests.Providers
         {
             var user = GetUser();
             AddUser(user);
-            //Assert.Equal(UserStorage.Single(),user);
+
             UserStorage.Single()
-                .ShouldHave()
-                .AllPropertiesBut(us => us.ProviderUserKey, us => us.CreateDate)
+                .ShouldHave().Properties(
+                    usr => usr.UserName,
+                    usr => usr.Password,
+                    usr => usr.Email,
+                    usr => usr.IsApproved,
+                    usr => usr.PasswordQuestion,
+                    usr => usr.PasswordAnswer)
                 .EqualTo(user);
-            //UserStorage.Should().HaveCount(1).And.Contain(user);
         }
 
         [Fact]
