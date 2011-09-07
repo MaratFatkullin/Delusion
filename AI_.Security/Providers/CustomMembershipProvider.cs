@@ -126,12 +126,13 @@ namespace AI_.Security.Providers
             if (config == null)
                 throw new ArgumentNullException("config");
 
-            if (string.IsNullOrEmpty(name))
-            {
-                name = "CustomMembershipProvider";
-            }
             base.Initialize(name, config);
 
+            Configure(config);
+        }
+
+        public void Configure(NameValueCollection config)
+        {
             //_applicationName = GetConfigValue(config["applicationName"],
             //                                System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath);
             _maxInvalidPasswordAttempts = Convert.ToInt32(GetConfigValue(
@@ -235,7 +236,7 @@ namespace AI_.Security.Providers
             if (!ValidateUser(username, password))
                 return false;
 
-            var user = _unitOfWork.UserRepository.Get(usr => usr.UserName == username).SingleOrDefault();
+            var user = GetUser(username);
 
             user.PasswordQuestion = newPasswordQuestion;
             user.PasswordAnswer = newPasswordAnswer;
@@ -306,11 +307,6 @@ namespace AI_.Security.Providers
             if (!EnablePasswordReset)
             {
                 throw new NotSupportedException("Password reset is not enabled.");
-            }
-
-            if (answer == null && RequiresQuestionAndAnswer)
-            {
-                throw new ProviderException("Password answer required for password reset.");
             }
 
             var newPassword = Membership.GeneratePassword(_newPasswordLength, MinRequiredNonAlphanumericCharacters);
@@ -391,8 +387,9 @@ namespace AI_.Security.Providers
             var user = _unitOfWork.UserRepository.
                 Get(usr => usr.ProviderUserKey == providerUserKey).SingleOrDefault();
 
-            //todo: использовать автомаппер.
-            return null;
+            if(user == null)
+                return null;
+            return Mapper.Map<User, MembershipUser>(user);
         }
 
         public override MembershipUser GetUser(string username, bool userIsOnline)
@@ -405,19 +402,38 @@ namespace AI_.Security.Providers
 
         public override string GetUserNameByEmail(string email)
         {
-            throw new NotImplementedException();
+            var user = _unitOfWork.UserRepository.Get(usr => usr.Email == email).FirstOrDefault();
+            if (user == null)
+                return null;
+            return user.UserName;
         }
 
         public override bool DeleteUser(string username, bool deleteAllRelatedData)
         {
-            throw new NotImplementedException();
+            var user = GetUser(username);
+            if (user == null)
+            {
+                return false;
+            }
+            _unitOfWork.UserRepository.Delete(user);
+            return true;
         }
 
         public override MembershipUserCollection GetAllUsers(int pageIndex,
                                                              int pageSize,
                                                              out int totalRecords)
         {
-            throw new NotImplementedException();
+            var users = _unitOfWork.UserRepository.Get();
+            totalRecords = users.Count();
+
+            var membershipUsers = new MembershipUserCollection();
+            var usersInPage = users.Skip(pageIndex * pageSize).Take(pageSize);
+            foreach (var user in usersInPage)
+            {
+                var membershipUser = Mapper.Map<User, MembershipUser>(user);
+                membershipUsers.Add(membershipUser);
+            }
+            return membershipUsers;
         }
 
         public override int GetNumberOfUsersOnline()
@@ -431,7 +447,7 @@ namespace AI_.Security.Providers
                                                                  int pageSize,
                                                                  out int totalRecords)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("Searching users by name is not supported");
         }
 
         public override MembershipUserCollection FindUsersByEmail(string emailToMatch,
@@ -439,7 +455,17 @@ namespace AI_.Security.Providers
                                                                   int pageSize,
                                                                   out int totalRecords)
         {
-            throw new NotImplementedException();
+            var users = _unitOfWork.UserRepository.Get(usr=>usr.Email == emailToMatch);
+            totalRecords = users.Count();
+
+            var membershipUsers = new MembershipUserCollection();
+            var usersInPage = users.Skip(pageIndex*pageSize).Take(pageSize);
+            foreach (var user in usersInPage)
+            {
+                var membershipUser = Mapper.Map<User,MembershipUser>(user);
+                membershipUsers.Add(membershipUser);
+            }
+            return membershipUsers;
         }
 
         protected User GetUser(string username)
