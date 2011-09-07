@@ -7,6 +7,14 @@ namespace AI_.Security.Tests.Mocks
     public class SecurityUnitOfWorkMock : ISecurityUnitOfWork
     {
         private IRepository<User> _userRepository;
+        protected bool IsDisposed { get; private set; }
+        protected bool IsSaved { get; private set; }
+
+        public SecurityUnitOfWorkMock()
+        {
+            IsDisposed = false;
+            IsSaved = false;
+        }
 
         #region ISecurityUnitOfWork Members
 
@@ -17,12 +25,13 @@ namespace AI_.Security.Tests.Mocks
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+           Save();
+            IsDisposed = true;
         }
 
         public void Save()
         {
-            throw new NotImplementedException();
+            IsSaved = true;
         }
 
         #endregion
