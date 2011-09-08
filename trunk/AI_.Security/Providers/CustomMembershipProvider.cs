@@ -143,6 +143,8 @@ namespace AI_.Security.Providers
                 config["minRequiredNonAlphanumericCharacters"], "1"));
             _minRequiredPasswordLength = Convert.ToInt32(GetConfigValue(
                 config["minRequiredPasswordLength"], "7"));
+            _newPasswordLength = Convert.ToInt32(GetConfigValue(
+                config["newPasswordLength"], "12"));
             _passwordStrengthRegularExpression = Convert.ToString(GetConfigValue(
                 config["passwordStrengthRegularExpression"], ""));
             _enablePasswordReset = Convert.ToBoolean(GetConfigValue(
@@ -153,6 +155,8 @@ namespace AI_.Security.Providers
                 config["requiresQuestionAndAnswer"], "false"));
             _requiresUniqueEmail = Convert.ToBoolean(GetConfigValue(
                 config["requiresUniqueEmail"], "false"));
+
+            Enum.TryParse(config["passwordFormat"], true, out _passwordFormat);
         }
 
         public override MembershipUser CreateUser(string username,

@@ -63,6 +63,7 @@
     <Compile Include="Providers\CustomMembershipProviderTests.cs" />
     <Compile Include="FixtureBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Providers\ot.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
