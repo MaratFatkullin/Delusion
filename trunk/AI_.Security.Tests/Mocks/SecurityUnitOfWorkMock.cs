@@ -1,5 +1,4 @@
-﻿using System;
-using AI_.Security.DAL;
+﻿using AI_.Security.DAL;
 using AI_.Security.Models;
 
 namespace AI_.Security.Tests.Mocks
@@ -7,8 +6,8 @@ namespace AI_.Security.Tests.Mocks
     public class SecurityUnitOfWorkMock : ISecurityUnitOfWork
     {
         private IRepository<User> _userRepository;
-        protected bool IsDisposed { get; private set; }
-        protected bool IsSaved { get; private set; }
+        public bool IsDisposed { get; private set; }
+        public bool IsSaved { get; private set; }
 
         public SecurityUnitOfWorkMock()
         {
@@ -25,7 +24,7 @@ namespace AI_.Security.Tests.Mocks
 
         public void Dispose()
         {
-           Save();
+            Save();
             IsDisposed = true;
         }
 

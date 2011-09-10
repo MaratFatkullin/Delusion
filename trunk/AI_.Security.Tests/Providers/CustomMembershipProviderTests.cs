@@ -4,13 +4,16 @@ using System.Collections.Specialized;
 using System.Configuration.Provider;
 using System.Linq;
 using System.Web.Security;
+using AI_.Security.DAL;
 using AI_.Security.Models;
 using AI_.Security.Providers;
 using AI_.Security.Tests.Mocks;
 using AutoMapper;
+using FluentAssertions;
 using Xunit;
 using Xunit.Extensions;
-using FluentAssertions;
+using Microsoft.Practices.Unity;
+
 
 namespace AI_.Security.Tests.Providers
 {
@@ -28,11 +31,32 @@ namespace AI_.Security.Tests.Providers
         public CustomMembershipProviderTests()
         {
             _unitOfWork = new SecurityUnitOfWorkMock();
-            _provider = new CustomMembershipProvider(_unitOfWork);
+            _provider = new CustomMembershipProvider();
+            _provider.Container.RegisterInstance<ISecurityUnitOfWork>(_unitOfWork);
             _provider.Initialize("CustomMembershipProvider", new NameValueCollection());
         }
 
         #region Utility methods
+
+        public static IEnumerable<object[]> PagingTestData
+        {
+            get
+            {
+                // { pageSize, pageIndex, expectedItemsInPage }
+                yield return new object[]
+                             {
+                                 2, 0, 2
+                             };
+                yield return new object[]
+                             {
+                                 2, 1, 1
+                             };
+                yield return new object[]
+                             {
+                                 2, 2, 0
+                             };
+            }
+        }
 
         private User GetUser(string username = "username",
                              string password = "password",
@@ -40,37 +64,37 @@ namespace AI_.Security.Tests.Providers
                              string passwordQuestion = "passwordQuestion",
                              string passwordAnswer = "passwordAnswer",
                              bool isApproved = true,
-                             object providerUserKey = null)
+                             int id = 0)
         {
             var user = new User
-                           {
-                               UserName = username,
-                               Password = password,
-                               Email = email,
-                               PasswordQuestion = passwordQuestion,
-                               PasswordAnswer = passwordAnswer,
-                               IsApproved = isApproved,
-                               IsLocked = false,
-                               ProviderUserKey = providerUserKey,
-                               LastPasswordChangedDate = DateTime.Today,
-                               CreateDate = DateTime.Today,
-                               LastActivityDate = DateTime.Today,
-                               LastLockoutDate = DateTime.MinValue.ToLocalTime(),
-                               LastLoginDate = DateTime.MinValue.ToLocalTime()
-                           };
+                       {
+                           UserName = username,
+                           Password = password,
+                           Email = email,
+                           PasswordQuestion = passwordQuestion,
+                           PasswordAnswer = passwordAnswer,
+                           IsApproved = isApproved,
+                           IsLocked = false,
+                           LastPasswordChangedDate = DateTime.Today,
+                           CreateDate = DateTime.Today,
+                           LastActivityDate = DateTime.Today,
+                           LastLockoutDate = DateTime.MinValue.ToLocalTime(),
+                           LastLoginDate = DateTime.MinValue.ToLocalTime()
+                       };
 
             return user;
         }
 
         private MembershipUser AddUserViaProvider(User user)
         {
+            user.ID = UserStorage.Count + 1;
             return _provider.CreateUser(user.UserName,
                                         user.Password,
                                         user.Email,
                                         user.PasswordQuestion,
                                         user.PasswordAnswer,
                                         user.IsApproved,
-                                        user.ProviderUserKey,
+                                        user.ID,
                                         out _membershipCreateStatus);
         }
 
@@ -79,22 +103,11 @@ namespace AI_.Security.Tests.Providers
             UserStorage.Add(user);
         }
 
-        private void AddUsers(int count,Func<object, User> func)
+        private void AddUsers(int count, Func<object, User> func)
         {
             for (int i = 0; i < count; i++)
             {
                 AddUserDirectly(func(i));
-            }
-        }
-
-        public static IEnumerable<object[]> PagingTestData
-        {
-            get
-            {
-                // { pageSize, pageIndex, expectedItemsInPage }
-                yield return new object[] { 2, 0, 2 };
-                yield return new object[] { 2, 1, 1 };
-                yield return new object[] { 2, 2, 0 };
             }
         }
 
@@ -106,14 +119,13 @@ namespace AI_.Security.Tests.Providers
             var user = GetUser();
             AddUserViaProvider(user);
 
-            UserStorage.Single()
-                .ShouldHave().Properties(
-                    usr => usr.UserName,
-                    usr => usr.Password,
-                    usr => usr.Email,
-                    usr => usr.IsApproved,
-                    usr => usr.PasswordQuestion,
-                    usr => usr.PasswordAnswer)
+            UserStorage.Single().ShouldHave().Properties(
+                usr => usr.UserName,
+                usr => usr.Password,
+                usr => usr.Email,
+                usr => usr.IsApproved,
+                usr => usr.PasswordQuestion,
+                usr => usr.PasswordAnswer)
                 .EqualTo(user);
         }
 
@@ -124,6 +136,15 @@ namespace AI_.Security.Tests.Providers
             AddUserViaProvider(user);
 
             _membershipCreateStatus.Should().Be(MembershipCreateStatus.Success);
+        }
+
+        [Fact]
+        public void CreateUser_Simple_UnitOfWorkDisposed()
+        {
+            var user = GetUser();
+            AddUserViaProvider(user);
+
+            _unitOfWork.IsDisposed.Should().BeTrue();
         }
 
         [Fact]
@@ -210,6 +231,21 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
+        public void ChangePasswordQuestionAndAnswer_Simple_UnitOfWorkDisposed()
+        {
+            var user = GetUser();
+            AddUserViaProvider(user);
+            var newPasswordQuestion = "newPasswordQuestion";
+            var newPasswordAnswer = "newPasswordAnswer";
+            _provider.ChangePasswordQuestionAndAnswer(user.UserName,
+                                                      user.Password,
+                                                      newPasswordQuestion,
+                                                      newPasswordAnswer);
+
+            _unitOfWork.IsDisposed.Should().BeTrue();
+        }
+
+        [Fact]
         public void ChangePasswordQuestionAndAnswer_InvalidUserDataProvided_PasswordQuestionNotChanged()
         {
             var user = GetUser();
@@ -251,6 +287,17 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
+        public void ChangePassword_Simple_UnitOfWorkDisposed()
+        {
+            var user = GetUser();
+            AddUserViaProvider(user);
+            var newPassword = "newPassword";
+            _provider.ChangePassword(user.UserName, user.Password, newPassword);
+
+            _unitOfWork.IsDisposed.Should().BeTrue();
+        }
+
+        [Fact]
         public void ChangePassword_InvalidOldPasswordProvided_PasswordNotChanged()
         {
             var user = GetUser();
@@ -261,14 +308,36 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void ChangePassword_InvalidNewPasswordProvided_ExceptionThrown()
+        public void ChangePassword_ShortNewPasswordProvided_ExceptionThrown()
         {
             var user = GetUser();
             AddUserViaProvider(user);
-            var newPassword = string.Empty;
+            var newPassword = "shrtPwd";
 
             _provider.Invoking(p => p.ChangePassword(user.UserName, user.Password, newPassword))
                 .ShouldThrow<MembershipPasswordException>();
+        }
+
+        [Fact]
+        public void ChangePassword_NewPasswordWithWhiteSpaceProvided_ExceptionThrown()
+        {
+            var user = GetUser();
+            AddUserViaProvider(user);
+            var newPassword = "shrt Pwd";
+
+            _provider.Invoking(p => p.ChangePassword(user.UserName, user.Password, newPassword))
+                .ShouldThrow<MembershipPasswordException>();
+        }
+
+        [Fact]
+        public void ChangePassword_NullAsNewPasswordProvided_ExceptionThrown()
+        {
+            var user = GetUser();
+            AddUserViaProvider(user);
+            string newPassword = null;
+
+            _provider.Invoking(p => p.ChangePassword(user.UserName, user.Password, newPassword))
+                .ShouldThrow<ArgumentNullException>();
         }
 
         [Fact]
@@ -290,7 +359,20 @@ namespace AI_.Security.Tests.Providers
             _provider.UpdateUser(membershipUser);
             var updatedUser = Mapper.Map<User, MembershipUser>(UserStorage.Single());
 
-            updatedUser.ShouldHave().AllPropertiesBut(u => u.ProviderUserKey, u => u.CreationDate).EqualTo(membershipUser);
+            updatedUser.ShouldHave().AllPropertiesBut(u => u.ProviderUserKey, u => u.CreationDate).EqualTo(
+                membershipUser);
+        }
+
+        [Fact]
+        public void UpdateUser_Simple_UnitOfWorkDisposed()
+        {
+            AddUserDirectly(GetUser());
+            var user = GetUser(email: "newEmail@a.b");
+            var membershipUser = Mapper.Map<User, MembershipUser>(user);
+            _provider.UpdateUser(membershipUser);
+            Mapper.Map<User, MembershipUser>(UserStorage.Single());
+
+            _unitOfWork.IsDisposed.Should().BeTrue();
         }
 
         [Fact]
@@ -334,6 +416,17 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
+        public void UnlockUser_Simple_UnitOfWorkDisposed()
+        {
+            var user = GetUser();
+            AddUserViaProvider(user);
+            UserStorage.Single().IsLocked = true;
+            _provider.UnlockUser(user.UserName);
+
+            _unitOfWork.IsDisposed.Should().BeTrue();
+        }
+
+        [Fact]
         public void GetUserByProviderUserKey_UserExists_UserReturned()
         {
             var user = GetUser();
@@ -347,9 +440,18 @@ namespace AI_.Security.Tests.Providers
         public void GetUserByProviderUserKey_UserDoesNotExists_NullReturned()
         {
             var user = GetUser();
-            var membershipUser = _provider.GetUser(user.ProviderUserKey, false);
+            var membershipUser = _provider.GetUser(user.ID, false);
 
             membershipUser.Should().BeNull();
+        }
+
+        [Fact]
+        public void GetUserByProviderUserKey_Simple_UnitOfWorkDisposed()
+        {
+            var user = GetUser();
+            _provider.GetUser(user.ID, false);
+
+            _unitOfWork.IsDisposed.Should().BeTrue();
         }
 
         [Fact]
@@ -358,7 +460,7 @@ namespace AI_.Security.Tests.Providers
             var user = GetUser();
             AddUserViaProvider(user);
 
-            _provider.Invoking(p => p.ResetPassword(user.UserName,user.PasswordAnswer))
+            _provider.Invoking(p => p.ResetPassword(user.UserName, user.PasswordAnswer))
                 .ShouldThrow<NotSupportedException>();
         }
 
@@ -423,6 +525,21 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
+        public void ResetPassword_Simple_UnitOfWorkDisposed()
+        {
+            var config = new NameValueCollection();
+            config.Add("enablePasswordReset", "true");
+            config.Add("requiresQuestionAndAnswer", "true");
+            _provider.Configure(config);
+
+            var user = GetUser();
+            AddUserViaProvider(user);
+            _provider.ResetPassword(user.UserName, user.PasswordAnswer);
+
+            _unitOfWork.IsDisposed.Should().BeTrue();
+        }
+
+        [Fact]
         public void ResetPassword_RequieredPasswordAnswerIsInvalid_ExceptionThrown()
         {
             var config = new NameValueCollection();
@@ -432,7 +549,7 @@ namespace AI_.Security.Tests.Providers
 
             var user = GetUser();
             AddUserViaProvider(user);
-            
+
             _provider.Invoking(p => p.ResetPassword(user.UserName, "invalidAnswer"))
                 .ShouldThrow<MembershipPasswordException>();
         }
@@ -443,7 +560,7 @@ namespace AI_.Security.Tests.Providers
             var user = GetUser();
             AddUserViaProvider(user);
 
-            _provider.Invoking(p => p.GetPassword(user.UserName,user.PasswordAnswer))
+            _provider.Invoking(p => p.GetPassword(user.UserName, user.PasswordAnswer))
                 .ShouldThrow<ProviderException>();
         }
 
@@ -459,6 +576,20 @@ namespace AI_.Security.Tests.Providers
             var password = _provider.GetPassword(user.UserName, user.PasswordAnswer);
 
             password.Should().Be(user.Password);
+        }
+
+        [Fact]
+        public void GetPassword_Simple_UnitOfWorkDisposed()
+        {
+            var config = new NameValueCollection();
+            config.Add("enablePasswordRetrieval", "true");
+            _provider.Configure(config);
+
+            var user = GetUser();
+            AddUserViaProvider(user);
+            _provider.GetPassword(user.UserName, user.PasswordAnswer);
+
+            _unitOfWork.IsDisposed.Should().BeTrue();
         }
 
         [Fact]
@@ -498,6 +629,16 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
+        //todo: via theory (userIsOnLine) evrywhere
+        public void GetUserByUsername_Simple_UnitOfWorkDisposed()
+        {
+            var user = GetUser();
+            var membershipUser = _provider.GetUser(user.UserName, false);
+
+            _unitOfWork.IsDisposed.Should().BeTrue();
+        }
+
+        [Fact]
         public void GetUserByUsername_UserExists_UserReturned()
         {
             var user = GetUser();
@@ -514,6 +655,15 @@ namespace AI_.Security.Tests.Providers
             var username = _provider.GetUserNameByEmail(user.Email);
 
             username.Should().BeNull();
+        }
+
+        [Fact]
+        public void GetUserNameByEmail_Simple_UnitOfWorkDisposed()
+        {
+            var user = GetUser();
+            _provider.GetUserNameByEmail(user.Email);
+
+            _unitOfWork.IsDisposed.Should().BeTrue();
         }
 
         [Fact]
@@ -546,6 +696,16 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
+        public void DeleteUser_Simple_UnitOfWorkDisposed()
+        {
+            var user = GetUser();
+            AddUserViaProvider(user);
+            _provider.DeleteUser(user.UserName, false);
+
+            _unitOfWork.IsDisposed.Should().BeTrue();
+        }
+
+        [Fact]
         public void DeleteUser_UserExists_TrueReturned()
         {
             var user = GetUser();
@@ -564,16 +724,25 @@ namespace AI_.Security.Tests.Providers
             membershipUserCollection.Should().HaveCount(0);
         }
 
+        [Fact]
+        public void GetAllUsers_Simple_UnitOfWorkDisposed()
+        {
+            int totalRecords;
+            var membershipUserCollection = _provider.GetAllUsers(0, 1, out totalRecords);
+
+            _unitOfWork.IsDisposed.Should().BeTrue();
+        }
+
         [Theory]
         [PropertyData("PagingTestData")]
         public void GetAllUsers_UsersExist_MaxUsersCountPerPageReturned(int pageSize,
-                                                                   int pageIndex,
-                                                                   int expectedFoundMemberships)
+                                                                        int pageIndex,
+                                                                        int expectedFoundMemberships)
         {
             int totalRecords;
-            AddUsers(3, i => GetUser("user"+i));
+            AddUsers(3, i => GetUser("user" + i));
             var membershipUserCollection = _provider.GetAllUsers(pageIndex,
-                                                                 pageSize, 
+                                                                 pageSize,
                                                                  out totalRecords);
 
             membershipUserCollection.Should().HaveCount(expectedFoundMemberships);
@@ -606,12 +775,20 @@ namespace AI_.Security.Tests.Providers
             membershipUserCollection.Should().BeEmpty();
         }
 
+        [Fact]
+        public void FindUsersByEmail_Simple_UnitOfWorkDisposed()
+        {
+            int totalRecords;
+            var membershipUserCollection = _provider.FindUsersByEmail("a@b.c", 0, 1, out totalRecords);
+
+            _unitOfWork.IsDisposed.Should().BeTrue();
+        }
 
         [Theory]
         [PropertyData("PagingTestData")]
         public void FindUsersByEmail_UsersExist_MaxUsersCountPerPageReturned(int pageSize,
-                                                                        int pageIndex,
-                                                                        int expectedFoundMemberships)
+                                                                             int pageIndex,
+                                                                             int expectedFoundMemberships)
         {
             int totalRecords;
             AddUsers(3, i => GetUser(username: "user" + i, email: "a@b.c"));
@@ -629,7 +806,7 @@ namespace AI_.Security.Tests.Providers
             int totalRecords;
             AddUsers(3, i => GetUser(email: "a@b.c"));
             AddUsers(1, i => GetUser(email: "b@b.c"));
-            _provider.FindUsersByEmail("a@b.c",0,1,out totalRecords);
+            _provider.FindUsersByEmail("a@b.c", 0, 1, out totalRecords);
 
             totalRecords.Should().Be(3);
         }
@@ -682,6 +859,16 @@ namespace AI_.Security.Tests.Providers
             var isValid = _provider.ValidateUser(user.UserName, user.Password);
 
             isValid.Should().BeTrue();
+        }
+
+        [Fact]
+        public void ValidateUser_Simple_UnitOfWorkDisposed()
+        {
+            var user = GetUser();
+            AddUserDirectly(user);
+            var isValid = _provider.ValidateUser(user.UserName, user.Password);
+
+            _unitOfWork.IsDisposed.Should().BeTrue();
         }
     }
 }
