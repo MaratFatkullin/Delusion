@@ -6,30 +6,31 @@ using System.Web.Security;
 using AI_.Security.DAL;
 using AI_.Security.Models;
 using AutoMapper;
+using Microsoft.Practices.Unity;
 
 namespace AI_.Security.Providers
 {
     public class CustomMembershipProvider : MembershipProvider
     {
-        private readonly ISecurityUnitOfWork _unitOfWork;
+        public IUnityContainer Container { get; private set; }
 
         #region Configuration fields
 
-        private bool _enablePasswordReset;
-        private bool _enablePasswordRetrieval;
         private int _maxInvalidPasswordAttempts;
         private int _minRequiredNonAlphanumericCharacters;
         private int _minRequiredPasswordLength;
+        private int _newPasswordLength;
         private int _passwordAttemptWindow;
-        private MembershipPasswordFormat _passwordFormat;
-        private string _passwordStrengthRegularExpression;
+        private bool _enablePasswordReset;
+        private bool _enablePasswordRetrieval;
         private bool _requiresQuestionAndAnswer;
         private bool _requiresUniqueEmail;
-        private int _newPasswordLength;
+        private string _passwordStrengthRegularExpression;
+        private MembershipPasswordFormat _passwordFormat;
 
         #endregion
 
-        #region Properties
+        #region Configuration Properties
 
         public override bool EnablePasswordRetrieval
         {
@@ -85,14 +86,33 @@ namespace AI_.Security.Providers
 
         #endregion
 
-        public CustomMembershipProvider(ISecurityUnitOfWork unitOfWork)
+        public CustomMembershipProvider()
         {
-            _unitOfWork = unitOfWork;
+            Container = new UnityContainer();
+            Container.RegisterType<ISecurityUnitOfWork, SecurityUnitOfWork>();
             ConfigureMapping();
+            ValidatingPassword += CustomMembershipProvider_ValidatingPassword;
         }
 
-        public CustomMembershipProvider() : this(new SecurityUnitOfWork())
+       
+        private void CustomMembershipProvider_ValidatingPassword(object sender, ValidatePasswordEventArgs e)
         {
+            if (e == null)
+                throw new ArgumentNullException("e");
+
+            if (e.Password.Length < MinRequiredPasswordLength)
+            {
+                e.Cancel = true;
+                e.FailureInformation = 
+                    new MembershipPasswordException("Password is too short. Minimal lenght is 8 symbols");
+            }
+
+            if (e.Password.Contains(" "))
+            {
+                e.Cancel = true;
+                e.FailureInformation =
+                    new MembershipPasswordException("Password cannot contain white spaces.");
+            }
         }
 
         private void ConfigureMapping()
@@ -100,7 +120,7 @@ namespace AI_.Security.Providers
             Mapper.CreateMap<User, MembershipUser>()
                 .ConstructUsing(usr => new MembershipUser(Name,
                                                           usr.UserName,
-                                                          usr.ProviderUserKey,
+                                                          usr.ID,
                                                           usr.Email,
                                                           usr.PasswordQuestion,
                                                           string.Empty,
@@ -142,7 +162,7 @@ namespace AI_.Security.Providers
             _minRequiredNonAlphanumericCharacters = Convert.ToInt32(GetConfigValue(
                 config["minRequiredNonAlphanumericCharacters"], "1"));
             _minRequiredPasswordLength = Convert.ToInt32(GetConfigValue(
-                config["minRequiredPasswordLength"], "7"));
+                config["minRequiredPasswordLength"], "8"));
             _newPasswordLength = Convert.ToInt32(GetConfigValue(
                 config["newPasswordLength"], "12"));
             _passwordStrengthRegularExpression = Convert.ToString(GetConfigValue(
@@ -184,54 +204,44 @@ namespace AI_.Security.Providers
                 return null;
             }
 
-            MembershipUser existingUser = GetUser(username, false);
-            if (existingUser != null)
+            using (var unitOfWork = GetUnitOfWork())
             {
-                status = MembershipCreateStatus.DuplicateUserName;
-                return null;
-            }
-
-            if (providerUserKey == null)
-            {
-                providerUserKey = Guid.NewGuid();
-            }
-            else
-            {
-                if (!(providerUserKey is Guid))
+                MembershipUser existingUser = GetUser(username, false);
+                if (existingUser != null)
                 {
-                    status = MembershipCreateStatus.InvalidProviderUserKey;
+                    status = MembershipCreateStatus.DuplicateUserName;
                     return null;
                 }
-            }
 
-            var user = new User
-                       {
-                           UserName = username,
-                           Password = password,
-                           Email = email,
-                           IsApproved = isApproved,
-                           PasswordQuestion = passwordQuestion,
-                           PasswordAnswer = passwordAnswer,
-                           ProviderUserKey = providerUserKey,
-                           LastPasswordChangedDate = DateTime.Now,
-                           CreateDate = DateTime.Now,
-                           LastActivityDate = DateTime.Now,
-                           LastLockoutDate = DateTime.MinValue.ToLocalTime(),
-                           LastLoginDate = DateTime.MinValue.ToLocalTime(),
-                       };
 
-            try
-            {
-                _unitOfWork.UserRepository.Insert(user);
-            }
-            catch (Exception)
-            {
-                status = MembershipCreateStatus.ProviderError;
-                return null;
-            }
+                var user = new User
+                           {
+                               UserName = username,
+                               Password = password,
+                               Email = email,
+                               IsApproved = isApproved,
+                               PasswordQuestion = passwordQuestion,
+                               PasswordAnswer = passwordAnswer,
+                               LastPasswordChangedDate = DateTime.Now,
+                               CreateDate = DateTime.Now,
+                               LastActivityDate = DateTime.Now,
+                               LastLockoutDate = DateTime.MinValue.ToLocalTime(),
+                               LastLoginDate = DateTime.MinValue.ToLocalTime(),
+                           };
 
-            status = MembershipCreateStatus.Success;
-            return GetUser(username, false);
+                try
+                {
+                    unitOfWork.UserRepository.Insert(user);
+                }
+                catch (Exception)
+                {
+                    status = MembershipCreateStatus.ProviderError;
+                    return null;
+                }
+
+                status = MembershipCreateStatus.Success;
+                return GetUser(username, false);
+            }
         }
 
         public override bool ChangePasswordQuestionAndAnswer(string username,
@@ -242,15 +252,18 @@ namespace AI_.Security.Providers
             if (!ValidateUser(username, password))
                 return false;
 
-            var user = GetUser(username);
+            using (var unitOfWork = GetUnitOfWork())
+            {
+                var user = GetUser(username,unitOfWork);
 
-            user.PasswordQuestion = newPasswordQuestion;
-            user.PasswordAnswer = newPasswordAnswer;
+                user.PasswordQuestion = newPasswordQuestion;
+                user.PasswordAnswer = newPasswordAnswer;
 
-            _unitOfWork.UserRepository.Update(user);
-            _unitOfWork.Save();
+                unitOfWork.UserRepository.Update(user);
+                unitOfWork.Save();
 
-            return true;
+                return true;
+            }
         }
 
         public override string GetPassword(string username, string answer)
@@ -266,34 +279,41 @@ namespace AI_.Security.Providers
                 throw new ProviderException("Cannot retrieve Hashed passwords.");
             }
 
-            var user = _unitOfWork.UserRepository
-                .Get(usr => usr.UserName == username)
-                .FirstOrDefault();
-
-            if (user == null)
+            using (var unitOfWork = GetUnitOfWork())
             {
-                throw new MembershipPasswordException("The supplied user name is not found.");
-            }
+                var user = unitOfWork.UserRepository
+                    .Get(usr => usr.UserName == username)
+                    .FirstOrDefault();
 
-            if (user.IsLocked)
-            {
-                throw new MembershipPasswordException("The supplied user is locked out.");
-            }
+                if (user == null)
+                {
+                    throw new MembershipPasswordException("The supplied user name is not found.");
+                }
 
-            if (RequiresQuestionAndAnswer && answer == user.PasswordAnswer)
-            {
-                throw new MembershipPasswordException("Incorrect password answer.");
-            }
+                if (user.IsLocked)
+                {
+                    throw new MembershipPasswordException("The supplied user is locked out.");
+                }
 
-            return user.Password;
+                if (RequiresQuestionAndAnswer && answer == user.PasswordAnswer)
+                {
+                    throw new MembershipPasswordException("Incorrect password answer.");
+                }
+
+                return user.Password;
+            }
         }
 
         public override bool ChangePassword(string username, string oldPassword, string newPassword)
         {
+            if (newPassword == null)
+                throw new ArgumentNullException("newPassword");
+            if (oldPassword == null)
+                throw new ArgumentNullException("newPassword");
+
             if (!ValidateUser(username, oldPassword))
                 return false;
             var args = new ValidatePasswordEventArgs(username, newPassword, true);
-
             OnValidatingPassword(args);
 
             if (args.Cancel)
@@ -302,10 +322,13 @@ namespace AI_.Security.Providers
                 else
                     throw new MembershipPasswordException(
                         "Change password canceled due to new password validation failure.");
-            var user = _unitOfWork.UserRepository.Get(usr => usr.UserName == username).Single();
-            user.Password = newPassword;
-            _unitOfWork.Save();
-            return true;
+
+            using (var unitOfWork = GetUnitOfWork())
+            {
+                var user = unitOfWork.UserRepository.Get(usr => usr.UserName == username).Single();
+                user.Password = newPassword;
+                return true;
+            }
         }
 
         public override string ResetPassword(string username, string answer)
@@ -315,9 +338,10 @@ namespace AI_.Security.Providers
                 throw new NotSupportedException("Password reset is not enabled.");
             }
 
-            var newPassword = Membership.GeneratePassword(_newPasswordLength, MinRequiredNonAlphanumericCharacters);
+            var newPassword = Membership.GeneratePassword(_newPasswordLength,
+                                                          MinRequiredNonAlphanumericCharacters);
 
-            var args = new ValidatePasswordEventArgs(username, newPassword, true);
+            var args = new ValidatePasswordEventArgs(username, newPassword, false);
 
             OnValidatingPassword(args);
 
@@ -325,121 +349,148 @@ namespace AI_.Security.Providers
                 if (args.FailureInformation != null)
                     throw args.FailureInformation;
                 else
-                    throw new MembershipPasswordException("Reset password canceled due to password validation failure.");
+                    throw new MembershipPasswordException(
+                        "Reset password canceled due to password validation failure.");
 
-            var user = GetUser(username);
-            if (user == null)
+            using (var unitOfWork = GetUnitOfWork())
             {
-                throw new MembershipPasswordException("The supplied user name is not found.");
+                var user = GetUser(username, unitOfWork);
+                if (user == null)
+                {
+                    throw new MembershipPasswordException("The supplied user name is not found.");
+                }
+
+                if (user.IsLocked)
+                {
+                    throw new MembershipPasswordException("The supplied user is locked out.");
+                }
+
+                if (RequiresQuestionAndAnswer && answer != user.PasswordAnswer)
+                {
+                    throw new MembershipPasswordException("Incorrect password answer.");
+                }
+
+                user.Password = newPassword;
+                unitOfWork.Save();
+
+                return newPassword;
             }
-
-            if (user.IsLocked)
-            {
-                throw new MembershipPasswordException("The supplied user is locked out.");
-            }
-
-            if (RequiresQuestionAndAnswer && answer != user.PasswordAnswer)
-            {
-                throw new MembershipPasswordException("Incorrect password answer.");
-            }
-
-            user.Password = newPassword;
-            _unitOfWork.Save();
-
-            return newPassword;
         }
 
         public override void UpdateUser(MembershipUser user)
         {
-            var existingUser = GetUser(user.UserName);
-            if (existingUser == null)
+            using (var unitOfWork = GetUnitOfWork())
             {
-                throw new ProviderException("The supplied user name is not found.");
-            }
-            existingUser.Email = user.Email;
-            existingUser.IsApproved = user.IsApproved;
-            //todo:использовать автомэппер.
+                var existingUser = GetUser(user.UserName, unitOfWork);
+                if (existingUser == null)
+                {
+                    throw new ProviderException("The supplied user name is not found.");
+                }
+                existingUser.Email = user.Email;
+                existingUser.IsApproved = user.IsApproved;
+                //todo:использовать автомэппер.
 
-            _unitOfWork.UserRepository.Update(existingUser);
-            _unitOfWork.Save();
+                unitOfWork.UserRepository.Update(existingUser);
+            }
         }
 
         public override bool ValidateUser(string username, string password)
         {
-            var user = GetUser(username);
-            if (user == null || user.IsLocked || !user.IsApproved)
-                return false;
-            return ValidatePassword(user.Password, password);
+            using (var unitOfWork = GetUnitOfWork())
+            {
+                var user = GetUser(username, unitOfWork);
+                if (user == null || user.IsLocked || !user.IsApproved)
+                    return false;
+                return ValidatePassword(user.Password, password);
+            }
         }
 
         public override bool UnlockUser(string userName)
         {
-            var user = GetUser(userName);
-            if (user == null)
+            using (var unitOfWork = GetUnitOfWork())
             {
-                throw new ProviderException("The supplied user name is not found.");
-            }
+                var user = GetUser(userName, unitOfWork);
+                if (user == null)
+                {
+                    throw new ProviderException("The supplied user name is not found.");
+                }
 
-            if (!user.IsLocked)
-            {
-                throw new ProviderException("The supplied user is not locked out.");
+                if (!user.IsLocked)
+                {
+                    throw new ProviderException("The supplied user is not locked out.");
+                }
+                user.IsLocked = false;
+                return true;
             }
-            user.IsLocked = false;
-            return true;
         }
 
         public override MembershipUser GetUser(object providerUserKey, bool userIsOnline)
         {
-            var user = _unitOfWork.UserRepository.
-                Get(usr => usr.ProviderUserKey == providerUserKey).SingleOrDefault();
+            using (var unitOfWork = GetUnitOfWork())
+            {
+                var user = unitOfWork.UserRepository.
+                    Get(usr => usr.ID == (int) providerUserKey).SingleOrDefault();
 
-            if(user == null)
-                return null;
-            return Mapper.Map<User, MembershipUser>(user);
+                if (user == null)
+                    return null;
+                return Mapper.Map<User, MembershipUser>(user);
+            }
         }
 
         public override MembershipUser GetUser(string username, bool userIsOnline)
         {
-            var user = GetUser(username);
-            if (user == null)
-                return null;
-            return Mapper.Map<User, MembershipUser>(user);
+            using (var unitOfWork = GetUnitOfWork())
+            {
+                var user = GetUser(username, unitOfWork);
+                if (user == null)
+                    return null;
+                return Mapper.Map<User, MembershipUser>(user);
+            }
         }
 
         public override string GetUserNameByEmail(string email)
         {
-            var user = _unitOfWork.UserRepository.Get(usr => usr.Email == email).FirstOrDefault();
-            if (user == null)
-                return null;
-            return user.UserName;
+            using (var unitOfWork = GetUnitOfWork())
+            {
+                var user = unitOfWork.UserRepository.Get(usr => usr.Email == email).FirstOrDefault();
+                if (user == null)
+                    return null;
+                return user.UserName;
+            }
         }
 
         public override bool DeleteUser(string username, bool deleteAllRelatedData)
         {
-            var user = GetUser(username);
-            if (user == null)
+            using (var unitOfWork = GetUnitOfWork())
             {
-                return false;
+                var user = GetUser(username, unitOfWork);
+                if (user == null)
+                {
+                    return false;
+                }
+                unitOfWork.UserRepository.Delete(user);
+                return true;
             }
-            _unitOfWork.UserRepository.Delete(user);
-            return true;
         }
 
         public override MembershipUserCollection GetAllUsers(int pageIndex,
                                                              int pageSize,
                                                              out int totalRecords)
         {
-            var users = _unitOfWork.UserRepository.Get();
-            totalRecords = users.Count();
-
-            var membershipUsers = new MembershipUserCollection();
-            var usersInPage = users.Skip(pageIndex * pageSize).Take(pageSize);
-            foreach (var user in usersInPage)
+            using (var unitOfWork = GetUnitOfWork())
             {
-                var membershipUser = Mapper.Map<User, MembershipUser>(user);
-                membershipUsers.Add(membershipUser);
+                var users = unitOfWork.UserRepository.Get();
+                totalRecords = users.Count();
+
+                var membershipUsers = new MembershipUserCollection();
+                var usersInPage = users.Skip(pageIndex*pageSize).Take(pageSize);
+                foreach (var user in usersInPage)
+                {
+                    var membershipUser = Mapper.Map<User, MembershipUser>(user);
+                    membershipUsers.Add(membershipUser);
+                }
+                return membershipUsers;
             }
-            return membershipUsers;
         }
 
         public override int GetNumberOfUsersOnline()
@@ -461,27 +512,35 @@ namespace AI_.Security.Providers
                                                                   int pageSize,
                                                                   out int totalRecords)
         {
-            var users = _unitOfWork.UserRepository.Get(usr=>usr.Email == emailToMatch);
-            totalRecords = users.Count();
-
-            var membershipUsers = new MembershipUserCollection();
-            var usersInPage = users.Skip(pageIndex*pageSize).Take(pageSize);
-            foreach (var user in usersInPage)
+            using (var unitOfWork = GetUnitOfWork())
             {
-                var membershipUser = Mapper.Map<User,MembershipUser>(user);
-                membershipUsers.Add(membershipUser);
+                var users = unitOfWork.UserRepository.Get(usr => usr.Email == emailToMatch);
+                totalRecords = users.Count();
+
+                var membershipUsers = new MembershipUserCollection();
+                var usersInPage = users.Skip(pageIndex*pageSize).Take(pageSize);
+                foreach (var user in usersInPage)
+                {
+                    var membershipUser = Mapper.Map<User, MembershipUser>(user);
+                    membershipUsers.Add(membershipUser);
+                }
+                return membershipUsers;
             }
-            return membershipUsers;
         }
 
-        protected User GetUser(string username)
+        protected User GetUser(string username,ISecurityUnitOfWork unitOfWork)
         {
-            return _unitOfWork.UserRepository.Get(user => user.UserName == username).SingleOrDefault();
+            return unitOfWork.UserRepository.Get(user => user.UserName == username).SingleOrDefault();
         }
 
         private static bool ValidatePassword(string storedPassword, string providedPassword)
         {
             return providedPassword == storedPassword;
+        }
+
+        private ISecurityUnitOfWork GetUnitOfWork()
+        {
+            return Container.Resolve<ISecurityUnitOfWork>();
         }
     }
 }
