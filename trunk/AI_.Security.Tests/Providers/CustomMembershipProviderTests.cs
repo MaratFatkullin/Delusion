@@ -4,10 +4,12 @@ using System.Collections.Specialized;
 using System.Configuration.Provider;
 using System.Linq;
 using System.Web.Security;
+using AI_.Data.Repository;
 using AI_.Security.DAL;
 using AI_.Security.Models;
 using AI_.Security.Providers;
 using AI_.Security.Tests.Mocks;
+using AI_.Security.Tests.UtilityClasses;
 using AutoMapper;
 using FluentAssertions;
 using Xunit;
@@ -17,13 +19,13 @@ using Microsoft.Practices.Unity;
 
 namespace AI_.Security.Tests.Providers
 {
-    public class CustomMembershipProviderTests
+    public class CustomMembershipProviderTests 
     {
         private readonly CustomMembershipProvider _provider;
         private readonly SecurityUnitOfWorkMock _unitOfWork;
         private MembershipCreateStatus _membershipCreateStatus;
 
-        protected IList<User> UserStorage
+        protected ICollection<User> UserStorage
         {
             get { return ((RepositoryMock<User>) _unitOfWork.UserRepository).Storage; }
         }
@@ -34,6 +36,8 @@ namespace AI_.Security.Tests.Providers
             _provider = new CustomMembershipProvider();
             _provider.Container.RegisterInstance<ISecurityUnitOfWork>(_unitOfWork);
             _provider.Initialize("CustomMembershipProvider", new NameValueCollection());
+
+            Mapper.CreateMap<User, User>();
         }
 
         #region Utility methods
@@ -58,33 +62,6 @@ namespace AI_.Security.Tests.Providers
             }
         }
 
-        private User GetUser(string username = "username",
-                             string password = "password",
-                             string email = "email",
-                             string passwordQuestion = "passwordQuestion",
-                             string passwordAnswer = "passwordAnswer",
-                             bool isApproved = true,
-                             int id = 0)
-        {
-            var user = new User
-                       {
-                           UserName = username,
-                           Password = password,
-                           Email = email,
-                           PasswordQuestion = passwordQuestion,
-                           PasswordAnswer = passwordAnswer,
-                           IsApproved = isApproved,
-                           IsLocked = false,
-                           LastPasswordChangedDate = DateTime.Today,
-                           CreateDate = DateTime.Today,
-                           LastActivityDate = DateTime.Today,
-                           LastLockoutDate = DateTime.MinValue.ToLocalTime(),
-                           LastLoginDate = DateTime.MinValue.ToLocalTime()
-                       };
-
-            return user;
-        }
-
         private MembershipUser AddUserViaProvider(User user)
         {
             user.ID = UserStorage.Count + 1;
@@ -100,10 +77,10 @@ namespace AI_.Security.Tests.Providers
 
         private void AddUserDirectly(User user)
         {
-            UserStorage.Add(user);
+            UserStorage.Add(Mapper.Map<User, User>(user));
         }
 
-        private void AddUsers(int count, Func<object, User> func)
+        protected void AddUsers(int count, Func<object, User> func)
         {
             for (int i = 0; i < count; i++)
             {
@@ -116,7 +93,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void CreateUser_Simple_UserCreated()
         {
-            var user = GetUser();
+            var user = UtilityMethods.GetUser();
             AddUserViaProvider(user);
 
             UserStorage.Single().ShouldHave().Properties(
@@ -132,7 +109,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void CreateUser_Simple_SuccessCreateStatusReturned()
         {
-            var user = GetUser();
+            var user = UtilityMethods.GetUser();
             AddUserViaProvider(user);
 
             _membershipCreateStatus.Should().Be(MembershipCreateStatus.Success);
@@ -141,7 +118,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void CreateUser_Simple_UnitOfWorkDisposed()
         {
-            var user = GetUser();
+            var user = UtilityMethods.GetUser();
             AddUserViaProvider(user);
 
             _unitOfWork.IsDisposed.Should().BeTrue();
@@ -150,8 +127,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void CreateUser_UserWithSameUserNameExists_DuplicateUserNameCreateStatusReturned()
         {
-            AddUserViaProvider(GetUser());
-            AddUserViaProvider(GetUser());
+            AddUserViaProvider(UtilityMethods.GetUser());
+            AddUserViaProvider(UtilityMethods.GetUser());
 
             _membershipCreateStatus.Should().Be(MembershipCreateStatus.DuplicateUserName);
         }
@@ -159,8 +136,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void CreateUser_UserWithSameUserNameExists_UserNotCreated()
         {
-            AddUserViaProvider(GetUser());
-            AddUserViaProvider(GetUser());
+            AddUserViaProvider(UtilityMethods.GetUser());
+            AddUserViaProvider(UtilityMethods.GetUser());
 
             UserStorage.Should().HaveCount(1);
         }
@@ -172,8 +149,8 @@ namespace AI_.Security.Tests.Providers
             config.Add("requiresUniqueEmail", "true");
             _provider.Configure(config);
 
-            AddUserViaProvider(GetUser("user1"));
-            AddUserViaProvider(GetUser("user2"));
+            AddUserViaProvider(UtilityMethods.GetUser("user1"));
+            AddUserViaProvider(UtilityMethods.GetUser("user2"));
 
             _membershipCreateStatus.Should().Be(MembershipCreateStatus.DuplicateEmail);
         }
@@ -185,8 +162,8 @@ namespace AI_.Security.Tests.Providers
             config.Add("requiresUniqueEmail", "true");
             _provider.Configure(config);
 
-            AddUserViaProvider(GetUser("user1"));
-            AddUserViaProvider(GetUser("user2"));
+            AddUserViaProvider(UtilityMethods.GetUser("user1"));
+            AddUserViaProvider(UtilityMethods.GetUser("user2"));
 
             UserStorage.Should().HaveCount(1);
         }
@@ -194,8 +171,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void CreateUser_UniqueEmailConstraintDisabled_UserWithSameEmailCreated()
         {
-            AddUserViaProvider(GetUser(username: "user1"));
-            AddUserViaProvider(GetUser(username: "user2"));
+            AddUserViaProvider(UtilityMethods.GetUser(username: "user1"));
+            AddUserViaProvider(UtilityMethods.GetUser(username: "user2"));
 
             _membershipCreateStatus.Should().Be(MembershipCreateStatus.Success);
         }
@@ -203,8 +180,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void ChangePasswordQuestionAndAnswer_ValidUserDataProvided_PasswordQuestionChanged()
         {
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             var newPasswordQuestion = "newPasswordQuestion";
             var newPasswordAnswer = "newPasswordAnswer";
             _provider.ChangePasswordQuestionAndAnswer(user.UserName,
@@ -218,8 +195,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void ChangePasswordQuestionAndAnswer_ValidUserDataProvided_PasswordAnswerChanged()
         {
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             var newPasswordQuestion = "newPasswordQuestion";
             var newPasswordAnswer = "newPasswordAnswer";
             _provider.ChangePasswordQuestionAndAnswer(user.UserName,
@@ -233,8 +210,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void ChangePasswordQuestionAndAnswer_Simple_UnitOfWorkDisposed()
         {
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             var newPasswordQuestion = "newPasswordQuestion";
             var newPasswordAnswer = "newPasswordAnswer";
             _provider.ChangePasswordQuestionAndAnswer(user.UserName,
@@ -248,8 +225,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void ChangePasswordQuestionAndAnswer_InvalidUserDataProvided_PasswordQuestionNotChanged()
         {
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             var newPasswordQuestion = "newPasswordQuestion";
             var newPasswordAnswer = "newPasswordAnswer";
             _provider.ChangePasswordQuestionAndAnswer(user.UserName,
@@ -263,8 +240,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void ChangePasswordQuestionAndAnswer_InvalidUserDataProvided_PasswordAnswerNotChanged()
         {
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             var newPasswordQuestion = "newPasswordQuestion";
             var newPasswordAnswer = "newPasswordAnswer";
             _provider.ChangePasswordQuestionAndAnswer(user.UserName,
@@ -278,8 +255,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void ChangePassword_ValidPasswordProvided_PasswordChanged()
         {
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             var newPassword = "newPassword";
             _provider.ChangePassword(user.UserName, user.Password, newPassword);
 
@@ -289,8 +266,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void ChangePassword_Simple_UnitOfWorkDisposed()
         {
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             var newPassword = "newPassword";
             _provider.ChangePassword(user.UserName, user.Password, newPassword);
 
@@ -300,8 +277,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void ChangePassword_InvalidOldPasswordProvided_PasswordNotChanged()
         {
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             _provider.ChangePassword(user.UserName, "invalidPassword", "newPassword");
 
             UserStorage.Single().Password.Should().Be(user.Password);
@@ -310,8 +287,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void ChangePassword_ShortNewPasswordProvided_ExceptionThrown()
         {
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             var newPassword = "shrtPwd";
 
             _provider.Invoking(p => p.ChangePassword(user.UserName, user.Password, newPassword))
@@ -321,8 +298,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void ChangePassword_NewPasswordWithWhiteSpaceProvided_ExceptionThrown()
         {
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             var newPassword = "shrt Pwd";
 
             _provider.Invoking(p => p.ChangePassword(user.UserName, user.Password, newPassword))
@@ -332,8 +309,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void ChangePassword_NullAsNewPasswordProvided_ExceptionThrown()
         {
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             string newPassword = null;
 
             _provider.Invoking(p => p.ChangePassword(user.UserName, user.Password, newPassword))
@@ -343,7 +320,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void ChangePassword_UserDoesNotExists_PasswordNotChangedResultReturned()
         {
-            var user = GetUser();
+            var user = UtilityMethods.GetUser();
             var newPassword = "newPassword";
             var changePassword = _provider.ChangePassword(user.UserName, user.Password, newPassword);
 
@@ -353,8 +330,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void UpdateUser_UserExists_UserUpdated()
         {
-            AddUserDirectly(GetUser());
-            var user = GetUser(email: "newEmail@a.b");
+            AddUserDirectly(UtilityMethods.GetUser());
+            var user = UtilityMethods.GetUser(email: "newEmail@a.b");
             var membershipUser = Mapper.Map<User, MembershipUser>(user);
             _provider.UpdateUser(membershipUser);
             var updatedUser = Mapper.Map<User, MembershipUser>(UserStorage.Single());
@@ -366,8 +343,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void UpdateUser_Simple_UnitOfWorkDisposed()
         {
-            AddUserDirectly(GetUser());
-            var user = GetUser(email: "newEmail@a.b");
+            AddUserDirectly(UtilityMethods.GetUser());
+            var user = UtilityMethods.GetUser(email: "newEmail@a.b");
             var membershipUser = Mapper.Map<User, MembershipUser>(user);
             _provider.UpdateUser(membershipUser);
             Mapper.Map<User, MembershipUser>(UserStorage.Single());
@@ -378,7 +355,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void UpdateUser_UserDoesNotExists_ExceptionThrown()
         {
-            var user = GetUser();
+            var user = UtilityMethods.GetUser();
             var membershipUser = Mapper.Map<User, MembershipUser>(user);
 
             _provider.Invoking(p => p.UpdateUser(membershipUser))
@@ -388,7 +365,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void UnlockUser_UserDoesNotExists_ExceptionThrown()
         {
-            var user = GetUser();
+            var user = UtilityMethods.GetUser();
 
             _provider.Invoking(p => p.UnlockUser(user.UserName))
                 .ShouldThrow<ProviderException>();
@@ -397,8 +374,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void UnlockUser_UserIsNotLocked_ExceptionThrown()
         {
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
 
             _provider.Invoking(p => p.UnlockUser(user.UserName))
                 .ShouldThrow<ProviderException>();
@@ -407,8 +384,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void UnlockUser_UserIsLocked_UserUnlocked()
         {
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             UserStorage.Single().IsLocked = true;
             _provider.UnlockUser(user.UserName);
 
@@ -418,8 +395,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void UnlockUser_Simple_UnitOfWorkDisposed()
         {
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             UserStorage.Single().IsLocked = true;
             _provider.UnlockUser(user.UserName);
 
@@ -429,7 +406,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void GetUserByProviderUserKey_UserExists_UserReturned()
         {
-            var user = GetUser();
+            var user = UtilityMethods.GetUser();
             var addUser = AddUserViaProvider(user);
             var membershipUser = _provider.GetUser(addUser.ProviderUserKey, false);
 
@@ -439,7 +416,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void GetUserByProviderUserKey_UserDoesNotExists_NullReturned()
         {
-            var user = GetUser();
+            var user = UtilityMethods.GetUser();
             var membershipUser = _provider.GetUser(user.ID, false);
 
             membershipUser.Should().BeNull();
@@ -448,7 +425,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void GetUserByProviderUserKey_Simple_UnitOfWorkDisposed()
         {
-            var user = GetUser();
+            var user = UtilityMethods.GetUser();
             _provider.GetUser(user.ID, false);
 
             _unitOfWork.IsDisposed.Should().BeTrue();
@@ -457,8 +434,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void ResetPassword_PasswordResetOptionIsDisabled_ExceptionThrown()
         {
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
 
             _provider.Invoking(p => p.ResetPassword(user.UserName, user.PasswordAnswer))
                 .ShouldThrow<NotSupportedException>();
@@ -472,8 +449,8 @@ namespace AI_.Security.Tests.Providers
             config.Add("requiresQuestionAndAnswer", "true");
             _provider.Configure(config);
 
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
 
             _provider.Invoking(p => p.ResetPassword(user.UserName, null))
                 .ShouldThrow<MembershipPasswordException>();
@@ -487,7 +464,7 @@ namespace AI_.Security.Tests.Providers
             config.Add("requiresQuestionAndAnswer", "true");
             _provider.Configure(config);
 
-            var user = GetUser();
+            var user = UtilityMethods.GetUser();
 
             _provider.Invoking(p => p.ResetPassword(user.UserName, user.PasswordAnswer))
                 .ShouldThrow<MembershipPasswordException>();
@@ -501,8 +478,8 @@ namespace AI_.Security.Tests.Providers
             config.Add("requiresQuestionAndAnswer", "true");
             _provider.Configure(config);
 
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             UserStorage.Single().IsLocked = true;
 
             _provider.Invoking(p => p.ResetPassword(user.UserName, user.PasswordAnswer))
@@ -517,8 +494,8 @@ namespace AI_.Security.Tests.Providers
             config.Add("requiresQuestionAndAnswer", "true");
             _provider.Configure(config);
 
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             _provider.ResetPassword(user.UserName, user.PasswordAnswer);
 
             UserStorage.Single().Password.Should().NotBe(user.Password);
@@ -532,8 +509,8 @@ namespace AI_.Security.Tests.Providers
             config.Add("requiresQuestionAndAnswer", "true");
             _provider.Configure(config);
 
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             _provider.ResetPassword(user.UserName, user.PasswordAnswer);
 
             _unitOfWork.IsDisposed.Should().BeTrue();
@@ -547,8 +524,8 @@ namespace AI_.Security.Tests.Providers
             config.Add("requiresQuestionAndAnswer", "true");
             _provider.Configure(config);
 
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
 
             _provider.Invoking(p => p.ResetPassword(user.UserName, "invalidAnswer"))
                 .ShouldThrow<MembershipPasswordException>();
@@ -557,8 +534,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void GetPassword_PasswordRetrievalOptionIsDisabled_ExceptionThrown()
         {
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
 
             _provider.Invoking(p => p.GetPassword(user.UserName, user.PasswordAnswer))
                 .ShouldThrow<ProviderException>();
@@ -571,8 +548,8 @@ namespace AI_.Security.Tests.Providers
             config.Add("enablePasswordRetrieval", "true");
             _provider.Configure(config);
 
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             var password = _provider.GetPassword(user.UserName, user.PasswordAnswer);
 
             password.Should().Be(user.Password);
@@ -585,8 +562,8 @@ namespace AI_.Security.Tests.Providers
             config.Add("enablePasswordRetrieval", "true");
             _provider.Configure(config);
 
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             _provider.GetPassword(user.UserName, user.PasswordAnswer);
 
             _unitOfWork.IsDisposed.Should().BeTrue();
@@ -610,8 +587,8 @@ namespace AI_.Security.Tests.Providers
             config.Add("enablePasswordRetrieval", "true");
             _provider.Configure(config);
 
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             UserStorage.Single().IsLocked = true;
 
             _provider.Invoking(p => p.GetPassword(user.UserName, user.PasswordAnswer))
@@ -622,7 +599,7 @@ namespace AI_.Security.Tests.Providers
         //todo: via theory (userIsOnLine) evrywhere
         public void GetUserByUsername_UserDoesNotExists_NullReturned()
         {
-            var user = GetUser();
+            var user = UtilityMethods.GetUser();
             var membershipUser = _provider.GetUser(user.UserName, false);
 
             membershipUser.Should().BeNull();
@@ -632,8 +609,8 @@ namespace AI_.Security.Tests.Providers
         //todo: via theory (userIsOnLine) evrywhere
         public void GetUserByUsername_Simple_UnitOfWorkDisposed()
         {
-            var user = GetUser();
-            var membershipUser = _provider.GetUser(user.UserName, false);
+            var user = UtilityMethods.GetUser();
+            _provider.GetUser(user.UserName, false);
 
             _unitOfWork.IsDisposed.Should().BeTrue();
         }
@@ -641,8 +618,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void GetUserByUsername_UserExists_UserReturned()
         {
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             var membershipUser = _provider.GetUser(user.UserName, false);
 
             membershipUser.UserName.Should().Be(user.UserName);
@@ -651,7 +628,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void GetUserNameByEmail_UserDoesNotExists_NullReturned()
         {
-            var user = GetUser();
+            var user = UtilityMethods.GetUser();
             var username = _provider.GetUserNameByEmail(user.Email);
 
             username.Should().BeNull();
@@ -660,7 +637,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void GetUserNameByEmail_Simple_UnitOfWorkDisposed()
         {
-            var user = GetUser();
+            var user = UtilityMethods.GetUser();
             _provider.GetUserNameByEmail(user.Email);
 
             _unitOfWork.IsDisposed.Should().BeTrue();
@@ -669,8 +646,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void GetUserNameByEmail_UserExists_UserNameReturned()
         {
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             var username = _provider.GetUserNameByEmail(user.Email);
 
             username.Should().Be(user.UserName);
@@ -679,7 +656,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void DeleteUser_UserDoesNotExists_UserNotDeletedResultReturned()
         {
-            var user = GetUser();
+            var user = UtilityMethods.GetUser();
             var userDeleted = _provider.DeleteUser(user.UserName, false);
 
             userDeleted.Should().BeFalse();
@@ -688,8 +665,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void DeleteUser_UserExists_UserDeleted()
         {
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             _provider.DeleteUser(user.UserName, false);
 
             UserStorage.Should().HaveCount(0);
@@ -698,8 +675,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void DeleteUser_Simple_UnitOfWorkDisposed()
         {
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             _provider.DeleteUser(user.UserName, false);
 
             _unitOfWork.IsDisposed.Should().BeTrue();
@@ -708,8 +685,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void DeleteUser_UserExists_TrueReturned()
         {
-            var user = GetUser();
-            AddUserViaProvider(user);
+            var user = UtilityMethods.GetUser();
+            AddUserDirectly(user);
             var userDeleted = _provider.DeleteUser(user.UserName, false);
 
             userDeleted.Should().BeTrue();
@@ -728,7 +705,7 @@ namespace AI_.Security.Tests.Providers
         public void GetAllUsers_Simple_UnitOfWorkDisposed()
         {
             int totalRecords;
-            var membershipUserCollection = _provider.GetAllUsers(0, 1, out totalRecords);
+            _provider.GetAllUsers(0, 1, out totalRecords);
 
             _unitOfWork.IsDisposed.Should().BeTrue();
         }
@@ -740,7 +717,7 @@ namespace AI_.Security.Tests.Providers
                                                                         int expectedFoundMemberships)
         {
             int totalRecords;
-            AddUsers(3, i => GetUser("user" + i));
+            AddUsers(3, i => UtilityMethods.GetUser("user" + i));
             var membershipUserCollection = _provider.GetAllUsers(pageIndex,
                                                                  pageSize,
                                                                  out totalRecords);
@@ -752,7 +729,7 @@ namespace AI_.Security.Tests.Providers
         public void GetAllUsers_UsersExist_TotalRecordsCountEquelsUsersCount()
         {
             int totalRecords;
-            AddUsers(3, i => GetUser());
+            AddUsers(3, i => UtilityMethods.GetUser());
             _provider.GetAllUsers(0, 1, out totalRecords);
 
             totalRecords.Should().Be(3);
@@ -779,7 +756,7 @@ namespace AI_.Security.Tests.Providers
         public void FindUsersByEmail_Simple_UnitOfWorkDisposed()
         {
             int totalRecords;
-            var membershipUserCollection = _provider.FindUsersByEmail("a@b.c", 0, 1, out totalRecords);
+            _provider.FindUsersByEmail("a@b.c", 0, 1, out totalRecords);
 
             _unitOfWork.IsDisposed.Should().BeTrue();
         }
@@ -791,7 +768,7 @@ namespace AI_.Security.Tests.Providers
                                                                              int expectedFoundMemberships)
         {
             int totalRecords;
-            AddUsers(3, i => GetUser(username: "user" + i, email: "a@b.c"));
+            AddUsers(3, i => UtilityMethods.GetUser(username: "user" + i, email: "a@b.c"));
             var membershipUserCollection = _provider.FindUsersByEmail("a@b.c",
                                                                       pageIndex,
                                                                       pageSize,
@@ -804,8 +781,8 @@ namespace AI_.Security.Tests.Providers
         public void FindUsersByEmail_UsersExist_TotalRecordsCountEquelsMatchingUsersCount()
         {
             int totalRecords;
-            AddUsers(3, i => GetUser(email: "a@b.c"));
-            AddUsers(1, i => GetUser(email: "b@b.c"));
+            AddUsers(3, i => UtilityMethods.GetUser(email: "a@b.c"));
+            AddUsers(1, i => UtilityMethods.GetUser(email: "b@b.c"));
             _provider.FindUsersByEmail("a@b.c", 0, 1, out totalRecords);
 
             totalRecords.Should().Be(3);
@@ -814,7 +791,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void ValidateUser_UserIsLocked_UserNotValid()
         {
-            var user = GetUser();
+            var user = UtilityMethods.GetUser();
             AddUserDirectly(user);
             UserStorage.Single().IsLocked = true;
             var isValid = _provider.ValidateUser(user.UserName, user.Password);
@@ -833,7 +810,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void ValidateUser_UserIsNotApproved_UserNotValid()
         {
-            var user = GetUser();
+            var user = UtilityMethods.GetUser();
             AddUserDirectly(user);
             UserStorage.Single().IsApproved = false;
             var isValid = _provider.ValidateUser(user.UserName, user.Password);
@@ -844,7 +821,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void ValidateUser_InvalidPasswordProvided_UserNotValid()
         {
-            var user = GetUser();
+            var user = UtilityMethods.GetUser();
             AddUserDirectly(user);
             var isValid = _provider.ValidateUser(user.UserName, "invalidPassword");
 
@@ -854,7 +831,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void ValidateUser_Simple_UserValid()
         {
-            var user = GetUser();
+            var user = UtilityMethods.GetUser();
             AddUserDirectly(user);
             var isValid = _provider.ValidateUser(user.UserName, user.Password);
 
@@ -864,9 +841,9 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void ValidateUser_Simple_UnitOfWorkDisposed()
         {
-            var user = GetUser();
+            var user = UtilityMethods.GetUser();
             AddUserDirectly(user);
-            var isValid = _provider.ValidateUser(user.UserName, user.Password);
+            _provider.ValidateUser(user.UserName, user.Password);
 
             _unitOfWork.IsDisposed.Should().BeTrue();
         }

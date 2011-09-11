@@ -61,6 +61,8 @@
   <ItemGroup>
     <Compile Include="Mocks\SecurityUnitOfWorkMock.cs" />
     <Compile Include="Mocks\RepositoryMock.cs" />
+    <Compile Include="UtilityClasses\UtilityMethods.cs" />
+    <Compile Include="Providers\CustomRoleProviderTests.cs" />
     <Compile Include="Providers\CustomMembershipProviderTests.cs" />
     <Compile Include="FixtureBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -80,9 +82,7 @@
       <Name>AI_.Security</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="UtilityClasses\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

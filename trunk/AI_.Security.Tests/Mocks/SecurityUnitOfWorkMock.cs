@@ -6,6 +6,7 @@ namespace AI_.Security.Tests.Mocks
     public class SecurityUnitOfWorkMock : ISecurityUnitOfWork
     {
         private IRepository<User> _userRepository;
+        private IRepository<Role> _roleRepository;
         public bool IsDisposed { get; private set; }
         public bool IsSaved { get; private set; }
 
@@ -20,6 +21,11 @@ namespace AI_.Security.Tests.Mocks
         public IRepository<User> UserRepository
         {
             get { return _userRepository ?? (_userRepository = new RepositoryMock<User>()); }
+        }
+
+        public IRepository<Role> RoleRepository
+        {
+            get { return _roleRepository ?? (_roleRepository= new RepositoryMock<Role>()); }
         }
 
         public void Dispose()
