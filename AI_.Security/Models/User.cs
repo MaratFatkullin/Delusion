@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using AI_.Data;
 
 namespace AI_.Security.Models
@@ -28,15 +29,7 @@ namespace AI_.Security.Models
         public DateTime LastLockoutDate { get; set; }
 
         public DateTime LastPasswordChangedDate { get; set; }
-    }
 
-
-    public class ModelBase : IIdentifiable<int>
-    {
-        #region IIdentifiable<int> Members
-
-        public int ID { get; set; }
-
-        #endregion
+        public virtual ICollection<Role> Roles { get; set; }
     }
 }

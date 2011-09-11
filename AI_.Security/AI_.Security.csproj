@@ -51,6 +51,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\ModelBase.cs" />
+    <Compile Include="Models\Role.cs" />
+    <Compile Include="Providers\CustomRoleProvider.cs" />
     <Compile Include="Providers\CustomMembershipProvider.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

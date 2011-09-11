@@ -10,5 +10,10 @@ namespace AI_.Security.DAL
         {
             get { throw new NotImplementedException(); }
         }
+
+        public IRepository<Role> RoleRepository
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 }

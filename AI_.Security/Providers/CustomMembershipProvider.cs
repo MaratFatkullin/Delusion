@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.Configuration.Provider;
 using System.Linq;
 using System.Web.Security;
+using AI_.Data.Repository;
 using AI_.Security.DAL;
 using AI_.Security.Models;
 using AutoMapper;
@@ -89,7 +90,7 @@ namespace AI_.Security.Providers
         public CustomMembershipProvider()
         {
             Container = new UnityContainer();
-            Container.RegisterType<ISecurityUnitOfWork, SecurityUnitOfWork>();
+            Container.RegisterType<ISecurityUnitOfWork,SecurityUnitOfWork>();
             ConfigureMapping();
             ValidatingPassword += CustomMembershipProvider_ValidatingPassword;
         }
@@ -325,7 +326,8 @@ namespace AI_.Security.Providers
 
             using (var unitOfWork = GetUnitOfWork())
             {
-                var user = unitOfWork.UserRepository.Get(usr => usr.UserName == username).Single();
+                var user = unitOfWork.UserRepository
+                    .Get(usr => usr.UserName == username).Single();
                 user.Password = newPassword;
                 return true;
             }
@@ -428,8 +430,8 @@ namespace AI_.Security.Providers
         {
             using (var unitOfWork = GetUnitOfWork())
             {
-                var user = unitOfWork.UserRepository.
-                    Get(usr => usr.ID == (int) providerUserKey).SingleOrDefault();
+                var user = unitOfWork.UserRepository
+                    .Get(usr => usr.ID == (int) providerUserKey).SingleOrDefault();
 
                 if (user == null)
                     return null;
@@ -530,7 +532,8 @@ namespace AI_.Security.Providers
 
         protected User GetUser(string username,ISecurityUnitOfWork unitOfWork)
         {
-            return unitOfWork.UserRepository.Get(user => user.UserName == username).SingleOrDefault();
+            return unitOfWork.UserRepository
+                .Get(user => user.UserName == username).SingleOrDefault();
         }
 
         private static bool ValidatePassword(string storedPassword, string providedPassword)
