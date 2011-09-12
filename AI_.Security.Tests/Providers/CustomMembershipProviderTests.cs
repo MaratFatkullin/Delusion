@@ -4,8 +4,6 @@ using System.Collections.Specialized;
 using System.Configuration.Provider;
 using System.Linq;
 using System.Web.Security;
-using AI_.Data.Repository;
-using AI_.Security.DAL;
 using AI_.Security.Models;
 using AI_.Security.Providers;
 using AI_.Security.Tests.Mocks;
@@ -14,7 +12,6 @@ using AutoMapper;
 using FluentAssertions;
 using Xunit;
 using Xunit.Extensions;
-using Microsoft.Practices.Unity;
 
 
 namespace AI_.Security.Tests.Providers
@@ -33,8 +30,7 @@ namespace AI_.Security.Tests.Providers
         public CustomMembershipProviderTests()
         {
             _unitOfWork = new SecurityUnitOfWorkMock();
-            _provider = new CustomMembershipProvider();
-            _provider.Container.RegisterInstance<ISecurityUnitOfWork>(_unitOfWork);
+            _provider = new CustomMembershipProvider(new UnitOfWorkFactoryMock(_unitOfWork));
             _provider.Initialize("CustomMembershipProvider", new NameValueCollection());
 
             Mapper.CreateMap<User, User>();
@@ -64,7 +60,6 @@ namespace AI_.Security.Tests.Providers
 
         private MembershipUser AddUserViaProvider(User user)
         {
-            user.ID = UserStorage.Count + 1;
             return _provider.CreateUser(user.UserName,
                                         user.Password,
                                         user.Email,
@@ -77,7 +72,7 @@ namespace AI_.Security.Tests.Providers
 
         private void AddUserDirectly(User user)
         {
-            UserStorage.Add(Mapper.Map<User, User>(user));
+            _unitOfWork.UserRepository.Insert(Mapper.Map<User, User>(user));
         }
 
         protected void AddUsers(int count, Func<object, User> func)

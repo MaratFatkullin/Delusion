@@ -7,13 +7,12 @@ using AI_.Data.Repository;
 using AI_.Security.DAL;
 using AI_.Security.Models;
 using AutoMapper;
-using Microsoft.Practices.Unity;
 
 namespace AI_.Security.Providers
 {
     public class CustomMembershipProvider : MembershipProvider
     {
-        public IUnityContainer Container { get; private set; }
+        private readonly IUnitOfWorkFactory _factory;
 
         #region Configuration fields
 
@@ -88,9 +87,13 @@ namespace AI_.Security.Providers
         #endregion
 
         public CustomMembershipProvider()
+            :this(new UnitOfWorkFactory())
         {
-            Container = new UnityContainer();
-            Container.RegisterType<ISecurityUnitOfWork,SecurityUnitOfWork>();
+        }
+
+        public CustomMembershipProvider(IUnitOfWorkFactory factory)
+        {
+            _factory = factory;
             ConfigureMapping();
             ValidatingPassword += CustomMembershipProvider_ValidatingPassword;
         }
@@ -205,7 +208,7 @@ namespace AI_.Security.Providers
                 return null;
             }
 
-            using (var unitOfWork = GetUnitOfWork())
+            using (var unitOfWork = _factory.GetInstance())
             {
                 MembershipUser existingUser = GetUser(username, false);
                 if (existingUser != null)
@@ -253,7 +256,7 @@ namespace AI_.Security.Providers
             if (!ValidateUser(username, password))
                 return false;
 
-            using (var unitOfWork = GetUnitOfWork())
+            using (var unitOfWork = _factory.GetInstance())
             {
                 var user = GetUser(username,unitOfWork);
 
@@ -280,7 +283,7 @@ namespace AI_.Security.Providers
                 throw new ProviderException("Cannot retrieve Hashed passwords.");
             }
 
-            using (var unitOfWork = GetUnitOfWork())
+            using (var unitOfWork = _factory.GetInstance())
             {
                 var user = unitOfWork.UserRepository
                     .Get(usr => usr.UserName == username)
@@ -324,7 +327,7 @@ namespace AI_.Security.Providers
                     throw new MembershipPasswordException(
                         "Change password canceled due to new password validation failure.");
 
-            using (var unitOfWork = GetUnitOfWork())
+            using (var unitOfWork = _factory.GetInstance())
             {
                 var user = unitOfWork.UserRepository
                     .Get(usr => usr.UserName == username).Single();
@@ -354,7 +357,7 @@ namespace AI_.Security.Providers
                     throw new MembershipPasswordException(
                         "Reset password canceled due to password validation failure.");
 
-            using (var unitOfWork = GetUnitOfWork())
+            using (var unitOfWork = _factory.GetInstance())
             {
                 var user = GetUser(username, unitOfWork);
                 if (user == null)
@@ -381,7 +384,7 @@ namespace AI_.Security.Providers
 
         public override void UpdateUser(MembershipUser user)
         {
-            using (var unitOfWork = GetUnitOfWork())
+            using (var unitOfWork = _factory.GetInstance())
             {
                 var existingUser = GetUser(user.UserName, unitOfWork);
                 if (existingUser == null)
@@ -398,7 +401,7 @@ namespace AI_.Security.Providers
 
         public override bool ValidateUser(string username, string password)
         {
-            using (var unitOfWork = GetUnitOfWork())
+            using (var unitOfWork = _factory.GetInstance())
             {
                 var user = GetUser(username, unitOfWork);
                 if (user == null || user.IsLocked || !user.IsApproved)
@@ -409,7 +412,7 @@ namespace AI_.Security.Providers
 
         public override bool UnlockUser(string userName)
         {
-            using (var unitOfWork = GetUnitOfWork())
+            using (var unitOfWork = _factory.GetInstance())
             {
                 var user = GetUser(userName, unitOfWork);
                 if (user == null)
@@ -428,7 +431,7 @@ namespace AI_.Security.Providers
 
         public override MembershipUser GetUser(object providerUserKey, bool userIsOnline)
         {
-            using (var unitOfWork = GetUnitOfWork())
+            using (var unitOfWork = _factory.GetInstance())
             {
                 var user = unitOfWork.UserRepository
                     .Get(usr => usr.ID == (int) providerUserKey).SingleOrDefault();
@@ -441,7 +444,7 @@ namespace AI_.Security.Providers
 
         public override MembershipUser GetUser(string username, bool userIsOnline)
         {
-            using (var unitOfWork = GetUnitOfWork())
+            using (var unitOfWork = _factory.GetInstance())
             {
                 var user = GetUser(username, unitOfWork);
                 if (user == null)
@@ -452,7 +455,7 @@ namespace AI_.Security.Providers
 
         public override string GetUserNameByEmail(string email)
         {
-            using (var unitOfWork = GetUnitOfWork())
+            using (var unitOfWork = _factory.GetInstance())
             {
                 var user = unitOfWork.UserRepository.Get(usr => usr.Email == email).FirstOrDefault();
                 if (user == null)
@@ -463,7 +466,7 @@ namespace AI_.Security.Providers
 
         public override bool DeleteUser(string username, bool deleteAllRelatedData)
         {
-            using (var unitOfWork = GetUnitOfWork())
+            using (var unitOfWork = _factory.GetInstance())
             {
                 var user = GetUser(username, unitOfWork);
                 if (user == null)
@@ -479,7 +482,7 @@ namespace AI_.Security.Providers
                                                              int pageSize,
                                                              out int totalRecords)
         {
-            using (var unitOfWork = GetUnitOfWork())
+            using (var unitOfWork = _factory.GetInstance())
             {
                 var users = unitOfWork.UserRepository.Get();
                 totalRecords = users.Count();
@@ -514,7 +517,7 @@ namespace AI_.Security.Providers
                                                                   int pageSize,
                                                                   out int totalRecords)
         {
-            using (var unitOfWork = GetUnitOfWork())
+            using (var unitOfWork = _factory.GetInstance())
             {
                 var users = unitOfWork.UserRepository.Get(usr => usr.Email == emailToMatch);
                 totalRecords = users.Count();
@@ -539,11 +542,6 @@ namespace AI_.Security.Providers
         private static bool ValidatePassword(string storedPassword, string providedPassword)
         {
             return providedPassword == storedPassword;
-        }
-
-        private ISecurityUnitOfWork GetUnitOfWork()
-        {
-            return Container.Resolve<ISecurityUnitOfWork>();
         }
     }
 }
