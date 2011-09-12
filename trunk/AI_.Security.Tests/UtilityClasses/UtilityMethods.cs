@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 using AI_.Security.Models;
 
 namespace AI_.Security.Tests.UtilityClasses
@@ -27,7 +28,8 @@ namespace AI_.Security.Tests.UtilityClasses
                            CreateDate = DateTime.Today,
                            LastActivityDate = DateTime.Today,
                            LastLockoutDate = DateTime.MinValue.ToLocalTime(),
-                           LastLoginDate = DateTime.MinValue.ToLocalTime()
+                           LastLoginDate = DateTime.MinValue.ToLocalTime(),
+                           Roles = new Collection<Role>()
                        };
 
             return user;
@@ -37,7 +39,8 @@ namespace AI_.Security.Tests.UtilityClasses
         {
             return new Role
                    {
-                       RoleName = roleName
+                       RoleName = roleName,
+                       Users = new Collection<User>()
                    };
         }
     }

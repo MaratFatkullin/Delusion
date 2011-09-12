@@ -1,4 +1,5 @@
-﻿using AI_.Security.DAL;
+﻿using AI_.Data.Repository;
+using AI_.Security.DAL;
 using AI_.Security.Models;
 
 namespace AI_.Security.Tests.Mocks

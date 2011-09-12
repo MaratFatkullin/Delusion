@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using AI_.Data.Repository;
 using AI_.Security.Models;
 
 namespace AI_.Security.Tests.Mocks
@@ -49,6 +50,7 @@ namespace AI_.Security.Tests.Mocks
 
         public void Insert(TEntity entity)
         {
+            entity.ID = _storage.Count + 1;
             _storage.Add(entity);
         }
 
