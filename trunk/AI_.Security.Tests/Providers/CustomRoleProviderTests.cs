@@ -103,7 +103,7 @@ namespace AI_.Security.Tests.Providers
             //AddRole(role2);
             var rolesForUser = _provider.GetRolesForUser(user.UserName);
 
-            rolesForUser.Should().BeEquivalentTo("role1", "role2");
+            rolesForUser.Should().Equal(new List<string> {"role1", "role2"});
         }
 
         [Fact]
@@ -114,6 +114,13 @@ namespace AI_.Security.Tests.Providers
             var rolesForUser = _provider.GetRolesForUser(user.UserName);
 
             rolesForUser.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GetRolesForUser_UserNotExists_ExceptionThrown()
+        {
+            _provider.Invoking(p => p.GetRolesForUser("unexistingUsername"))
+                .ShouldThrow<ProviderException>();
         }
 
         [Fact]
@@ -182,6 +189,7 @@ namespace AI_.Security.Tests.Providers
             var user = UtilityMethods.GetUser();
             BindUserToRole(user, role);
             AddUser(user);
+            _provider.DeleteRole(role.RoleName, false);
 
             RoleStorage.Should().HaveCount(1);
         }
@@ -194,6 +202,7 @@ namespace AI_.Security.Tests.Providers
             var user = UtilityMethods.GetUser();
             BindUserToRole(user, role);
             AddUser(user);
+            _provider.DeleteRole(role.RoleName, false);
 
             RoleStorage.Should().BeEmpty();
         }
@@ -230,14 +239,8 @@ namespace AI_.Security.Tests.Providers
             AddRole(role1);
             AddRole(role2);
 
-            var usernames = new[]
-                            {
-                                user1.UserName, user2.UserName
-                            };
-            var roleNames = new[]
-                            {
-                                role1.RoleName, role2.RoleName
-                            };
+            var usernames = new[] {user1.UserName, user2.UserName};
+            var roleNames = new[] {role1.RoleName, role2.RoleName};
 
             _provider.AddUsersToRoles(usernames, roleNames);
 
@@ -250,14 +253,8 @@ namespace AI_.Security.Tests.Providers
             var role = UtilityMethods.GetRole();
             AddRole(role);
 
-            _provider.Invoking(p => p.AddUsersToRoles(new[]
-                                                      {
-                                                          "unexistingUserName"
-                                                      },
-                                                      new[]
-                                                      {
-                                                          role.RoleName
-                                                      }))
+            _provider.Invoking(p => p.AddUsersToRoles(new[] {"unexistingUserName"},
+                                                      new[] {role.RoleName}))
                 .ShouldThrow<ProviderException>();
         }
 
@@ -267,14 +264,8 @@ namespace AI_.Security.Tests.Providers
             var user = UtilityMethods.GetUser();
             AddUser(user);
 
-            _provider.Invoking(p => p.AddUsersToRoles(new[]
-                                                      {
-                                                          user.UserName
-                                                      },
-                                                      new[]
-                                                      {
-                                                          "unexistingRoleName"
-                                                      }))
+            _provider.Invoking(p => p.AddUsersToRoles(new[] {user.UserName},
+                                                      new[] {"unexistingRoleName"}))
                 .ShouldThrow<ProviderException>();
         }
 
@@ -287,14 +278,8 @@ namespace AI_.Security.Tests.Providers
             AddUser(user);
             AddRole(role);
 
-            _provider.Invoking(p => p.AddUsersToRoles(new[]
-                                                      {
-                                                          user.UserName
-                                                      },
-                                                      new[]
-                                                      {
-                                                          role.RoleName
-                                                      }))
+            _provider.Invoking(p => p.AddUsersToRoles(new[] {user.UserName},
+                                                      new[] {role.RoleName}))
                 .ShouldThrow<ProviderException>();
         }
 
@@ -316,14 +301,8 @@ namespace AI_.Security.Tests.Providers
             BindUserToRole(user1, role2);
             BindUserToRole(user2, role2);
 
-            var usernames = new[]
-                            {
-                                user1.UserName, user2.UserName
-                            };
-            var roleNames = new[]
-                            {
-                                role1.RoleName, role2.RoleName
-                            };
+            var usernames = new[] {user1.UserName, user2.UserName};
+            var roleNames = new[] {role1.RoleName, role2.RoleName};
 
             _provider.RemoveUsersFromRoles(usernames, roleNames);
 
@@ -336,14 +315,8 @@ namespace AI_.Security.Tests.Providers
             var role = UtilityMethods.GetRole();
             AddRole(role);
 
-            _provider.Invoking(p => p.RemoveUsersFromRoles(new[]
-                                                           {
-                                                               "unexistingUserName"
-                                                           },
-                                                           new[]
-                                                           {
-                                                               role.RoleName
-                                                           }))
+            _provider.Invoking(p => p.RemoveUsersFromRoles(new[] {"unexistingUserName"},
+                                                           new[] {role.RoleName}))
                 .ShouldThrow<ProviderException>();
         }
 
@@ -353,14 +326,8 @@ namespace AI_.Security.Tests.Providers
             var user = UtilityMethods.GetUser();
             AddUser(user);
 
-            _provider.Invoking(p => p.RemoveUsersFromRoles(new[]
-                                                           {
-                                                               user.UserName
-                                                           },
-                                                           new[]
-                                                           {
-                                                               "unexistingRoleName"
-                                                           }))
+            _provider.Invoking(p => p.RemoveUsersFromRoles(new[]{user.UserName},
+                                                           new[]{"unexistingRoleName"}))
                 .ShouldThrow<ProviderException>();
         }
 
@@ -372,14 +339,8 @@ namespace AI_.Security.Tests.Providers
             AddUser(user);
             AddRole(role);
 
-            _provider.Invoking(p => p.AddUsersToRoles(new[]
-                                                      {
-                                                          user.UserName
-                                                      },
-                                                      new[]
-                                                      {
-                                                          role.RoleName
-                                                      }))
+            _provider.Invoking(p => p.AddUsersToRoles(new[]{user.UserName},
+                                                      new[]{role.RoleName}))
                 .ShouldThrow<ProviderException>();
         }
 
@@ -438,7 +399,7 @@ namespace AI_.Security.Tests.Providers
             BindUserToRole(UtilityMethods.GetUser("user2"), role);
             BindUserToRole(UtilityMethods.GetUser("someOtherMan"), role);
             AddRole(role);
-            var usersInRole = _provider.FindUsersInRole(role.RoleName,"user");
+            var usersInRole = _provider.FindUsersInRole(role.RoleName, "user");
 
             usersInRole.Should().BeEquivalentTo("user1", "user2");
         }
