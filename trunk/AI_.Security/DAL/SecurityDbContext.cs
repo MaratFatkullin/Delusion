@@ -21,8 +21,10 @@ namespace AI_.Security.DAL
         }
 
         public SecurityDbContext()
-            : base("ApplicationServices")
+            : base("DataContext")
         {
         }
+
+        
     }
 }
