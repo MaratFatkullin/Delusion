@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 
 namespace AI_.Data.Repository
 {
-    public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
+    public class Repository<TEntity> : IRepository<TEntity> where TEntity : ModelBase
     {
         internal DbContext Context { get; set; }
         internal DbSet<TEntity> DbSet { get; set; }
@@ -52,6 +52,7 @@ namespace AI_.Data.Repository
 
         public virtual void Insert(TEntity entity)
         {
+            entity.CreateDate = DateTime.Now;
             DbSet.Add(entity);
         }
 
@@ -73,6 +74,7 @@ namespace AI_.Data.Repository
         public virtual void Update(TEntity entityToUpdate)
         {
             DbSet.Attach(entityToUpdate);
+            entityToUpdate.UpdateDate = DateTime.Now;
             Context.Entry(entityToUpdate).State = EntityState.Modified;
         }
 

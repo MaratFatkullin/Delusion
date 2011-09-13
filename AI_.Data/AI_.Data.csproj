@@ -48,6 +48,7 @@
     <Compile Include="IIdentifiable.cs" />
     <Compile Include="Repository\IRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ModelBase.cs" />
     <Compile Include="Repository\Repository.cs" />
     <Compile Include="Repository\UnitOfWork.cs" />
   </ItemGroup>
