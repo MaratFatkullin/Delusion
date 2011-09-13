@@ -1,6 +1,4 @@
-﻿using System;
-using System.Data.Entity;
-using AI_.Security.DAL;
+﻿using AI_.Security.DAL;
 
 namespace AI_.Studmix.WebApplication.DAL
 {
@@ -11,7 +9,7 @@ namespace AI_.Studmix.WebApplication.DAL
         }
 
         public DataContext()
-            : base("ApplicationServices")
+            : base("DataContext")
         {
         }
     }

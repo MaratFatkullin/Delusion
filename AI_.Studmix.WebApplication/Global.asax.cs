@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.Data.Entity;
 using System.Web.Mvc;
 using System.Web.Routing;
+using AI_.Studmix.WebApplication.DAL;
 
 namespace AI_.Studmix.WebApplication
 {
@@ -29,12 +27,23 @@ namespace AI_.Studmix.WebApplication
 
         }
 
+        private static void InitializeDatabase()
+        {
+            Database.SetInitializer(new CustomDatabaseInitializer());
+            using (var dataContext = new DataContext())
+            {
+                dataContext.Database.Initialize(false);
+            }
+        }
+
         protected void Application_Start()
         {
             AreaRegistration.RegisterAllAreas();
 
             RegisterGlobalFilters(GlobalFilters.Filters);
             RegisterRoutes(RouteTable.Routes);
+
+            InitializeDatabase();
         }
     }
 }

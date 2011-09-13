@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.Mvc;
-using System.Web.Routing;
 using System.Web.Security;
-using AI_.Studmix.WebApplication.Models;
-using AI_.Studmix.WebApplication.Models.ViewModels;
 using AI_.Studmix.WebApplication.Models.ViewModels.Account;
 
 namespace AI_.Studmix.WebApplication.Controllers
