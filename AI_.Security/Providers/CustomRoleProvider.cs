@@ -45,7 +45,7 @@ namespace AI_.Security.Providers
             {
                 var user = GetUser(username, unitOfWork);
                 if (user == null)
-                    throw new ProviderException("User not found.");
+                    throw new ProviderException("User with specified name does not exists.");
                 var rolenames = from role in user.Roles
                                 select role.RoleName;
                 return rolenames.ToArray();
@@ -57,7 +57,7 @@ namespace AI_.Security.Providers
             using (var unitOfwork = GetUnitOfWork())
             {
                 if (RoleExists(roleName))
-                    throw new ProviderException("Role already exists.");
+                    throw new ProviderException("Role with specified name already exists.");
 
                 var role = new Role {RoleName = roleName};
                 unitOfwork.RoleRepository.Insert(role);
@@ -66,7 +66,21 @@ namespace AI_.Security.Providers
 
         public override bool DeleteRole(string roleName, bool throwOnPopulatedRole)
         {
-            throw new NotImplementedException();
+            using (var unitOfWork = GetUnitOfWork())
+            {
+                var role = GetRole(roleName, unitOfWork);
+                if (role == null)
+                    return false;
+                if (role.Users.Count != 0)
+                {
+                    if (throwOnPopulatedRole)
+                        throw new ProviderException("Role cannot be deleted cause it has rolemembers.");
+                    foreach (var user in role.Users)
+                        user.Roles.Remove(role);
+                }
+                unitOfWork.RoleRepository.Delete(role);
+                return true;
+            }
         }
 
         public override bool RoleExists(string roleName)
@@ -80,27 +94,81 @@ namespace AI_.Security.Providers
 
         public override void AddUsersToRoles(string[] usernames, string[] roleNames)
         {
-            throw new NotImplementedException();
+            using (var unitOfWork = GetUnitOfWork())
+            {
+                foreach (var roleName in roleNames)
+                {
+                    var role = GetRole(roleName, unitOfWork);
+                    if (role == null)
+                        throw new ProviderException("Role with specified name does not exists.");
+                    foreach (var username in usernames)
+                    {
+                        var userInRole = role.Users.Where(usr => usr.UserName == username).SingleOrDefault();
+                        if (userInRole != null)
+                            throw new ProviderException("User with specified name already has specified role.");
+                        var user = GetUser(username, unitOfWork);
+                            if (user == null)
+                                throw new ProviderException("User with specified name does not exists.");
+                        role.Users.Add(user);
+                    }
+                }
+            }
         }
 
         public override void RemoveUsersFromRoles(string[] usernames, string[] roleNames)
         {
-            throw new NotImplementedException();
+            using (var unitOfWork = GetUnitOfWork())
+            {
+                foreach (var roleName in roleNames)
+                {
+                    var role = GetRole(roleName, unitOfWork);
+                    if (role == null)
+                        throw new ProviderException("Role with specified name does not exists.");
+                    foreach (var username in usernames)
+                    {
+                        var user = role.Users.Where(usr => usr.UserName == username).SingleOrDefault();
+                        if (user == null)
+                            throw new ProviderException("User with specified name does not have specified role.");
+                        role.Users.Remove(user);
+                    }
+                }
+            }
         }
 
         public override string[] GetUsersInRole(string roleName)
         {
-            throw new NotImplementedException();
+            using (var unitOfwork = GetUnitOfWork())
+            {
+                var role = GetRole(roleName, unitOfwork);
+                if (role == null)
+                    throw new ProviderException("Role with specified name does not exists.");
+                var usernames = from user in role.Users
+                                select user.UserName;
+                return usernames.ToArray();
+            }
         }
 
         public override string[] GetAllRoles()
         {
-            throw new NotImplementedException();
+            using (var unitOfwork = GetUnitOfWork())
+                return unitOfwork.RoleRepository
+                    .Get()
+                    .Select(role => role.RoleName)
+                    .ToArray();
         }
 
         public override string[] FindUsersInRole(string roleName, string usernameToMatch)
         {
-            throw new NotImplementedException();
+            using (var unitOfwork = GetUnitOfWork())
+            {
+                var role = GetRole(roleName, unitOfwork);
+                if(role == null)
+                    throw new ProviderException("Role with specified name does not exists.");
+                var usernames = from user in role.Users
+                                where user.UserName.Contains(usernameToMatch)
+                                select user.UserName;
+                return usernames.ToArray();
+            }
         }
 
         private ISecurityUnitOfWork GetUnitOfWork()

@@ -160,51 +160,63 @@ namespace AI_.Security.Tests.Providers
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void DeleteRole_RoleNotExists_ExceptionThrown(bool throwOnPopulatedRole)
+        public void DeleteRole_RoleExists_TrueReturned(bool throwOnPopulatedRole)
         {
             var role = UtilityMethods.GetRole();
+            AddRole(role);
+            var deleteRole = _provider.DeleteRole(role.RoleName, throwOnPopulatedRole);
 
-            _provider.Invoking(p => p.DeleteRole(role.RoleName, throwOnPopulatedRole))
-                .ShouldThrow<ProviderException>();
+            deleteRole.Should().BeTrue();
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void DeleteRole_RoleNotExists_FalseReturned(bool throwOnPopulatedRole)
+        {
+            var role = UtilityMethods.GetRole();
+            var roleDeleted = _provider.DeleteRole(role.RoleName, throwOnPopulatedRole);
+
+            roleDeleted.Should().BeFalse();
+        }
+        
         [Fact]
         public void DeleteRole_ThrowOnPopulatedRoleTrue_ExceptionThrown()
         {
             var role = UtilityMethods.GetRole();
-            //AddRole(role);
+            AddRole(role);
             var user = UtilityMethods.GetUser();
             BindUserToRole(user, role);
-            AddUser(user);
+            //AddUser(user);
 
             _provider.Invoking(p => p.DeleteRole(role.RoleName, true))
                 .ShouldThrow<ProviderException>();
         }
 
         [Fact]
-        public void DeleteRole_ThrowOnPopulatedRoleTrue_RoleNotDeleted()
-        {
-            var role = UtilityMethods.GetRole();
-            //AddRole(role);
-            var user = UtilityMethods.GetUser();
-            BindUserToRole(user, role);
-            AddUser(user);
-            _provider.DeleteRole(role.RoleName, false);
-
-            RoleStorage.Should().HaveCount(1);
-        }
-
-        [Fact]
         public void DeleteRole_ThrowOnPopulatedRoleFalse_RoleDeleted()
         {
             var role = UtilityMethods.GetRole();
-            //AddRole(role);
+            AddRole(role);
+            var user = UtilityMethods.GetUser();
+            BindUserToRole(user, role);
+            //AddUser(user);
+            _provider.DeleteRole(role.RoleName, false);
+
+            RoleStorage.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void DeleteRole_ThrowOnPopulatedRoleFalse_UsersExcludedFromRole()
+        {
+            var role = UtilityMethods.GetRole();
+            AddRole(role);
             var user = UtilityMethods.GetUser();
             BindUserToRole(user, role);
             AddUser(user);
             _provider.DeleteRole(role.RoleName, false);
 
-            RoleStorage.Should().BeEmpty();
+            UserStorage.Single().Roles.Should().BeEmpty();
         }
 
         [Fact]
@@ -227,7 +239,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void AddUsersToRoles_Simple_UsersAddedToRoles()
+        public void AddUsersToRoles_UserDoesNotHaveRole_UsersAddedToRoles()
         {
             var user1 = UtilityMethods.GetUser("user1");
             var user2 = UtilityMethods.GetUser("user2");
@@ -270,7 +282,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void AddUsersToRoles_UserHaveRole_ExceptionThrown()
+        public void AddUsersToRoles_UserHasRole_ExceptionThrown()
         {
             var user = UtilityMethods.GetUser();
             var role = UtilityMethods.GetRole();
@@ -284,7 +296,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void RemoveUsersFromRoles_Simple_UsersRemovedFromRoles()
+        public void RemoveUsersFromRoles_UserHasRole_UsersRemovedFromRoles()
         {
             var user1 = UtilityMethods.GetUser("user1");
             var user2 = UtilityMethods.GetUser("user2");
@@ -339,8 +351,8 @@ namespace AI_.Security.Tests.Providers
             AddUser(user);
             AddRole(role);
 
-            _provider.Invoking(p => p.AddUsersToRoles(new[]{user.UserName},
-                                                      new[]{role.RoleName}))
+            _provider.Invoking(p => p.RemoveUsersFromRoles(new[] {user.UserName},
+                                                           new[] {role.RoleName}))
                 .ShouldThrow<ProviderException>();
         }
 
@@ -352,15 +364,17 @@ namespace AI_.Security.Tests.Providers
             var user2 = UtilityMethods.GetUser("user2");
             BindUserToRole(user1, role);
             BindUserToRole(user2, role);
+            AddRole(role);
             var usersInRole = _provider.GetUsersInRole(role.RoleName);
 
-            usersInRole.Should().BeEquivalentTo(user1.UserName, user2.UserName);
+            usersInRole.Should().BeEquivalentTo(new List<string> { user1.UserName, user2.UserName });
         }
 
         [Fact]
         public void GetUsersInRole_NoUsersInRole_EmptyCollectionReturned()
         {
             var role = UtilityMethods.GetRole();
+            AddRole(role);
             var usersInRole = _provider.GetUsersInRole(role.RoleName);
 
             usersInRole.Should().BeEmpty();
@@ -380,7 +394,7 @@ namespace AI_.Security.Tests.Providers
             AddRole(UtilityMethods.GetRole("role2"));
             var allRoles = _provider.GetAllRoles();
 
-            allRoles.Should().BeEquivalentTo("role1", "role2");
+            allRoles.Should().BeEquivalentTo(new List<string> { "role1", "role2" });
         }
 
         [Fact]
@@ -392,7 +406,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void FindUsersInRole_Simple_MatchedUserNamesReturned()
+        public void FindUsersInRole_UsersInRole_MatchedUserNamesReturned()
         {
             var role = UtilityMethods.GetRole();
             BindUserToRole(UtilityMethods.GetUser("user1"), role);
@@ -401,7 +415,7 @@ namespace AI_.Security.Tests.Providers
             AddRole(role);
             var usersInRole = _provider.FindUsersInRole(role.RoleName, "user");
 
-            usersInRole.Should().BeEquivalentTo("user1", "user2");
+            usersInRole.Should().BeEquivalentTo(new List<string> { "user1", "user2" });
         }
 
         [Fact]
@@ -421,7 +435,7 @@ namespace AI_.Security.Tests.Providers
                 .ShouldThrow<ProviderException>();
         }
 
-        [Fact]
+        [Fact(Skip = "Возможно нужно будет отказаться.")]
         public void ApplicationName_Simple_NullReturned()
         {
             _provider.ApplicationName.Should().BeNull();
