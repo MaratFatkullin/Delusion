@@ -227,7 +227,6 @@ namespace AI_.Security.Providers
                                PasswordQuestion = passwordQuestion,
                                PasswordAnswer = passwordAnswer,
                                LastPasswordChangedDate = DateTime.Now,
-                               CreateDate = DateTime.Now,
                                LastActivityDate = DateTime.Now,
                                LastLockoutDate = DateTime.MinValue.ToLocalTime(),
                                LastLoginDate = DateTime.MinValue.ToLocalTime(),

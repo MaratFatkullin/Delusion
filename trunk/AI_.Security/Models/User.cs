@@ -18,8 +18,6 @@ namespace AI_.Security.Models
 
         public bool IsApproved { get; set; }
 
-        public DateTime CreateDate { get; set; }
-
         public bool IsLocked { get; set; }
 
         public DateTime LastActivityDate { get; set; }
