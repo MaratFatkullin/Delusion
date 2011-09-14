@@ -66,12 +66,13 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="DAL\CustomDatabaseInitializer.asax.cs" />
     <Compile Include="DAL\DataContext.cs" />
+    <Compile Include="DAL\UnitOfWork.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\ViewModels\Account\RegisterViewModel.cs" />
-    <Compile Include="Models\ViewModels\Account\ChangePasswordViewModel.cs" />
-    <Compile Include="Models\ViewModels\Account\LogOnViewModel.cs" />
+    <Compile Include="ViewModels\Account\RegisterViewModel.cs" />
+    <Compile Include="ViewModels\Account\ChangePasswordViewModel.cs" />
+    <Compile Include="ViewModels\Account\LogOnViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -147,6 +148,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Models\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
