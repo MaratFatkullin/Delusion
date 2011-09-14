@@ -3,7 +3,7 @@ using System.Data.Entity;
 
 namespace AI_.Data.Repository
 {
-    public class UnitOfWork<TContext>
+    public abstract class UnitOfWork<TContext>
         : IDisposable
         where TContext : DbContext, new()
     {

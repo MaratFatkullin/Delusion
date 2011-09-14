@@ -13,6 +13,7 @@ namespace AI_.Security.DAL
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.Conventions.Remove<IncludeMetadataConvention>();
+            base.OnModelCreating(modelBuilder);
         }
 
         public SecurityDbContext(string nameOrConnectionString) 

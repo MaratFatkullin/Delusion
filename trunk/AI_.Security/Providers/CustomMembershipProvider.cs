@@ -130,10 +130,10 @@ namespace AI_.Security.Providers
                                                           usr.IsApproved,
                                                           usr.IsLocked,
                                                           usr.CreateDate,
-                                                          usr.LastLoginDate,
-                                                          usr.LastActivityDate,
-                                                          usr.LastPasswordChangedDate,
-                                                          usr.LastLockoutDate));
+                                                          usr.LastLoginDate ?? DateTime.MinValue,
+                                                          usr.LastActivityDate ?? DateTime.MinValue,
+                                                          usr.LastPasswordChangedDate ?? DateTime.MinValue,
+                                                          usr.LastLockoutDate ?? DateTime.MinValue));
         }
 
         private string GetConfigValue(string configValue, string defaultValue)

@@ -20,13 +20,13 @@ namespace AI_.Security.Models
 
         public bool IsLocked { get; set; }
 
-        public DateTime LastActivityDate { get; set; }
+        public DateTime? LastActivityDate { get; set; }
 
-        public DateTime LastLoginDate { get; set; }
+        public DateTime? LastLoginDate { get; set; }
 
-        public DateTime LastLockoutDate { get; set; }
+        public DateTime? LastLockoutDate { get; set; }
 
-        public DateTime LastPasswordChangedDate { get; set; }
+        public DateTime? LastPasswordChangedDate { get; set; }
 
         public virtual ICollection<Role> Roles { get; set; }
     }
