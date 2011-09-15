@@ -58,8 +58,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void IsUserInRole_UserInRole_TrueReturned()
         {
-            var user = UtilityMethods.GetUser();
-            var role = UtilityMethods.GetRole();
+            var user = UtilityMethods.CreateUser();
+            var role = UtilityMethods.CreateRole();
             BindUserToRole(user, role);
             AddUser(user);
             AddRole(role);
@@ -71,8 +71,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void IsUserInRole_UserNotInRole_FalseReturned()
         {
-            var user = UtilityMethods.GetUser();
-            var role = UtilityMethods.GetRole();
+            var user = UtilityMethods.CreateUser();
+            var role = UtilityMethods.CreateRole();
             AddUser(user);
             AddRole(role);
             var isUserInRole = _provider.IsUserInRole(user.UserName, role.RoleName);
@@ -83,7 +83,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void IsUserInRole_RoleNotExists_ExceptionThrown()
         {
-            var user = UtilityMethods.GetUser();
+            var user = UtilityMethods.CreateUser();
             AddUser(user);
             _provider.Invoking(p => p.IsUserInRole(user.UserName, "roleName"))
                 .ShouldThrow<ProviderException>();
@@ -92,9 +92,9 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void GetRolesForUser_UserHasRoles_RoleNamesReturned()
         {
-            var user = UtilityMethods.GetUser();
-            var role1 = UtilityMethods.GetRole("role1");
-            var role2 = UtilityMethods.GetRole("role2");
+            var user = UtilityMethods.CreateUser();
+            var role1 = UtilityMethods.CreateRole("role1");
+            var role2 = UtilityMethods.CreateRole("role2");
 
             BindUserToRole(user, role1);
             BindUserToRole(user, role2);
@@ -109,7 +109,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void GetRolesForUser_UserHasNoRoles_EmptyCollectionReturned()
         {
-            var user = UtilityMethods.GetUser();
+            var user = UtilityMethods.CreateUser();
             AddUser(user);
             var rolesForUser = _provider.GetRolesForUser(user.UserName);
 
@@ -126,7 +126,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void CreateRole_Simple_RoleCreated()
         {
-            var role = UtilityMethods.GetRole();
+            var role = UtilityMethods.CreateRole();
             _provider.CreateRole(role.RoleName);
 
             RoleStorage.Single()
@@ -138,7 +138,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void CreateRole_RoleWithSameNameExists_ExceptionThrown()
         {
-            var role = UtilityMethods.GetRole();
+            var role = UtilityMethods.CreateRole();
             AddRole(role);
 
             _provider.Invoking(p => p.CreateRole(role.RoleName))
@@ -150,7 +150,7 @@ namespace AI_.Security.Tests.Providers
         [InlineData(false)]
         public void DeleteRole_RoleExists_RoleDeleted(bool throwOnPopulatedRole)
         {
-            var role = UtilityMethods.GetRole();
+            var role = UtilityMethods.CreateRole();
             AddRole(role);
             _provider.DeleteRole(role.RoleName, throwOnPopulatedRole);
 
@@ -162,7 +162,7 @@ namespace AI_.Security.Tests.Providers
         [InlineData(false)]
         public void DeleteRole_RoleExists_TrueReturned(bool throwOnPopulatedRole)
         {
-            var role = UtilityMethods.GetRole();
+            var role = UtilityMethods.CreateRole();
             AddRole(role);
             var deleteRole = _provider.DeleteRole(role.RoleName, throwOnPopulatedRole);
 
@@ -174,7 +174,7 @@ namespace AI_.Security.Tests.Providers
         [InlineData(false)]
         public void DeleteRole_RoleNotExists_FalseReturned(bool throwOnPopulatedRole)
         {
-            var role = UtilityMethods.GetRole();
+            var role = UtilityMethods.CreateRole();
             var roleDeleted = _provider.DeleteRole(role.RoleName, throwOnPopulatedRole);
 
             roleDeleted.Should().BeFalse();
@@ -183,9 +183,9 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void DeleteRole_ThrowOnPopulatedRoleTrue_ExceptionThrown()
         {
-            var role = UtilityMethods.GetRole();
+            var role = UtilityMethods.CreateRole();
             AddRole(role);
-            var user = UtilityMethods.GetUser();
+            var user = UtilityMethods.CreateUser();
             BindUserToRole(user, role);
             //AddUser(user);
 
@@ -196,9 +196,9 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void DeleteRole_ThrowOnPopulatedRoleFalse_RoleDeleted()
         {
-            var role = UtilityMethods.GetRole();
+            var role = UtilityMethods.CreateRole();
             AddRole(role);
-            var user = UtilityMethods.GetUser();
+            var user = UtilityMethods.CreateUser();
             BindUserToRole(user, role);
             //AddUser(user);
             _provider.DeleteRole(role.RoleName, false);
@@ -209,9 +209,9 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void DeleteRole_ThrowOnPopulatedRoleFalse_UsersExcludedFromRole()
         {
-            var role = UtilityMethods.GetRole();
+            var role = UtilityMethods.CreateRole();
             AddRole(role);
-            var user = UtilityMethods.GetUser();
+            var user = UtilityMethods.CreateUser();
             BindUserToRole(user, role);
             AddUser(user);
             _provider.DeleteRole(role.RoleName, false);
@@ -222,7 +222,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void RoleExists_RoleExists_TrueReturned()
         {
-            var role = UtilityMethods.GetRole();
+            var role = UtilityMethods.CreateRole();
             AddRole(role);
             var roleExists = _provider.RoleExists(role.RoleName);
 
@@ -232,7 +232,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void RoleExists_RoleNotExists_FalseReturned()
         {
-            var role = UtilityMethods.GetRole();
+            var role = UtilityMethods.CreateRole();
             var roleExists = _provider.RoleExists(role.RoleName);
 
             roleExists.Should().BeFalse();
@@ -241,10 +241,10 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void AddUsersToRoles_UserDoesNotHaveRole_UsersAddedToRoles()
         {
-            var user1 = UtilityMethods.GetUser("user1");
-            var user2 = UtilityMethods.GetUser("user2");
-            var role1 = UtilityMethods.GetRole("role1");
-            var role2 = UtilityMethods.GetRole("role2");
+            var user1 = UtilityMethods.CreateUser("user1");
+            var user2 = UtilityMethods.CreateUser("user2");
+            var role1 = UtilityMethods.CreateRole("role1");
+            var role2 = UtilityMethods.CreateRole("role2");
 
             AddUser(user1);
             AddUser(user2);
@@ -262,7 +262,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void AddUsersToRoles_UserNotExists_ExceptionThrown()
         {
-            var role = UtilityMethods.GetRole();
+            var role = UtilityMethods.CreateRole();
             AddRole(role);
 
             _provider.Invoking(p => p.AddUsersToRoles(new[] {"unexistingUserName"},
@@ -273,7 +273,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void AddUsersToRoles_RoleNotExists_ExceptionThrown()
         {
-            var user = UtilityMethods.GetUser();
+            var user = UtilityMethods.CreateUser();
             AddUser(user);
 
             _provider.Invoking(p => p.AddUsersToRoles(new[] {user.UserName},
@@ -284,8 +284,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void AddUsersToRoles_UserHasRole_ExceptionThrown()
         {
-            var user = UtilityMethods.GetUser();
-            var role = UtilityMethods.GetRole();
+            var user = UtilityMethods.CreateUser();
+            var role = UtilityMethods.CreateRole();
             BindUserToRole(user, role);
             AddUser(user);
             AddRole(role);
@@ -298,10 +298,10 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void RemoveUsersFromRoles_UserHasRole_UsersRemovedFromRoles()
         {
-            var user1 = UtilityMethods.GetUser("user1");
-            var user2 = UtilityMethods.GetUser("user2");
-            var role1 = UtilityMethods.GetRole("role1");
-            var role2 = UtilityMethods.GetRole("role2");
+            var user1 = UtilityMethods.CreateUser("user1");
+            var user2 = UtilityMethods.CreateUser("user2");
+            var role1 = UtilityMethods.CreateRole("role1");
+            var role2 = UtilityMethods.CreateRole("role2");
 
             AddUser(user1);
             AddUser(user2);
@@ -324,7 +324,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void RemoveUsersFromRoles_UserNotExists_ExceptionThrown()
         {
-            var role = UtilityMethods.GetRole();
+            var role = UtilityMethods.CreateRole();
             AddRole(role);
 
             _provider.Invoking(p => p.RemoveUsersFromRoles(new[] {"unexistingUserName"},
@@ -335,7 +335,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void RemoveUsersFromRoles_RoleNotExists_ExceptionThrown()
         {
-            var user = UtilityMethods.GetUser();
+            var user = UtilityMethods.CreateUser();
             AddUser(user);
 
             _provider.Invoking(p => p.RemoveUsersFromRoles(new[]{user.UserName},
@@ -346,8 +346,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void RemoveUsersFromRoles_UserDoesNotHaveRole_ExceptionThrown()
         {
-            var user = UtilityMethods.GetUser();
-            var role = UtilityMethods.GetRole();
+            var user = UtilityMethods.CreateUser();
+            var role = UtilityMethods.CreateRole();
             AddUser(user);
             AddRole(role);
 
@@ -359,9 +359,9 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void GetUsersInRole_Simple_UserNamesReturned()
         {
-            var role = UtilityMethods.GetRole();
-            var user1 = UtilityMethods.GetUser("user1");
-            var user2 = UtilityMethods.GetUser("user2");
+            var role = UtilityMethods.CreateRole();
+            var user1 = UtilityMethods.CreateUser("user1");
+            var user2 = UtilityMethods.CreateUser("user2");
             BindUserToRole(user1, role);
             BindUserToRole(user2, role);
             AddRole(role);
@@ -373,7 +373,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void GetUsersInRole_NoUsersInRole_EmptyCollectionReturned()
         {
-            var role = UtilityMethods.GetRole();
+            var role = UtilityMethods.CreateRole();
             AddRole(role);
             var usersInRole = _provider.GetUsersInRole(role.RoleName);
 
@@ -390,8 +390,8 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void GetAllRoles_Simple_RollesReturned()
         {
-            AddRole(UtilityMethods.GetRole("role1"));
-            AddRole(UtilityMethods.GetRole("role2"));
+            AddRole(UtilityMethods.CreateRole("role1"));
+            AddRole(UtilityMethods.CreateRole("role2"));
             var allRoles = _provider.GetAllRoles();
 
             allRoles.Should().BeEquivalentTo(new List<string> { "role1", "role2" });
@@ -408,10 +408,10 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void FindUsersInRole_UsersInRole_MatchedUserNamesReturned()
         {
-            var role = UtilityMethods.GetRole();
-            BindUserToRole(UtilityMethods.GetUser("user1"), role);
-            BindUserToRole(UtilityMethods.GetUser("user2"), role);
-            BindUserToRole(UtilityMethods.GetUser("someOtherMan"), role);
+            var role = UtilityMethods.CreateRole();
+            BindUserToRole(UtilityMethods.CreateUser("user1"), role);
+            BindUserToRole(UtilityMethods.CreateUser("user2"), role);
+            BindUserToRole(UtilityMethods.CreateUser("someOtherMan"), role);
             AddRole(role);
             var usersInRole = _provider.FindUsersInRole(role.RoleName, "user");
 
@@ -421,7 +421,7 @@ namespace AI_.Security.Tests.Providers
         [Fact]
         public void FindUsersInRole_NoUsersInRole_EmptyCollectionReturned()
         {
-            var role = UtilityMethods.GetRole();
+            var role = UtilityMethods.CreateRole();
             AddRole(role);
             var usersInRole = _provider.FindUsersInRole(role.RoleName, "user");
 
