@@ -6,7 +6,7 @@ namespace AI_.Security.Tests.UtilityClasses
 {
     public class UtilityMethods
     {
-        public static User GetUser(string username = "username",
+        public static User CreateUser(string username = "username",
                              string password = "password",
                              string email = "email",
                              string passwordQuestion = "passwordQuestion",
@@ -35,7 +35,7 @@ namespace AI_.Security.Tests.UtilityClasses
             return user;
         }
 
-        public static Role GetRole(string roleName = "roleName")
+        public static Role CreateRole(string roleName = "roleName")
         {
             return new Role
                    {
