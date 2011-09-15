@@ -2,6 +2,7 @@
 using System.Web.Mvc;
 using System.Web.Routing;
 using AI_.Studmix.WebApplication.DAL;
+using AI_.Studmix.WebApplication.Filters;
 
 namespace AI_.Studmix.WebApplication
 {
@@ -12,7 +13,7 @@ namespace AI_.Studmix.WebApplication
     {
         public static void RegisterGlobalFilters(GlobalFilterCollection filters)
         {
-            filters.Add(new HandleErrorAttribute());
+            filters.Add(new LogErrorAttribute("ErrorFilterPolicy"));
         }
 
         public static void RegisterRoutes(RouteCollection routes)
