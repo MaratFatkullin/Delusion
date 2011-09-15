@@ -314,7 +314,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void ChangePassword_UserDoesNotExists_PasswordNotChangedResultReturned()
+        public void ChangePassword_UserNotExists_PasswordNotChangedResultReturned()
         {
             var user = UtilityMethods.GetUser();
             var newPassword = "newPassword";
@@ -359,7 +359,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void UnlockUser_UserDoesNotExists_ExceptionThrown()
+        public void UnlockUser_UserNotExists_ExceptionThrown()
         {
             var user = UtilityMethods.GetUser();
 
@@ -368,7 +368,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void UnlockUser_UserIsNotLocked_ExceptionThrown()
+        public void UnlockUser_UserNotLocked_ExceptionThrown()
         {
             var user = UtilityMethods.GetUser();
             AddUserDirectly(user);
@@ -378,7 +378,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void UnlockUser_UserIsLocked_UserUnlocked()
+        public void UnlockUser_UserLocked_UserUnlocked()
         {
             var user = UtilityMethods.GetUser();
             AddUserDirectly(user);
@@ -410,7 +410,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void GetUserByProviderUserKey_UserDoesNotExists_NullReturned()
+        public void GetUserByProviderUserKey_UserNotExists_NullReturned()
         {
             var user = UtilityMethods.GetUser();
             var membershipUser = _provider.GetUser(user.ID, false);
@@ -428,7 +428,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void ResetPassword_PasswordResetOptionIsDisabled_ExceptionThrown()
+        public void ResetPassword_PasswordResetOptionDisabled_ExceptionThrown()
         {
             var user = UtilityMethods.GetUser();
             AddUserDirectly(user);
@@ -453,7 +453,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void ResetPassword_UserDoesNotExists_ExceptionThrown()
+        public void ResetPassword_UserNotExists_ExceptionThrown()
         {
             var config = new NameValueCollection();
             config.Add("enablePasswordReset", "true");
@@ -467,7 +467,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void ResetPassword_UserIsLocked_ExceptionThrown()
+        public void ResetPassword_UserLocked_ExceptionThrown()
         {
             var config = new NameValueCollection();
             config.Add("enablePasswordReset", "true");
@@ -513,7 +513,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void ResetPassword_RequieredPasswordAnswerIsInvalid_ExceptionThrown()
+        public void ResetPassword_RequieredPasswordAnswerInvalid_ExceptionThrown()
         {
             var config = new NameValueCollection();
             config.Add("enablePasswordReset", "true");
@@ -528,7 +528,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void GetPassword_PasswordRetrievalOptionIsDisabled_ExceptionThrown()
+        public void GetPassword_PasswordRetrievalOptionDisabled_ExceptionThrown()
         {
             var user = UtilityMethods.GetUser();
             AddUserDirectly(user);
@@ -538,7 +538,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void GetPassword_PasswordRetrievalOptionIsEnabled_PasswordReturned()
+        public void GetPassword_PasswordRetrievalOptionEnabled_PasswordReturned()
         {
             var config = new NameValueCollection();
             config.Add("enablePasswordRetrieval", "true");
@@ -566,7 +566,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void GetPassword_UserDoesNotExists_ExceptionThrown()
+        public void GetPassword_UserNotExists_ExceptionThrown()
         {
             var config = new NameValueCollection();
             config.Add("enablePasswordRetrieval", "true");
@@ -577,7 +577,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void GetPassword_UserIsLocked_ExceptionThrown()
+        public void GetPassword_UserLocked_ExceptionThrown()
         {
             var config = new NameValueCollection();
             config.Add("enablePasswordRetrieval", "true");
@@ -593,7 +593,7 @@ namespace AI_.Security.Tests.Providers
 
         [Fact]
         //todo: via theory (userIsOnLine) evrywhere
-        public void GetUserByUsername_UserDoesNotExists_NullReturned()
+        public void GetUserByUsername_UserNotExists_NullReturned()
         {
             var user = UtilityMethods.GetUser();
             var membershipUser = _provider.GetUser(user.UserName, false);
@@ -622,7 +622,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void GetUserNameByEmail_UserDoesNotExists_NullReturned()
+        public void GetUserNameByEmail_UserNotExists_NullReturned()
         {
             var user = UtilityMethods.GetUser();
             var username = _provider.GetUserNameByEmail(user.Email);
@@ -650,7 +650,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void DeleteUser_UserDoesNotExists_UserNotDeletedResultReturned()
+        public void DeleteUser_UserNotExists_UserNotDeletedResultReturned()
         {
             var user = UtilityMethods.GetUser();
             var userDeleted = _provider.DeleteUser(user.UserName, false);
@@ -804,7 +804,7 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void ValidateUser_UserIsNotApproved_UserNotValid()
+        public void ValidateUser_UserNotApproved_UserNotValid()
         {
             var user = UtilityMethods.GetUser();
             AddUserDirectly(user);
