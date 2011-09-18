@@ -219,7 +219,7 @@ namespace AI_.Security.Providers
 
                 var user = new User
                            {
-                               UserName = username,
+                               UserName = username.ToLower(),
                                Password = password,
                                Email = email,
                                IsApproved = isApproved,
@@ -262,8 +262,6 @@ namespace AI_.Security.Providers
                 user.PasswordAnswer = newPasswordAnswer;
 
                 unitOfWork.UserRepository.Update(user);
-                unitOfWork.Save();
-
                 return true;
             }
         }
@@ -284,7 +282,9 @@ namespace AI_.Security.Providers
             using (var unitOfWork = _factory.GetInstance())
             {
                 var user = unitOfWork.UserRepository
-                    .Get(usr => usr.UserName == username)
+                    .Get(usr => string.Equals(usr.UserName,
+                                              username,
+                                              StringComparison.InvariantCultureIgnoreCase))
                     .FirstOrDefault();
 
                 if (user == null)
@@ -328,7 +328,10 @@ namespace AI_.Security.Providers
             using (var unitOfWork = _factory.GetInstance())
             {
                 var user = unitOfWork.UserRepository
-                    .Get(usr => usr.UserName == username).Single();
+                    .Get(usr => string.Equals(usr.UserName,
+                                              username,
+                                              StringComparison.InvariantCultureIgnoreCase))
+                    .Single();
                 user.Password = newPassword;
                 return true;
             }
@@ -374,7 +377,6 @@ namespace AI_.Security.Providers
                 }
 
                 user.Password = newPassword;
-                unitOfWork.Save();
 
                 return newPassword;
             }
@@ -531,10 +533,13 @@ namespace AI_.Security.Providers
             }
         }
 
-        protected User GetUser(string username,ISecurityUnitOfWork unitOfWork)
+        protected User GetUser(string username, ISecurityUnitOfWork unitOfWork)
         {
             return unitOfWork.UserRepository
-                .Get(user => user.UserName == username).SingleOrDefault();
+                .Get(user => string.Equals(user.UserName,
+                                           username,
+                                           StringComparison.InvariantCultureIgnoreCase))
+                .SingleOrDefault();
         }
 
         private static bool ValidatePassword(string storedPassword, string providedPassword)
