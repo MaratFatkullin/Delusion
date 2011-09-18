@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration.Provider;
-using System.Diagnostics;
 using System.Linq;
 using System.Web.Security;
 using AI_.Security.Models;
@@ -102,6 +101,7 @@ namespace AI_.Security.Tests.Providers
                 .EqualTo(user);
         }
 
+
         [Fact]
         public void CreateUser_Simple_SuccessCreateStatusReturned()
         {
@@ -118,6 +118,15 @@ namespace AI_.Security.Tests.Providers
             AddUserViaProvider(user);
 
             _unitOfWork.IsDisposed.Should().BeTrue();
+        }
+
+        [Fact]
+        public void CreateUser_UserNameInDifferentCaseProvided_CretedUsersNameInLowerCase()
+        {
+            var user = UtilityMethods.CreateUser("UserName");
+            AddUserViaProvider(user);
+
+            UserStorage.Single().UserName.Should().Be(user.UserName.ToLower());
         }
 
         [Fact]
@@ -186,6 +195,25 @@ namespace AI_.Security.Tests.Providers
                                                       newPasswordAnswer);
 
             UserStorage.Single().PasswordQuestion.Should().Be(newPasswordQuestion);
+        }
+
+        [Fact]
+        public void ChangePasswordQuestionAndAnswer_UserNameInDifferentCaseProvided_PasswordAnswerChanged()
+        {
+            var user = UtilityMethods.CreateUser("username");
+            AddUserDirectly(user);
+            var newPasswordQuestion = "newPasswordQuestion";
+            var newPasswordAnswer = "newPasswordAnswer";
+
+            _provider.ChangePasswordQuestionAndAnswer("UserName",
+                                                       user.Password,
+                                                       newPasswordQuestion,
+                                                       newPasswordAnswer);
+
+            UserStorage.Single().PasswordAnswer.Should().Be(newPasswordAnswer);
+
+            UserStorage.Single().PasswordAnswer.Should().Be(newPasswordAnswer);
+
         }
 
         [Fact]
@@ -260,6 +288,17 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
+        public void ChangePassword_UserNameInDifferentCaseProvided_PasswordChanged()
+        {
+            var user = UtilityMethods.CreateUser("username");
+            AddUserDirectly(user);
+            var newPassword = "newPassword";
+            _provider.ChangePassword("UserName", user.Password, newPassword);
+
+            UserStorage.Single().Password.Should().Be(newPassword);
+        }
+
+        [Fact]
         public void ChangePassword_Simple_UnitOfWorkDisposed()
         {
             var user = UtilityMethods.CreateUser();
@@ -323,6 +362,7 @@ namespace AI_.Security.Tests.Providers
             changePassword.Should().BeFalse();
         }
 
+        //todo: пересмотреть весь UpdateUser нахрен
         [Fact]
         public void UpdateUser_UserExists_UserUpdated()
         {
@@ -334,6 +374,17 @@ namespace AI_.Security.Tests.Providers
 
             updatedUser.ShouldHave().AllPropertiesBut(u => u.ProviderUserKey, u => u.CreationDate).EqualTo(
                 membershipUser);
+        }
+
+        [Fact]
+        public void UpdateUser_UserNameInDifferentCaseProvided_ExceptionNotThrown()
+        {
+            var user = UtilityMethods.CreateUser(username:"username",email: "newEmail@a.b");
+            AddUserDirectly(user);
+            user.UserName = "UserName";
+            var membershipUser = Mapper.Map<User, MembershipUser>(user);
+
+            _provider.Invoking(p=>p.UpdateUser(membershipUser)).ShouldNotThrow();
         }
 
         [Fact]
@@ -386,6 +437,17 @@ namespace AI_.Security.Tests.Providers
             _provider.UnlockUser(user.UserName);
 
             UserStorage.Single().IsLocked.Should().BeFalse();
+        }
+
+        [Fact]
+        public void UnlockUser_UserNameInDifferentCaseProvided_ExceptionNotThrown()
+        {
+            var user = UtilityMethods.CreateUser("username");
+            AddUserDirectly(user);
+            UserStorage.Single().IsLocked = true;
+
+            _provider.Invoking(p => p.UnlockUser("UserName"))
+                .ShouldNotThrow();
         }
 
         [Fact]
@@ -498,6 +560,21 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
+        public void ResetPassword_UserNameInDifferentCaseProvided_ExceptionNotThrown()
+        {
+            var config = new NameValueCollection();
+            config.Add("enablePasswordReset", "true");
+            config.Add("requiresQuestionAndAnswer", "true");
+            _provider.Configure(config);
+
+            var user = UtilityMethods.CreateUser("username");
+            AddUserDirectly(user);
+
+            _provider.Invoking(p=>p.ResetPassword("UserName", user.PasswordAnswer))
+                .ShouldNotThrow();
+        }
+
+        [Fact]
         public void ResetPassword_Simple_UnitOfWorkDisposed()
         {
             var config = new NameValueCollection();
@@ -547,6 +624,20 @@ namespace AI_.Security.Tests.Providers
             var user = UtilityMethods.CreateUser();
             AddUserDirectly(user);
             var password = _provider.GetPassword(user.UserName, user.PasswordAnswer);
+
+            password.Should().Be(user.Password);
+        }
+
+        [Fact]
+        public void GetPassword_UserNameInDifferentCaseProvided_ExceptionNotThrown()
+        {
+            var config = new NameValueCollection();
+            config.Add("enablePasswordRetrieval", "true");
+            _provider.Configure(config);
+
+            var user = UtilityMethods.CreateUser("username");
+            AddUserDirectly(user);
+            var password = _provider.GetPassword("UserName", user.PasswordAnswer);
 
             password.Should().Be(user.Password);
         }
@@ -622,6 +713,17 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
+        public void GetUserByUsername_UserNameInDifferentCaseProvided_ExceptionNotThrown()
+        {
+            var user = UtilityMethods.CreateUser("username");
+            AddUserDirectly(user);
+
+            var membershipUser = _provider.GetUser("UserName", false);
+
+            membershipUser.UserName.Should().Be(user.UserName);
+        }
+
+        [Fact]
         public void GetUserNameByEmail_UserNotExists_NullReturned()
         {
             var user = UtilityMethods.CreateUser();
@@ -679,13 +781,23 @@ namespace AI_.Security.Tests.Providers
         }
 
         [Fact]
-        public void DeleteUser_UserExists_TrueReturned()
+        public void DeleteUser_UserExists_UserDeletedResultReturned()
         {
             var user = UtilityMethods.CreateUser();
             AddUserDirectly(user);
             var userDeleted = _provider.DeleteUser(user.UserName, false);
 
             userDeleted.Should().BeTrue();
+        }
+
+        [Fact]
+        public void DeleteUser_UserNameInDifferentCaseProvided_UserDeleted()
+        {
+            var user = UtilityMethods.CreateUser("username");
+            AddUserDirectly(user);
+            _provider.DeleteUser("UserName", false);
+
+            UserStorage.Should().BeEmpty();
         }
 
         [Fact]
@@ -830,6 +942,16 @@ namespace AI_.Security.Tests.Providers
             var user = UtilityMethods.CreateUser();
             AddUserDirectly(user);
             var isValid = _provider.ValidateUser(user.UserName, user.Password);
+
+            isValid.Should().BeTrue();
+        }
+
+        [Fact]
+        public void ValidateUser_UserNameInDifferentCaseProvided_UserValid()
+        {
+            var user = UtilityMethods.CreateUser("username");
+            AddUserDirectly(user);
+            var isValid = _provider.ValidateUser("UserName", user.Password);
 
             isValid.Should().BeTrue();
         }
