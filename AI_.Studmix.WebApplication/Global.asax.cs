@@ -37,10 +37,10 @@ namespace AI_.Studmix.WebApplication
         private static void InitializeDatabase()
         {
             Database.SetInitializer(new CustomDatabaseInitializer());
-            using (var dataContext = new DataContext())
-            {
-                dataContext.Database.Initialize(false);
-            }
+            //using (var dataContext = new DataContext())
+            //{
+            //    dataContext.Database.Initialize(false);
+            //}
         }
 
         protected void Application_Start()
@@ -65,7 +65,7 @@ namespace AI_.Studmix.WebApplication
             container.RegisterType<IControllerFactory, DefaultControllerFactory>();
             container.RegisterType<IControllerActivator, ControllerActivator>();
             container.RegisterType<IViewPageActivator, ViewPageActivator>();
-            //container.RegisterType<ModelMetadataProvider>();
+            container.RegisterType<ModelMetadataProvider, DataAnnotationsModelMetadataProvider>();
         }
     }
 
