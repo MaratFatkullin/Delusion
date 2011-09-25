@@ -1,9 +1,11 @@
+using System.Data.Entity;
 using AI_.Data.Repository;
 using AI_.Security.Models;
 
 namespace AI_.Security.DAL
 {
-    public class SecurityUnitOfWork : UnitOfWork<SecurityDbContext>, ISecurityUnitOfWork
+    public abstract class SecurityUnitOfWork<TContext> : UnitOfWork<TContext>, ISecurityUnitOfWork
+        where TContext : SecurityDbContext, new()
     {
         private readonly SecurityDbContext _context;
         private IRepository<User> _userRepository;
@@ -11,7 +13,7 @@ namespace AI_.Security.DAL
 
         public SecurityUnitOfWork()
         {
-            _context = new SecurityDbContext();
+            _context = new TContext();
         }
 
         public IRepository<User> UserRepository

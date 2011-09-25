@@ -51,7 +51,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DAL\IFactory.cs" />
-    <Compile Include="DAL\UnitOfWorkFactory.cs" />
     <Compile Include="DAL\IUnitOfWorkFactory.cs" />
     <Compile Include="Models\Role.cs" />
     <Compile Include="Providers\CustomRoleProvider.cs" />

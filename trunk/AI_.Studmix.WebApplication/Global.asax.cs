@@ -1,4 +1,6 @@
-﻿using System.Data.Entity;
+﻿using System;
+using System.Collections.Generic;
+using System.Data.Entity;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
@@ -63,6 +65,8 @@ namespace AI_.Studmix.WebApplication
             container.RegisterType<IControllerFactory, DefaultControllerFactory>();
             container.RegisterType<IControllerActivator, ControllerActivator>();
             container.RegisterType<IViewPageActivator, ViewPageActivator>();
+            //container.RegisterType<ModelMetadataProvider>();
         }
     }
+
 }

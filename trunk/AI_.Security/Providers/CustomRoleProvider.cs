@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.Configuration.Provider;
 using System.Linq;
 using System.Web.Security;
@@ -9,7 +10,12 @@ namespace AI_.Security.Providers
 {
     public class CustomRoleProvider : RoleProvider
     {
-        private readonly IUnitOfWorkFactory _factory;
+        private IUnitOfWorkFactory _factory;
+
+        public IUnitOfWorkFactory Factory
+        {
+            get { return _factory; }
+        }
 
         public override string ApplicationName
         {
@@ -17,19 +23,30 @@ namespace AI_.Security.Providers
             set { throw new NotImplementedException(); }
         }
 
-        public CustomRoleProvider(IUnitOfWorkFactory factory)
+        public override void Initialize(string name, NameValueCollection config)
         {
-            _factory = factory;
+            base.Initialize(name, config);
+            InitializeUnitOfWorkFactory(config);
         }
 
-        public CustomRoleProvider()
-            : this(new UnitOfWorkFactory())
+        protected void InitializeUnitOfWorkFactory(NameValueCollection config)
         {
+            if (Factory != null)
+                return;
+            var typeName = config["unitOfWorkFactoryType"];
+            if (typeName == null)
+                throw new ArgumentException("unitOfWorkFactoryType parameter not specified.");
+            var unitOfWorkFactoryType = Type.GetType(typeName, true, true);
+
+            if (!typeof(IUnitOfWorkFactory).IsAssignableFrom(unitOfWorkFactoryType))
+                throw new ArgumentException("UnitOfWork factory type must implement " +
+                                            "IUnitOfWorkFactory interface.");
+            _factory = (IUnitOfWorkFactory)Activator.CreateInstance(unitOfWorkFactoryType);
         }
 
         public override bool IsUserInRole(string username, string roleName)
         {
-            using (var unitOfWork = GetUnitOfWork())
+            using (var unitOfWork = Factory.GetInstance())
             {
                 var role = GetRole(roleName, unitOfWork);
                 if (role == null)
@@ -41,7 +58,7 @@ namespace AI_.Security.Providers
 
         public override string[] GetRolesForUser(string username)
         {
-            using (var unitOfWork = GetUnitOfWork())
+            using (var unitOfWork = Factory.GetInstance())
             {
                 var user = GetUser(username, unitOfWork);
                 if (user == null)
@@ -54,7 +71,7 @@ namespace AI_.Security.Providers
 
         public override void CreateRole(string roleName)
         {
-            using (var unitOfwork = GetUnitOfWork())
+            using (var unitOfwork = Factory.GetInstance())
             {
                 if (RoleExists(roleName))
                     throw new ProviderException("Role with specified name already exists.");
@@ -66,7 +83,7 @@ namespace AI_.Security.Providers
 
         public override bool DeleteRole(string roleName, bool throwOnPopulatedRole)
         {
-            using (var unitOfWork = GetUnitOfWork())
+            using (var unitOfWork = Factory.GetInstance())
             {
                 var role = GetRole(roleName, unitOfWork);
                 if (role == null)
@@ -85,7 +102,7 @@ namespace AI_.Security.Providers
 
         public override bool RoleExists(string roleName)
         {
-            using (var unitOfWork = GetUnitOfWork())
+            using (var unitOfWork = Factory.GetInstance())
             {
                 var role = unitOfWork.RoleRepository.Get(r => r.RoleName == roleName).SingleOrDefault();
                 return role != null;
@@ -94,7 +111,7 @@ namespace AI_.Security.Providers
 
         public override void AddUsersToRoles(string[] usernames, string[] roleNames)
         {
-            using (var unitOfWork = GetUnitOfWork())
+            using (var unitOfWork = Factory.GetInstance())
             {
                 foreach (var roleName in roleNames)
                 {
@@ -117,7 +134,7 @@ namespace AI_.Security.Providers
 
         public override void RemoveUsersFromRoles(string[] usernames, string[] roleNames)
         {
-            using (var unitOfWork = GetUnitOfWork())
+            using (var unitOfWork = Factory.GetInstance())
             {
                 foreach (var roleName in roleNames)
                 {
@@ -137,7 +154,7 @@ namespace AI_.Security.Providers
 
         public override string[] GetUsersInRole(string roleName)
         {
-            using (var unitOfwork = GetUnitOfWork())
+            using (var unitOfwork = Factory.GetInstance())
             {
                 var role = GetRole(roleName, unitOfwork);
                 if (role == null)
@@ -150,7 +167,7 @@ namespace AI_.Security.Providers
 
         public override string[] GetAllRoles()
         {
-            using (var unitOfwork = GetUnitOfWork())
+            using (var unitOfwork = Factory.GetInstance())
                 return unitOfwork.RoleRepository
                     .Get()
                     .Select(role => role.RoleName)
@@ -159,7 +176,7 @@ namespace AI_.Security.Providers
 
         public override string[] FindUsersInRole(string roleName, string usernameToMatch)
         {
-            using (var unitOfwork = GetUnitOfWork())
+            using (var unitOfwork = Factory.GetInstance())
             {
                 var role = GetRole(roleName, unitOfwork);
                 if(role == null)
@@ -169,11 +186,6 @@ namespace AI_.Security.Providers
                                 select user.UserName;
                 return usernames.ToArray();
             }
-        }
-
-        private ISecurityUnitOfWork GetUnitOfWork()
-        {
-            return _factory.GetInstance();
         }
 
         private User GetUser(string username, ISecurityUnitOfWork unitOfWork)

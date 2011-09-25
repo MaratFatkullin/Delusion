@@ -11,21 +11,21 @@ namespace AI_.Security.Providers
 {
     public class CustomMembershipProvider : MembershipProvider
     {
-        private readonly IUnitOfWorkFactory _factory;
+        private IUnitOfWorkFactory _factory;
 
         #region Configuration fields
 
+        private bool _enablePasswordReset;
+        private bool _enablePasswordRetrieval;
         private int _maxInvalidPasswordAttempts;
         private int _minRequiredNonAlphanumericCharacters;
         private int _minRequiredPasswordLength;
         private int _newPasswordLength;
         private int _passwordAttemptWindow;
-        private bool _enablePasswordReset;
-        private bool _enablePasswordRetrieval;
+        private MembershipPasswordFormat _passwordFormat;
+        private string _passwordStrengthRegularExpression;
         private bool _requiresQuestionAndAnswer;
         private bool _requiresUniqueEmail;
-        private string _passwordStrengthRegularExpression;
-        private MembershipPasswordFormat _passwordFormat;
 
         #endregion
 
@@ -83,21 +83,19 @@ namespace AI_.Security.Providers
             get { return _passwordStrengthRegularExpression; }
         }
 
+        public IUnitOfWorkFactory Factory
+        {
+            get { return _factory; }
+        }
+
         #endregion
 
         public CustomMembershipProvider()
-            :this(new UnitOfWorkFactory())
         {
-        }
-
-        public CustomMembershipProvider(IUnitOfWorkFactory factory)
-        {
-            _factory = factory;
             ConfigureMapping();
             ValidatingPassword += CustomMembershipProvider_ValidatingPassword;
         }
 
-       
         private void CustomMembershipProvider_ValidatingPassword(object sender, ValidatePasswordEventArgs e)
         {
             if (e == null)
@@ -106,7 +104,7 @@ namespace AI_.Security.Providers
             if (e.Password.Length < MinRequiredPasswordLength)
             {
                 e.Cancel = true;
-                e.FailureInformation = 
+                e.FailureInformation =
                     new MembershipPasswordException("Password is too short. Minimal lenght is 8 symbols");
             }
 
@@ -151,7 +149,23 @@ namespace AI_.Security.Providers
 
             base.Initialize(name, config);
 
+            InitializeUnitOfWorkFactory(config);
             Configure(config);
+        }
+
+        protected void InitializeUnitOfWorkFactory(NameValueCollection config)
+        {
+            if (_factory != null)
+                return;
+            var typeName = config["unitOfWorkFactoryType"];
+            if (typeName == null)
+                throw new ArgumentException("unitOfWorkFactoryType parameter not specified.");
+            var unitOfWorkFactoryType = Type.GetType(typeName, true, true);
+
+            if (!typeof (IUnitOfWorkFactory).IsAssignableFrom(unitOfWorkFactoryType))
+                throw new ArgumentException("UnitOfWork factory type must implement " +
+                                            "IUnitOfWorkFactory interface.");
+            _factory = (IUnitOfWorkFactory) Activator.CreateInstance(unitOfWorkFactoryType);
         }
 
         public void Configure(NameValueCollection config)
@@ -256,7 +270,7 @@ namespace AI_.Security.Providers
 
             using (var unitOfWork = _factory.GetInstance())
             {
-                var user = GetUser(username,unitOfWork);
+                var user = GetUser(username, unitOfWork);
 
                 user.PasswordQuestion = newPasswordQuestion;
                 user.PasswordAnswer = newPasswordAnswer;
@@ -536,9 +550,7 @@ namespace AI_.Security.Providers
         protected User GetUser(string username, ISecurityUnitOfWork unitOfWork)
         {
             return unitOfWork.UserRepository
-                .Get(user => string.Equals(user.UserName,
-                                           username,
-                                           StringComparison.InvariantCultureIgnoreCase))
+                .Get(user => user.UserName == username.ToLower())
                 .SingleOrDefault();
         }
 
