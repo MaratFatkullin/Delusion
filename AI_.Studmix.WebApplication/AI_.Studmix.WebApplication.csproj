@@ -72,18 +72,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\AccountController.cs" />
-    <Compile Include="dependencies\ViewPageActivator.cs" />
-    <Compile Include="dependencies\ControllerActivator.cs" />
-    <Compile Include="dependencies\UnityDependencyResolver.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="DAL\CustomDatabaseInitializer.asax.cs" />
     <Compile Include="DAL\DataContext.cs" />
     <Compile Include="DAL\UnitOfWork.cs" />
+    <Compile Include="dependencies\ControllerActivator.cs" />
+    <Compile Include="dependencies\UnityDependencyResolver.cs" />
+    <Compile Include="dependencies\ViewPageActivator.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Filters\LogErrorAttribute.asax.cs" />
     <Compile Include="Models\Content.cs" />
+    <Compile Include="DAL\UnitOfWorkFactory.cs" />
     <Compile Include="ViewModels\Account\RegisterViewModel.cs" />
     <Compile Include="ViewModels\Account\ChangePasswordViewModel.cs" />
     <Compile Include="ViewModels\Account\LogOnViewModel.cs" />

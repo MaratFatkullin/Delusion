@@ -13,7 +13,7 @@ namespace AI_.Studmix.WebApplication.DAL
 
             var role = new Role()
                            {
-                               RoleName = "Admin",
+                               RoleName = "admin",
                                CreateDate = DateTime.Now
                            };
             context.Roles.Add(role);

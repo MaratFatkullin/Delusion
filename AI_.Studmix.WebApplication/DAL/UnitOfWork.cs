@@ -2,7 +2,7 @@
 
 namespace AI_.Studmix.WebApplication.DAL
 {
-    public class UnitOfWork : SecurityUnitOfWork
+    public class UnitOfWork : SecurityUnitOfWork<DataContext>
     {
          
     }

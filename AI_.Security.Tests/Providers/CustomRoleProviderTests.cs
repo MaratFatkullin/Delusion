@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Configuration.Provider;
 using System.Linq;
 using AI_.Security.Models;
@@ -29,8 +30,13 @@ namespace AI_.Security.Tests.Providers
 
         public CustomRoleProviderTests()
         {
-            _unitOfWork = new SecurityUnitOfWorkMock();
-            _provider = new CustomRoleProvider(new UnitOfWorkFactoryMock(_unitOfWork));
+            var config = new NameValueCollection();
+            config.Add("unitOfWorkFactoryType",
+                "AI_.Security.Tests.Mocks.UnitOfWorkFactoryMock, AI_.Security.Tests");
+
+            _provider = new CustomRoleProvider();
+            _provider.Initialize("CustomRoleProvider", config);
+            _unitOfWork = (SecurityUnitOfWorkMock) _provider.Factory.GetInstance();
 
             Mapper.CreateMap<User, User>();
         }

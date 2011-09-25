@@ -29,9 +29,14 @@ namespace AI_.Security.Tests.Providers
 
         public CustomMembershipProviderTests()
         {
-            _unitOfWork = new SecurityUnitOfWorkMock();
-            _provider = new CustomMembershipProvider(new UnitOfWorkFactoryMock(_unitOfWork));
-            _provider.Initialize("CustomMembershipProvider", new NameValueCollection());
+            var config = new NameValueCollection();
+            config.Add("unitOfWorkFactoryType", 
+                "AI_.Security.Tests.Mocks.UnitOfWorkFactoryMock, AI_.Security.Tests");
+
+            _provider = new CustomMembershipProvider();
+            _provider.Initialize("CustomMembershipProvider",config);
+
+            _unitOfWork = (SecurityUnitOfWorkMock) _provider.Factory.GetInstance();
 
             Mapper.CreateMap<User, User>();
         }
@@ -964,6 +969,13 @@ namespace AI_.Security.Tests.Providers
             _provider.ValidateUser(user.UserName, user.Password);
 
             _unitOfWork.IsDisposed.Should().BeTrue();
+        }
+
+        [Fact]
+        public void MethodName_StateUnderTest_ExpectedBehavior()
+        {
+            var user = UtilityMethods.CreateUser();
+            var membershipUser = Mapper.Map<User,MembershipUser>(user);
         }
     }
 }

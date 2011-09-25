@@ -6,9 +6,9 @@ namespace AI_.Security.Tests.Mocks
     {
         private readonly ISecurityUnitOfWork _unitOfWork;
 
-        public UnitOfWorkFactoryMock(ISecurityUnitOfWork unitOfWork)
+        public UnitOfWorkFactoryMock()
         {
-            _unitOfWork = unitOfWork;
+            _unitOfWork = new SecurityUnitOfWorkMock();
         }
 
         public ISecurityUnitOfWork GetInstance()

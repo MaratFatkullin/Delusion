@@ -5,7 +5,7 @@ using AI_.Security.Models;
 
 namespace AI_.Security.DAL
 {
-    public class SecurityDbContext : DbContext
+    public abstract class SecurityDbContext : DbContext
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
