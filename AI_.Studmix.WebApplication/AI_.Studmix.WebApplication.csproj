@@ -79,9 +79,9 @@
     <Compile Include="DAL\FileSystem\IFileStorageManager.cs" />
     <Compile Include="DAL\FileSystem\IFileStorageProvider.cs" />
     <Compile Include="DAL\Database\UnitOfWork.cs" />
-    <Compile Include="dependencies\ControllerActivator.cs" />
-    <Compile Include="dependencies\UnityDependencyResolver.cs" />
-    <Compile Include="dependencies\ViewPageActivator.cs" />
+    <Compile Include="Dependencies\ControllerActivator.cs" />
+    <Compile Include="Dependencies\UnityDependencyResolver.cs" />
+    <Compile Include="Dependencies\ViewPageActivator.cs" />
     <Compile Include="Environment\Environment.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>

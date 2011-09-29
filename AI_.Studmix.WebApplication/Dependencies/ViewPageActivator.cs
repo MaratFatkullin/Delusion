@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Web.Mvc;
 
-namespace AI_.Studmix.WebApplication.dependencies
+namespace AI_.Studmix.WebApplication.Dependencies
 {
     public class ViewPageActivator : IViewPageActivator
     {
