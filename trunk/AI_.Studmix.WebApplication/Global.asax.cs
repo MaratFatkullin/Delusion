@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity;
+﻿using System.Data.Entity;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
-using AI_.Studmix.WebApplication.DAL;
+using AI_.Studmix.WebApplication.DAL.Database;
+using AI_.Studmix.WebApplication.DAL.FileSystem;
 using AI_.Studmix.WebApplication.Filters;
 using AI_.Studmix.WebApplication.dependencies;
 using Microsoft.Practices.Unity;
@@ -37,10 +36,6 @@ namespace AI_.Studmix.WebApplication
         private static void InitializeDatabase()
         {
             Database.SetInitializer(new CustomDatabaseInitializer());
-            //using (var dataContext = new DataContext())
-            //{
-            //    dataContext.Database.Initialize(false);
-            //}
         }
 
         protected void Application_Start()
@@ -66,7 +61,8 @@ namespace AI_.Studmix.WebApplication
             container.RegisterType<IControllerActivator, ControllerActivator>();
             container.RegisterType<IViewPageActivator, ViewPageActivator>();
             container.RegisterType<ModelMetadataProvider, DataAnnotationsModelMetadataProvider>();
+            container.RegisterType<IFileStorageManager, FileStorageManager>();
+            container.RegisterType<IFileStorageProvider, FileStorageProvider>();
         }
     }
-
 }
