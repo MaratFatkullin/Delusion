@@ -5,7 +5,7 @@ using System.Web.Routing;
 using AI_.Studmix.WebApplication.DAL.Database;
 using AI_.Studmix.WebApplication.DAL.FileSystem;
 using AI_.Studmix.WebApplication.Filters;
-using AI_.Studmix.WebApplication.dependencies;
+using AI_.Studmix.WebApplication.Dependencies;
 using Microsoft.Practices.Unity;
 
 namespace AI_.Studmix.WebApplication
