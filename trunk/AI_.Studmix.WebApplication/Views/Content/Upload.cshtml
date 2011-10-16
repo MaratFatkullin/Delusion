@@ -1,0 +1,63 @@
+﻿@using AI_.Studmix.WebApplication.ViewModels.Content
+@model UploadViewModel
+@{
+    ViewBag.Title = "Upload";
+}
+<h2>
+    Upload
+</h2>
+<script src="@Url.Content("~/Scripts/jquery.ajax.form.js")" type="text/javascript"></script>
+@Html.ValidationSummary()
+@using (Html.BeginForm())
+{
+    foreach (var property in Model.Properties)
+    {
+        var attrs = new Dictionary<string, object> {{"data-property-id", property.ID}};
+        Model.States[property.ID] = null;
+        <p>
+            <span>
+                @property.Name : 
+            </span>
+            <br />
+            @Html.TextBoxFor(x => x.States[property.ID], attrs)
+        </p>
+    }
+}
+
+<script>
+    $(function() {
+        $("input[data-property-id]").each(function() {
+            $(this).focus(UpdateAutocompleteStates);
+        });
+    });
+
+    function UpdateAutocompleteStates() {
+        var formData = $("form").formSerialize();
+        $.ajax(
+            {
+                url: '/Content/UpdateStates',
+                type: 'POST',
+                data: formData,
+                dataType: 'json',
+                success: OnUpdateAutocompleteStatesSuccess
+            }
+        );
+    }
+
+    function OnUpdateAutocompleteStatesSuccess(response) {
+        for (var i = 0; i < response.Properties.length; i++) {
+            var input = $("input[data-property-id=" + response.Properties[i].ID + "]");
+            input.attr("data-autocomplete", response.Properties[i].States);
+
+            input.autocomplete(
+                {
+                    matchContains: true,
+                    minLength: 0,
+                    delay: 0,
+                    autoFocus: false,
+                    source: input.attr("data-autocomplete").split("|")
+                }
+            );
+        }
+    }
+</script>

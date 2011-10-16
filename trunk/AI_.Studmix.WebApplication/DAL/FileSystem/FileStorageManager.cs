@@ -1,30 +1,47 @@
-﻿using System.IO;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.IO;
 using AI_.Studmix.WebApplication.Models;
+using System.Linq;
 
 namespace AI_.Studmix.WebApplication.DAL.FileSystem
 {
     public class FileStorageManager : IFileStorageManager
     {
-        protected IFileStorageProvider FileStorageProvider { get; set; }
+        private const string DEFAULT_FOLDER_NAME = "-";
+        protected IFileStorageProvider Provider { get; set; }
 
         public FileStorageManager(IFileStorageProvider fileStorageProvider)
         {
-            FileStorageProvider = fileStorageProvider;
+            Provider = fileStorageProvider;
         }
 
-        public void Store(ContentFile file, Stream inputStream)
+        public void Store(ContentPackage package)
         {
-            var path = Path.Combine(
-                file.ContentPackage.Institute.City.Country.Name,
-                file.ContentPackage.Institute.City.Name,
-                file.ContentPackage.Institute.Type.Name,
-                file.ContentPackage.Institute.Name,
-                file.ContentPackage.StudingForm.Name,
-                file.ContentPackage.Faculty.Name,
-                file.ContentPackage.Course.Name,
-                file.ContentPackage.Group.Name,
-                file.Name);
-            FileStorageProvider.Write(path, inputStream);
+            var propertyStates = package.PropertyStates;
+            var path = GetDirectoryPath(propertyStates);
+
+            foreach (var file in package.Files)
+            {
+                var fullFilePath = Path.Combine(path, file.Name);
+                Provider.Write(fullFilePath, file.Stream);
+            }
+        }
+
+        private string GetDirectoryPath(IEnumerable<PropertyState> propertyStates)
+        {
+            string path = string.Empty;
+            var maxOrder = propertyStates.Max(ps=>ps.Property.Order);
+            for (int i = 1; i <= maxOrder; i++)
+            {
+                var state = propertyStates.FirstOrDefault(ps => ps.Property.Order == i);
+                var folderName = state == null
+                                     ? DEFAULT_FOLDER_NAME
+                                     : string.Format("{0}_{1}", state.Property.ID, state.ID);
+
+                path = Path.Combine(path, folderName);
+            }
+            return path;
         }
     }
 }

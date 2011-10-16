@@ -2,6 +2,7 @@
 using System.Collections.Specialized;
 using System.Configuration.Provider;
 using System.Linq;
+using AI_.Data.Repository.Mocks;
 using AI_.Security.Models;
 using AI_.Security.Providers;
 using AI_.Security.Tests.Mocks;
@@ -32,7 +33,7 @@ namespace AI_.Security.Tests.Providers
         {
             var config = new NameValueCollection();
             config.Add("unitOfWorkFactoryType",
-                "AI_.Security.Tests.Mocks.UnitOfWorkFactoryMock, AI_.Security.Tests");
+                       "AI_.Security.Tests.Mocks.UnitOfWorkFactoryMock, AI_.Security.Tests");
 
             _provider = new CustomRoleProvider();
             _provider.Initialize("CustomRoleProvider", config);
@@ -185,7 +186,7 @@ namespace AI_.Security.Tests.Providers
 
             roleDeleted.Should().BeFalse();
         }
-        
+
         [Fact]
         public void DeleteRole_ThrowOnPopulatedRoleTrue_ExceptionThrown()
         {
@@ -344,8 +345,8 @@ namespace AI_.Security.Tests.Providers
             var user = UtilityMethods.CreateUser();
             AddUser(user);
 
-            _provider.Invoking(p => p.RemoveUsersFromRoles(new[]{user.UserName},
-                                                           new[]{"unexistingRoleName"}))
+            _provider.Invoking(p => p.RemoveUsersFromRoles(new[] {user.UserName},
+                                                           new[] {"unexistingRoleName"}))
                 .ShouldThrow<ProviderException>();
         }
 
@@ -373,7 +374,7 @@ namespace AI_.Security.Tests.Providers
             AddRole(role);
             var usersInRole = _provider.GetUsersInRole(role.RoleName);
 
-            usersInRole.Should().BeEquivalentTo(new List<string> { user1.UserName, user2.UserName });
+            usersInRole.Should().BeEquivalentTo(new List<string> {user1.UserName, user2.UserName});
         }
 
         [Fact]
@@ -400,7 +401,7 @@ namespace AI_.Security.Tests.Providers
             AddRole(UtilityMethods.CreateRole("role2"));
             var allRoles = _provider.GetAllRoles();
 
-            allRoles.Should().BeEquivalentTo(new List<string> { "role1", "role2" });
+            allRoles.Should().BeEquivalentTo(new List<string> {"role1", "role2"});
         }
 
         [Fact]
@@ -421,7 +422,7 @@ namespace AI_.Security.Tests.Providers
             AddRole(role);
             var usersInRole = _provider.FindUsersInRole(role.RoleName, "user");
 
-            usersInRole.Should().BeEquivalentTo(new List<string> { "user1", "user2" });
+            usersInRole.Should().BeEquivalentTo(new List<string> {"user1", "user2"});
         }
 
         [Fact]

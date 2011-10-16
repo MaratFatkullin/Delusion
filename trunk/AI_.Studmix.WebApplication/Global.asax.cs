@@ -1,4 +1,6 @@
-﻿using System.Data.Entity;
+﻿using System;
+using System.Collections.Generic;
+using System.Data.Entity;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
@@ -6,6 +8,7 @@ using AI_.Studmix.WebApplication.DAL.Database;
 using AI_.Studmix.WebApplication.DAL.FileSystem;
 using AI_.Studmix.WebApplication.Filters;
 using AI_.Studmix.WebApplication.Dependencies;
+using AI_.Studmix.WebApplication.Infrastructure;
 using Microsoft.Practices.Unity;
 
 namespace AI_.Studmix.WebApplication
@@ -42,10 +45,17 @@ namespace AI_.Studmix.WebApplication
         {
             AreaRegistration.RegisterAllAreas();
 
+
             RegisterGlobalFilters(GlobalFilters.Filters);
             RegisterRoutes(RouteTable.Routes);
             RegisterDependencyResolver();
+            RegisterModelBinders();
             InitializeDatabase();
+        }
+
+        private void RegisterModelBinders()
+        {
+            ModelBinders.Binders.Add(typeof (Dictionary<int, string>), new DefaultDictionaryBinder());
         }
 
         private void RegisterDependencyResolver()
@@ -63,6 +73,7 @@ namespace AI_.Studmix.WebApplication
             container.RegisterType<ModelMetadataProvider, DataAnnotationsModelMetadataProvider>();
             container.RegisterType<IFileStorageManager, FileStorageManager>();
             container.RegisterType<IFileStorageProvider, FileStorageProvider>();
+            container.RegisterType<IUnitOfWork, UnitOfWork>();
         }
     }
 }

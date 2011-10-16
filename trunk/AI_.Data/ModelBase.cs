@@ -2,7 +2,7 @@ using System;
 
 namespace AI_.Data
 {
-    public class ModelBase : IIdentifiable<int>
+    public abstract class ModelBase : IIdentifiable<int>
     {
         #region IIdentifiable<int> Members
 

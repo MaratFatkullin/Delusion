@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+using System.IO;
 using AI_.Data;
 
 namespace AI_.Studmix.WebApplication.Models
@@ -7,5 +9,8 @@ namespace AI_.Studmix.WebApplication.Models
         public virtual ContentPackage ContentPackage { get; set; }
 
         public string Name { get; set; }
+
+        [NotMapped]
+        public Stream Stream { get; set; }
     }
 }
