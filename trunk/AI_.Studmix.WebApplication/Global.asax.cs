@@ -7,7 +7,6 @@ using System.Web.Routing;
 using AI_.Studmix.WebApplication.DAL.Database;
 using AI_.Studmix.WebApplication.DAL.FileSystem;
 using AI_.Studmix.WebApplication.Filters;
-using AI_.Studmix.WebApplication.Dependencies;
 using AI_.Studmix.WebApplication.Infrastructure;
 using Microsoft.Practices.Unity;
 
