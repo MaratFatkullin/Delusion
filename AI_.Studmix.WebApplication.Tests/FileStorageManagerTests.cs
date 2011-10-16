@@ -119,5 +119,21 @@ namespace AI_.Studmix.WebApplication.Tests
             // Assert
             fileStorageProviderMock.FileData.Should().Contain("MockedFileData");
         }
+
+        [Fact]
+        public void Store_NoPropertySpecified_FileContentWritedToRootDirectory()
+        {
+            // Arrange
+            var fileStorageProviderMock = new FileStorageProviderMock();
+            var fileStorageManager = new FileStorageManager(fileStorageProviderMock);
+            var content = CreateContent();
+            content.PropertyStates = new Collection<PropertyState>();
+
+            // Act
+            fileStorageManager.Store(content);
+
+            // Assert
+            fileStorageProviderMock.Storage.Should().Contain(@"file1.txt");
+        }
     }
 }

@@ -6,24 +6,44 @@
 <h2>
     Upload
 </h2>
-<script src="@Url.Content("~/Scripts/jquery.ajax.form.js")" type="text/javascript"></script>
 @Html.ValidationSummary()
-@using (Html.BeginForm())
+@using (Html.BeginForm("Upload", "Content", FormMethod.Post, new {enctype = "multipart/form-data"}))
 {
-    foreach (var property in Model.Properties)
-    {
-        var attrs = new Dictionary<string, object> {{"data-property-id", property.ID}};
-        Model.States[property.ID] = null;
-        <p>
-            <span>
-                @property.Name : 
-            </span>
-            <br />
-            @Html.TextBoxFor(x => x.States[property.ID], attrs)
-        </p>
-    }
-}
+    <table>
+        <tr>
+            @*todo:убрать хардкодный стиль*@
 
+            <td style="vertical-align: top">
+                <p>
+                    <span>Контент:</span>
+                    <input type="file" multiple="true" name="ContentFiles" />
+                </p>
+                <p>
+                    <span>Превью:</span>
+                    <input type="file" multiple="true" name="PreviewContentFiles" />
+                </p>
+                <p>
+                    <input type="submit" value="Сохранить"/>
+                </p>
+            </td>
+            <td>
+                @foreach (var property in Model.Properties)
+                {
+                    var attrs = new Dictionary<string, object> {{"data-property-id", property.ID}};
+                    Model.States[property.ID] = null;
+                    <p>
+                        <span>
+                            @property.Name : 
+                        </span>
+                        <br />
+                        @Html.TextBoxFor(x => x.States[property.ID], attrs)
+                    </p>
+                }
+            </td>
+        </tr>
+    </table>
+}
+<script src="@Url.Content("~/Scripts/jquery.ajax.form.js")" type="text/javascript"> </script>
 <script>
     $(function() {
         $("input[data-property-id]").each(function() {

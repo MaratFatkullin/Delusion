@@ -8,7 +8,11 @@ namespace AI_.Studmix.WebApplication.Models
     public class PropertyState : ModelBase
     {
         public virtual Property Property { get; set; }
+
+        public virtual ICollection<ContentPackage> ContentPackages { get; set; }
+
         public string Value { get; set; }
+
 
         public static PropertyState Get(IUnitOfWork unitOfWork,
                                         int propertyId,
@@ -17,7 +21,7 @@ namespace AI_.Studmix.WebApplication.Models
             return unitOfWork.PropertyStateRepository
                 .Get(x => x.Property.ID == propertyId
                           && x.Value == stateValue)
-                .Single();
+                .FirstOrDefault();
         }
 
         public IEnumerable<ContentPackage> GetBoundedPackages(IUnitOfWork unitOfWork)

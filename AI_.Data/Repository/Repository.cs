@@ -52,7 +52,6 @@ namespace AI_.Data.Repository
 
         public virtual void Insert(TEntity entity)
         {
-            entity.CreateDate = DateTime.Now;
             DbSet.Add(entity);
         }
 
