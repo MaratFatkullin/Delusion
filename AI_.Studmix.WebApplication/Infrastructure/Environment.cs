@@ -1,6 +1,6 @@
 ﻿using System.Configuration;
 
-namespace AI_.Studmix.WebApplication.Environment
+namespace AI_.Studmix.WebApplication.Infrastructure
 {
     public static class Environment
     {

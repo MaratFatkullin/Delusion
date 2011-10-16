@@ -2,7 +2,7 @@
 using System.Web.Mvc;
 using System.Web.Routing;
 
-namespace AI_.Studmix.WebApplication.Dependencies
+namespace AI_.Studmix.WebApplication.Infrastructure
 {
     public class ControllerActivator : IControllerActivator
     {

@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Web.Mvc;
 using Microsoft.Practices.Unity;
 
-namespace AI_.Studmix.WebApplication.Dependencies
+namespace AI_.Studmix.WebApplication.Infrastructure
 {
     public class UnityDependencyResolver : IDependencyResolver
     {
-        private IUnityContainer _container;
+        private readonly IUnityContainer _container;
         public UnityDependencyResolver(IUnityContainer container)
         {
             _container = container;

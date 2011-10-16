@@ -1,4 +1,5 @@
 using System.IO;
+using AI_.Studmix.WebApplication.Infrastructure;
 
 namespace AI_.Studmix.WebApplication.DAL.FileSystem
 {
@@ -6,7 +7,7 @@ namespace AI_.Studmix.WebApplication.DAL.FileSystem
     {
         public void Write(string path, Stream inputStream)
         {
-            var fullPath = Path.Combine(Environment.Environment.FileStoragePath,path);
+            var fullPath = Path.Combine(Environment.FileStoragePath,path);
             var directoryName = Path.GetDirectoryName(fullPath);    
             if (!Directory.Exists(directoryName))
                 Directory.CreateDirectory(directoryName);
