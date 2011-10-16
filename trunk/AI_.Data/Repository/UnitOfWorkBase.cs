@@ -3,12 +3,18 @@ using System.Data.Entity;
 
 namespace AI_.Data.Repository
 {
-    public abstract class UnitOfWork<TContext>
+    public abstract class UnitOfWorkBase<TContext>
         : IDisposable
         where TContext : DbContext, new()
     {
-        private readonly TContext _context = new TContext();
+        protected TContext Context { get; private set; }
+
         private bool _disposed;
+
+        protected UnitOfWorkBase()
+        {
+            Context = new TContext();
+        }
 
         #region IDisposable Members
 
@@ -22,7 +28,7 @@ namespace AI_.Data.Repository
 
         public void Save()
         {
-            _context.SaveChanges();
+            Context.SaveChanges();
         }
 
         protected virtual void Dispose(bool disposing)
@@ -31,7 +37,7 @@ namespace AI_.Data.Repository
             {
                 if (disposing)
                 {
-                    _context.Dispose();
+                    Context.Dispose();
                 }
             }
             _disposed = true;

@@ -49,9 +49,10 @@
     <Compile Include="Repository\IRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ModelBase.cs" />
+    <Compile Include="DefaultModelEqualityComparer.cs" />
     <Compile Include="Repository\Mocks\RepositoryMock.cs" />
     <Compile Include="Repository\Repository.cs" />
-    <Compile Include="Repository\UnitOfWork.cs" />
+    <Compile Include="Repository\UnitOfWorkBase.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

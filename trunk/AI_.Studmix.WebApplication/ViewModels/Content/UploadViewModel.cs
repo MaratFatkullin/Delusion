@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Web;
 using AI_.Studmix.WebApplication.Models;
 
 namespace AI_.Studmix.WebApplication.ViewModels.Content
@@ -13,5 +14,15 @@ namespace AI_.Studmix.WebApplication.ViewModels.Content
         /// </summary>
         public Dictionary<int,string> States { get; set; }
 
+        public IList<HttpPostedFileBase> ContentFiles { get; set; }
+
+        public IList<HttpPostedFileBase> PreviewContentFiles { get; set; }
+
+        public UploadViewModel()
+        {
+            States = new Dictionary<int, string>();
+            ContentFiles = new List<HttpPostedFileBase>();
+            PreviewContentFiles = new List<HttpPostedFileBase>();
+        }
     }
 }

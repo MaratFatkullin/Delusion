@@ -31,6 +31,8 @@ namespace AI_.Studmix.WebApplication.DAL.FileSystem
         private string GetDirectoryPath(IEnumerable<PropertyState> propertyStates)
         {
             string path = string.Empty;
+            if (propertyStates.Count() == 0)
+                return path;
             var maxOrder = propertyStates.Max(ps=>ps.Property.Order);
             for (int i = 1; i <= maxOrder; i++)
             {

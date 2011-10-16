@@ -21,7 +21,8 @@ namespace AI_.Studmix.WebApplication.Models
             var propertyStates = packages.Aggregate(new List<PropertyState>().AsEnumerable(),
                                                     (acc, elem) => acc.Concat(elem.PropertyStates));
 
-            return propertyStates.Where(st => st.Property.ID == ID);
+            return propertyStates.Where(st => st.Property.ID == ID)
+                .Distinct(new DefaultModelEqualityComparer<PropertyState>());
         }
     }
 }

@@ -10,7 +10,6 @@ namespace AI_.Studmix.WebApplication.DAL.Database
         public DbSet<PropertyState> PropertyStates { get; set; }
         public DbSet<ContentFile> ContentFiles { get; set; }
         public DbSet<ContentPackage> ContentPackages { get; set; }
-       
 
         public DataContext(string nameOrConnectionString)
             : base(nameOrConnectionString)
@@ -26,14 +25,14 @@ namespace AI_.Studmix.WebApplication.DAL.Database
         {
             base.OnModelCreating(modelBuilder);
 
-            //modelBuilder.Entity<Country>()
-            //    .HasMany<City>(r => r.Cities)
-            //    .WithOptional(u => u.Country)
-            //    .Map(m =>
-            //         {
-            //             m.ToTable("ContentPackages");
-            //             m.MapKey("City_ID");
-            //         });
+            modelBuilder.Entity<ContentPackage>()
+                .HasMany<PropertyState>(package => package.PropertyStates)
+                .WithMany(state => state.ContentPackages);
+                //.Map(mapping => mapping.ToTable("ContentPackagePropertyStates"));
+
+            modelBuilder.Entity<PropertyState>()
+                .HasRequired<Property>(state => state.Property)
+                .WithMany(property => property.States);
         }
     }
 }

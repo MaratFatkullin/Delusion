@@ -1,6 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
+using System.Text;
+using System.Web;
+using AI_.Data.Repository.Mocks;
 using AI_.Studmix.WebApplication.Controllers;
 using AI_.Studmix.WebApplication.Models;
 using AI_.Studmix.WebApplication.Tests.Mocks;
@@ -13,13 +17,15 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
     public class ContentControllerTests
     {
         private readonly ContentController _controller;
+        private readonly FileStorageManagerMock _fileStorageManager;
         private readonly UnitOfWorkMock _unitOfWork;
 
 
         public ContentControllerTests()
         {
             _unitOfWork = new UnitOfWorkMock();
-            _controller = new ContentController(_unitOfWork);
+            _fileStorageManager = new FileStorageManagerMock();
+            _controller = new ContentController(_unitOfWork, _fileStorageManager);
             InitUnitOfWork(_unitOfWork);
         }
 
@@ -61,6 +67,21 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             unitOfWork.ContentPackageRepository.Insert(package2);
         }
 
+        private static MemoryStream CreateInputStream(string data = "mockedData")
+        {
+            return new MemoryStream(Encoding.ASCII.GetBytes(data));
+        }
+
+        private HttpPostedFileMock CreateHttpPostedFile(string filename = "file.txt")
+        {
+            return new HttpPostedFileMock(filename, CreateInputStream());
+        }
+
+        private HttpPostedFileMock CreateHttpPostedFile(Stream stream)
+        {
+            return new HttpPostedFileMock("file.txt", stream);
+        }
+
         #endregion
 
         [Fact]
@@ -68,7 +89,6 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         {
             // Arrange
             var uploadViewModel = new UploadViewModel();
-            uploadViewModel.States = new Dictionary<int, string>();
 
             // Act
             var viewResult = _controller.UpdateStates(uploadViewModel);
@@ -78,13 +98,11 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             viewModel.Properties.First().States.Should().Be("state1|state2");
         }
 
-
         [Fact]
         public void UpdateStates_AllPropertiesUnspecified_AllStatesOfSecondPropertyAvailable()
         {
             // Arrange
             var uploadViewModel = new UploadViewModel();
-            uploadViewModel.States = new Dictionary<int, string>();
 
             // Act
             var viewResult = _controller.UpdateStates(uploadViewModel);
@@ -168,6 +186,207 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             // Assert
             var viewModel = (AjaxStatesViewModel) viewResult.Data;
             viewModel.Properties.Last().States.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void UploadPost_SinglePostedContentFile_PostedFileStored()
+        {
+            // Arrange
+            var viewModel = new UploadViewModel();
+            var httpPostedFile = CreateHttpPostedFile();
+            viewModel.ContentFiles = new List<HttpPostedFileBase> {httpPostedFile};
+
+            // Act
+            _controller.Upload(viewModel);
+
+            // Assert
+            _fileStorageManager.Package.Files.Single().Name.Should().Be(httpPostedFile.FileName);
+        }
+
+        [Fact]
+        public void UploadPost_SinglePostedContentFile_ContentPackageStoredToDatabase()
+        {
+            // Arrange
+            var viewModel = new UploadViewModel();
+            viewModel.ContentFiles = new List<HttpPostedFileBase> {CreateHttpPostedFile()};
+
+            // Act
+            _controller.Upload(viewModel);
+
+            // Assert
+            var repositoryMock = (RepositoryMock<ContentPackage>) _unitOfWork.ContentPackageRepository;
+            repositoryMock.Storage.Should().HaveCount(3);
+        }
+
+        [Fact]
+        public void UploadPost_SinglePostedContentFile_PostedFileNotPreview()
+        {
+            // Arrange
+            var viewModel = new UploadViewModel();
+            viewModel.ContentFiles = new List<HttpPostedFileBase> {CreateHttpPostedFile()};
+
+            // Act
+            _controller.Upload(viewModel);
+
+            // Assert
+            _fileStorageManager.Package.Files.Single().IsPreview.Should().BeFalse();
+        }
+
+        [Fact]
+        public void UploadPost_TwoPostedFile_BothPostedFileStored()
+        {
+            // Arrange
+            var viewModel = new UploadViewModel();
+            viewModel.ContentFiles = new List<HttpPostedFileBase>
+                                     {
+                                         CreateHttpPostedFile(),
+                                         CreateHttpPostedFile()
+                                     };
+
+            // Act
+            _controller.Upload(viewModel);
+
+            // Assert
+            _fileStorageManager.Package.Files.Should().HaveCount(2);
+        }
+
+        [Fact]
+        public void UploadPost_SinglePostedPreviewFile_PostedFileIsPreview()
+        {
+            // Arrange
+            var viewModel = new UploadViewModel();
+            viewModel.PreviewContentFiles = new List<HttpPostedFileBase> {CreateHttpPostedFile()};
+
+            // Act
+            _controller.Upload(viewModel);
+
+            // Assert
+            _fileStorageManager.Package.Files.Single().IsPreview.Should().BeTrue();
+        }
+
+        [Fact]
+        public void UploadPost_ThereIsEmptyPropertyStates_EmptyPropertyStatesSkiped()
+        {
+            // Arrange
+            var viewModel = new UploadViewModel();
+            viewModel.PreviewContentFiles = new List<HttpPostedFileBase> {CreateHttpPostedFile()};
+            viewModel.States = new Dictionary<int, string> {{1, string.Empty}, {2, "state3"}};
+
+            // Act
+            _controller.Upload(viewModel);
+
+            // Assert
+            _fileStorageManager.Package.PropertyStates.Single().Value.Should().Be("state3");
+        }
+
+        [Fact]
+        public void UploadPost_NewPropertyStates_NewPropertyStatesStoredToDatabase()
+        {
+            // Arrange
+            var viewModel = new UploadViewModel();
+            viewModel.PreviewContentFiles = new List<HttpPostedFileBase> {CreateHttpPostedFile()};
+            viewModel.States = new Dictionary<int, string> {{1, "newState"}};
+
+            // Act
+            _controller.Upload(viewModel);
+
+            // Assert
+            var repositoryMock = (RepositoryMock<PropertyState>) _unitOfWork.PropertyStateRepository;
+            repositoryMock.Storage.Last().Value.Should().Be("newState");
+        }
+
+        [Fact]
+        public void UploadPost_Simple_ContentPackagesStoredToDatabase()
+        {
+            // Arrange
+            var viewModel = new UploadViewModel();
+            viewModel.PreviewContentFiles = new List<HttpPostedFileBase> {CreateHttpPostedFile()};
+
+            // Act
+            _controller.Upload(viewModel);
+
+            // Assert
+            var repositoryMock = (RepositoryMock<ContentPackage>) _unitOfWork.ContentPackageRepository;
+            repositoryMock.Storage.Should().HaveCount(3);
+        }
+
+        [Fact]
+        public void UploadPost_Simple_ContentFileHasSpecifiedFileName()
+        {
+            // Arrange
+            var viewModel = new UploadViewModel();
+            viewModel.PreviewContentFiles = new List<HttpPostedFileBase>
+                                            {
+                                                CreateHttpPostedFile(filename: "filename")
+                                            };
+
+            // Act
+            _controller.Upload(viewModel);
+
+            // Assert
+            _fileStorageManager.Package.Files.Single().Name.Should().Be("filename");
+        }
+
+
+        [Fact]
+        public void UploadPost_Simple_ContentFileHasSpecifiedStream()
+        {
+            // Arrange
+            var viewModel = new UploadViewModel();
+            var stream = CreateInputStream();
+            viewModel.PreviewContentFiles = new List<HttpPostedFileBase> {CreateHttpPostedFile(stream)};
+
+            // Act
+            _controller.Upload(viewModel);
+
+            // Assert
+            _fileStorageManager.Package.Files.Single().Stream.Should().Be(stream);
+        }
+
+        [Fact]
+        public void UploadPost_NoFilesPosted_ContentPackagesNotStoredToDatabase()
+        {
+            // Arrange
+            var viewModel = new UploadViewModel();
+            viewModel.ContentFiles = new List<HttpPostedFileBase> {null};
+            viewModel.PreviewContentFiles = new List<HttpPostedFileBase> {null};
+
+            // Act
+            _controller.Upload(viewModel);
+
+            // Assert
+            var repositoryMock = (RepositoryMock<ContentPackage>) _unitOfWork.ContentPackageRepository;
+            repositoryMock.Storage.Should().HaveCount(2);
+        }
+
+        [Fact]
+        public void UploadPost_NoFilesPosted_ContentPackagesNotStoredToFileSystem()
+        {
+            // Arrange
+            var viewModel = new UploadViewModel();
+            viewModel.ContentFiles = new List<HttpPostedFileBase> {null};
+            viewModel.PreviewContentFiles = new List<HttpPostedFileBase> {null};
+
+            // Act
+            _controller.Upload(viewModel);
+
+            // Assert
+            _fileStorageManager.Package.Should().BeNull();
+        }
+
+        [Fact]
+        public void UploadPost_NoFilesPosted_ModelStateErrorRegistered()
+        {
+            // Arrange
+            var viewModel = new UploadViewModel();
+            viewModel.ContentFiles = new List<HttpPostedFileBase> {null};
+            viewModel.PreviewContentFiles = new List<HttpPostedFileBase> {null};
+
+            // Act
+            _controller.Upload(viewModel);
+
+            // Assert
+            _controller.ViewData.ModelState.ContainsKey("noFiles").Should().BeTrue();
         }
     }
 }

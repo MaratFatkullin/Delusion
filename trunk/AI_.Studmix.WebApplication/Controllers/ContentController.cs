@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.ObjectModel;
 using System.Linq;
 using System.Web.Mvc;
 using AI_.Studmix.WebApplication.DAL.Database;
+using AI_.Studmix.WebApplication.DAL.FileSystem;
 using AI_.Studmix.WebApplication.Models;
 using AI_.Studmix.WebApplication.ViewModels.Content;
 
@@ -9,11 +10,13 @@ namespace AI_.Studmix.WebApplication.Controllers
 {
     public class ContentController : DataControllerBase
     {
+        private readonly IFileStorageManager _fileStorageManager;
         private const string STATE_VALUES_SEPARATOR = "|";
 
-        public ContentController(IUnitOfWork unitOfWork)
+        public ContentController(IUnitOfWork unitOfWork, IFileStorageManager fileStorageManager)
             : base(unitOfWork)
         {
+            _fileStorageManager = fileStorageManager;
         }
 
         [HttpGet]
@@ -21,11 +24,67 @@ namespace AI_.Studmix.WebApplication.Controllers
         {
             var viewModel = new UploadViewModel();
             viewModel.Properties = UnitOfWork.PropertyRepository.Get();
-            viewModel.States = new Dictionary<int, string>();
 
             return View(viewModel);
         }
 
+        [HttpPost]
+        public ActionResult Upload(UploadViewModel viewModel)
+        {
+            var package = new ContentPackage();
+            package.PropertyStates = new Collection<PropertyState>();
+            package.Files = new Collection<ContentFile>();
+
+            foreach (var postedFile in viewModel.ContentFiles)
+            {
+                if (postedFile != null)
+                {
+                    var file = new ContentFile();
+                    file.Name = postedFile.FileName;
+                    file.Stream = postedFile.InputStream;
+                    file.IsPreview = false;
+                    package.Files.Add(file);
+                }
+            }
+
+            foreach (var postedFile in viewModel.PreviewContentFiles)
+            {
+                if (postedFile != null)
+                {
+                    var file = new ContentFile();
+                    file.Name = postedFile.FileName;
+                    file.Stream = postedFile.InputStream;
+                    file.IsPreview = true;
+                    package.Files.Add(file);
+                }
+            }
+
+            if (package.Files.Count == 0)
+            {
+                ModelState.AddModelError("noFiles", "Должен быть добавлен хотя бы один файл");
+                return RedirectToAction("Upload");
+            }
+
+            var specifiedStates = viewModel.States.Where(pair => !string.IsNullOrEmpty(pair.Value));
+            foreach (var pair in specifiedStates)
+            {
+                //получаем состояние или создаем новое если не существет
+                var propertyState = PropertyState.Get(UnitOfWork, pair.Key, pair.Value);
+                if (propertyState == null)
+                {
+                    var property = UnitOfWork.PropertyRepository.GetByID(pair.Key);
+                    propertyState = new PropertyState { Value = pair.Value, Property = property };
+                    UnitOfWork.PropertyStateRepository.Insert(propertyState);
+                }
+
+                package.PropertyStates.Add(propertyState);
+            }
+
+            _fileStorageManager.Store(package);
+            UnitOfWork.ContentPackageRepository.Insert(package);
+            UnitOfWork.Save();
+            return RedirectToAction("Upload");
+        }
 
         public ViewResult Download()
         {
@@ -78,5 +137,7 @@ namespace AI_.Studmix.WebApplication.Controllers
 
             return response;
         }
+
+        
     }
 }

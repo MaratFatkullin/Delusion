@@ -10,6 +10,8 @@ namespace AI_.Studmix.WebApplication.Models
 
         public string Name { get; set; }
 
+        public bool IsPreview { get; set; }
+
         [NotMapped]
         public Stream Stream { get; set; }
     }
