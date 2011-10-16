@@ -5,7 +5,7 @@ using AI_.Studmix.WebApplication.Models.ViewModels.Account;
 
 namespace AI_.Studmix.WebApplication.Controllers
 {
-    public class AccountController : Controller
+    public class AccountController : ControllerBase
     {
 
         //

@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using AI_.Data;
-using AI_.Data.Repository;
 
-namespace AI_.Security.Tests.Mocks
+namespace AI_.Data.Repository.Mocks
 {
-    internal class RepositoryMock<TEntity>
+    public class RepositoryMock<TEntity>
         : IRepository<TEntity>
         where TEntity : ModelBase
     {

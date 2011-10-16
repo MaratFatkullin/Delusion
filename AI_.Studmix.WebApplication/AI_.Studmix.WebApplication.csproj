@@ -71,34 +71,36 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\DataControllerBase.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\ContentController.cs" />
+    <Compile Include="Controllers\ControllerBase.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="DAL\Database\CustomDatabaseInitializer.asax.cs" />
     <Compile Include="DAL\Database\DataContext.cs" />
+    <Compile Include="DAL\Database\IUnitOfWork.cs" />
     <Compile Include="DAL\FileSystem\FileStorageProvider.cs" />
     <Compile Include="DAL\FileSystem\IFileStorageManager.cs" />
     <Compile Include="DAL\FileSystem\IFileStorageProvider.cs" />
     <Compile Include="DAL\Database\UnitOfWork.cs" />
-    <Compile Include="Dependencies\ControllerActivator.cs" />
-    <Compile Include="Dependencies\UnityDependencyResolver.cs" />
-    <Compile Include="Dependencies\ViewPageActivator.cs" />
-    <Compile Include="Environment\Environment.cs" />
+    <Compile Include="Infrastructure\DefaultDictionaryBinder.cs" />
+    <Compile Include="Infrastructure\ControllerActivator.cs" />
+    <Compile Include="Infrastructure\UnityDependencyResolver.cs" />
+    <Compile Include="Infrastructure\ViewPageActivator.cs" />
+    <Compile Include="Infrastructure\Environment.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Filters\LogErrorAttribute.asax.cs" />
     <Compile Include="DAL\FileSystem\FileStorageManager.cs" />
-    <Compile Include="Models\City.cs" />
+    <Compile Include="Models\PropertyState.cs" />
+    <Compile Include="Models\Property.cs" />
     <Compile Include="Models\ContentPackage.cs" />
     <Compile Include="DAL\Database\UnitOfWorkFactory.cs" />
-    <Compile Include="Models\Country.cs" />
-    <Compile Include="Models\Course.cs" />
-    <Compile Include="Models\Faculty.cs" />
     <Compile Include="Models\ContentFile.cs" />
-    <Compile Include="Models\Group.cs" />
-    <Compile Include="Models\Institute.cs" />
-    <Compile Include="Models\InstituteType.cs" />
-    <Compile Include="Models\StudingForm.cs" />
+    <Compile Include="ViewModels\Content\AjaxStatesViewModel.cs" />
+    <Compile Include="ViewModels\Content\DownloadViewModel.cs" />
+    <Compile Include="ViewModels\Content\UploadViewModel.cs" />
     <Compile Include="ViewModels\Account\RegisterViewModel.cs" />
     <Compile Include="ViewModels\Account\ChangePasswordViewModel.cs" />
     <Compile Include="ViewModels\Account\LogOnViewModel.cs" />
@@ -138,6 +140,7 @@
     <Content Include="Scripts\jquery-1.5.1.min.js" />
     <Content Include="Scripts\jquery-ui-1.8.11.js" />
     <Content Include="Scripts\jquery-ui-1.8.11.min.js" />
+    <Content Include="Scripts\jquery.ajax.form.js" />
     <Content Include="Scripts\jquery.validate-vsdoc.js" />
     <Content Include="Scripts\jquery.validate.js" />
     <Content Include="Scripts\jquery.validate.min.js" />
@@ -191,6 +194,12 @@
       <Name>AI_.Security</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Content\Upload.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Content\Download.cshtml" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -207,7 +216,7 @@
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
         <WebProjectProperties>
           <UseIIS>False</UseIIS>
-          <AutoAssignPort>True</AutoAssignPort>
+          <AutoAssignPort>False</AutoAssignPort>
           <DevelopmentServerPort>2751</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>

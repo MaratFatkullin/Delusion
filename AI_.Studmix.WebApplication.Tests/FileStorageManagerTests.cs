@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -21,32 +22,19 @@ namespace AI_.Studmix.WebApplication.Tests
 
         private ContentPackage CreateContent()
         {
-            var file = new ContentFile {Name = "file1.txt"};
-            var country = new Country {Name = "Country1"};
-            var city = new City {Name = "City1", Country = country};
-            country.Cities = new List<City> {city};
+            var file1 = new ContentFile {Name = "file1.txt", Stream = CreateInputStream()};
+            var file2 = new ContentFile {Name = "file2.txt", Stream = CreateInputStream()};
+            var content = new ContentPackage {Files = new List<ContentFile> {file1, file2}};
 
-            var institute = new Institute
-                            {
-                                Name = "Institute1",
-                                City = city,
-                                Type = new InstituteType {Name = "InstituteType1"},
-                            };
+            file1.ContentPackage = content;
+            file2.ContentPackage = content;
 
-            var faculty = new Faculty {Name = "Faculty1"};
+            var property1 = new Property {ID = 1, Order = 1};
+            var property2 = new Property {ID = 2, Order = 2};
+            var state1 = new PropertyState {ID = 1, Value = "prop1", Property = property1};
+            var state2 = new PropertyState {ID = 2, Value = "prop2", Property = property2};
 
-            var studingType = new StudingForm {Name = "StudingForm1"};
-
-            var content = new ContentPackage
-                          {
-                              Course = new Course {Name = "Course1"},
-                              Group = new Group {Name = "Group1"},
-                              Faculty = faculty,
-                              Institute = institute,
-                              StudingForm = studingType,
-                              Files = new List<ContentFile> {file}
-                          };
-            file.ContentPackage = content;
+            content.PropertyStates = new Collection<PropertyState> {state1, state2};
 
             return content;
         }
@@ -54,7 +42,7 @@ namespace AI_.Studmix.WebApplication.Tests
         #endregion
 
         [Fact]
-        public void Store_Simple_FileSavedInNestedDirectory()
+        public void Store_ThereIsTwoFilesInPackage_FirstFileSaved()
         {
             // Arrange
             var fileStorageProviderMock = new FileStorageProviderMock();
@@ -62,12 +50,58 @@ namespace AI_.Studmix.WebApplication.Tests
             var content = CreateContent();
 
             // Act
-            fileStorageManager.Store(content.Files.First(), CreateInputStream());
+            fileStorageManager.Store(content);
 
             // Assert
-            fileStorageProviderMock.Storage.Should().Contain(
-                @"storagePath\Country1\City1\InstituteType1\Institute1" +
-                @"\StudingForm1\Faculty1\Course1\Group1\file1.txt");
+            fileStorageProviderMock.Storage.Should().Contain(@"1_1\2_2\file1.txt");
+        }
+
+        [Fact]
+        public void Store_ThereIsTwoFilesInPackage_SecondFileSaved()
+        {
+            // Arrange
+            var fileStorageProviderMock = new FileStorageProviderMock();
+            var fileStorageManager = new FileStorageManager(fileStorageProviderMock);
+            var content = CreateContent();
+
+            // Act
+            fileStorageManager.Store(content);
+
+            // Assert
+            fileStorageProviderMock.Storage.Should().Contain(@"1_1\2_2\file2.txt");
+        }
+
+        [Fact]
+        public void Store_ThereIsUnspecifiedPropertyInPackage_FilePathContainsDefaultNamedFolder()
+        {
+            // Arrange
+            var fileStorageProviderMock = new FileStorageProviderMock();
+            var fileStorageManager = new FileStorageManager(fileStorageProviderMock);
+            var content = CreateContent();
+            content.PropertyStates.Last().Property.Order = 3;
+
+            // Act
+            fileStorageManager.Store(content);
+
+            // Assert
+            fileStorageProviderMock.Storage.Should().Contain(@"1_1\-\2_2\file1.txt");
+        }
+
+
+        [Fact]
+        public void Store_PackagePropertyStatesNotOrdered_FilePathCombinedFromOrderedStates()
+        {
+            // Arrange
+            var fileStorageProviderMock = new FileStorageProviderMock();
+            var fileStorageManager = new FileStorageManager(fileStorageProviderMock);
+            var content = CreateContent();
+            content.PropertyStates = content.PropertyStates.Reverse().ToList();
+
+            // Act
+            fileStorageManager.Store(content);
+
+            // Assert
+            fileStorageProviderMock.Storage.Should().Contain(@"1_1\2_2\file1.txt");
         }
 
         [Fact]
@@ -77,12 +111,13 @@ namespace AI_.Studmix.WebApplication.Tests
             var fileStorageProviderMock = new FileStorageProviderMock();
             var fileStorageManager = new FileStorageManager(fileStorageProviderMock);
             var content = CreateContent();
+            content.Files.First().Stream = CreateInputStream("MockedFileData");
 
             // Act
-            fileStorageManager.Store(content.Files.First(), CreateInputStream("MockedFileData"));
+            fileStorageManager.Store(content);
 
             // Assert
-            fileStorageProviderMock.Storage.Should().Contain("MockedFileData");
+            fileStorageProviderMock.FileData.Should().Contain("MockedFileData");
         }
     }
 }
