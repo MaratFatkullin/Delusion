@@ -116,6 +116,7 @@
     <Compile Include="Models\ContentPackage.cs" />
     <Compile Include="DAL\Database\UnitOfWorkFactory.cs" />
     <Compile Include="Models\ContentFile.cs" />
+    <Compile Include="Validation\NotEmptyAttribute.cs" />
     <Compile Include="ViewModels\Content\AjaxStatesViewModel.cs" />
     <Compile Include="ViewModels\Content\DownloadViewModel.cs" />
     <Compile Include="ViewModels\Content\UploadViewModel.cs" />
