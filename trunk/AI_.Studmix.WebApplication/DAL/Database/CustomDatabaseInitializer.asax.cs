@@ -45,8 +45,8 @@ namespace AI_.Studmix.WebApplication.DAL.Database
                             Roles = new Collection<Role> {adminRole}
                         };
 
-            context.Users.Add(user);
             context.Users.Add(admin);
+            context.Users.Add(user);
 
             var countryProp = new Property
                               {

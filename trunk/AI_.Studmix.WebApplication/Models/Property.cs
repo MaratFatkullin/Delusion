@@ -6,7 +6,6 @@ using AI_.Studmix.WebApplication.DAL.Database;
 
 namespace AI_.Studmix.WebApplication.Models
 {
-    [Serializable]
     public class Property : ModelBase
     {
         public string Name { get; set; }

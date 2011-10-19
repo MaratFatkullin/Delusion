@@ -1,11 +1,28 @@
-﻿using System.Web.Mvc;
+﻿using System;
+using System.Linq;
+using AI_.Security.Models;
 using AI_.Studmix.WebApplication.DAL.Database;
 
 namespace AI_.Studmix.WebApplication.Controllers
 {
-    public abstract class DataControllerBase: ControllerBase
+    public abstract class DataControllerBase : ControllerBase
     {
+        private User _currentUser;
+
         protected IUnitOfWork UnitOfWork { get; private set; }
+
+        protected User CurrentUser
+        {
+            get
+            {
+                if (!User.Identity.IsAuthenticated)
+                    throw new InvalidOperationException("User is not authenticated.");
+
+                return _currentUser ?? (_currentUser = UnitOfWork.UserRepository
+                                                           .Get(user => user.UserName == User.Identity.Name)
+                                                           .Single());
+            }
+        }
 
         protected DataControllerBase(IUnitOfWork unitOfWork)
         {
