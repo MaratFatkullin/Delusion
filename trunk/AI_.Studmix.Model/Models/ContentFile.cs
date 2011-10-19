@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using AI_.Data;
 
-namespace AI_.Studmix.WebApplication.Models
+namespace AI_.Studmix.Model.Models
 {
     public class ContentFile: ModelBase
     {

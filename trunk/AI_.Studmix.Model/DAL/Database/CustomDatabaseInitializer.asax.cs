@@ -2,9 +2,9 @@ using System;
 using System.Collections.ObjectModel;
 using System.Data.Entity;
 using AI_.Security.Models;
-using AI_.Studmix.WebApplication.Models;
+using AI_.Studmix.Model.Models;
 
-namespace AI_.Studmix.WebApplication.DAL.Database
+namespace AI_.Studmix.Model.DAL.Database
 {
     public class CustomDatabaseInitializer : DropCreateDatabaseAlways<DataContext>
     {

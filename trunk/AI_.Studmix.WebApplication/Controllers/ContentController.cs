@@ -3,9 +3,9 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
-using AI_.Studmix.WebApplication.DAL.Database;
-using AI_.Studmix.WebApplication.DAL.FileSystem;
-using AI_.Studmix.WebApplication.Models;
+using AI_.Studmix.Model.DAL.Database;
+using AI_.Studmix.Model.DAL.FileSystem;
+using AI_.Studmix.Model.Models;
 using AI_.Studmix.WebApplication.ViewModels.Content;
 
 namespace AI_.Studmix.WebApplication.Controllers

@@ -1,8 +1,8 @@
 ﻿using AI_.Data.Repository;
 using AI_.Data.Repository.Mocks;
 using AI_.Security.Models;
-using AI_.Studmix.WebApplication.DAL.Database;
-using AI_.Studmix.WebApplication.Models;
+using AI_.Studmix.Model.DAL.Database;
+using AI_.Studmix.Model.Models;
 
 namespace AI_.Studmix.WebApplication.Tests.Mocks
 {
@@ -30,7 +30,8 @@ namespace AI_.Studmix.WebApplication.Tests.Mocks
 
         public IRepository<PropertyState> PropertyStateRepository
         {
-            get { return _propertyStateRepository ?? (_propertyStateRepository = new RepositoryMock<PropertyState>()); }
+            get { return _propertyStateRepository 
+                ?? (_propertyStateRepository = new RepositoryMock<PropertyState>()); }
 
         }
 

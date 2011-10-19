@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Web.Mvc;
 using System.Web.Security;
-using AI_.Studmix.WebApplication.Models.ViewModels.Account;
+using AI_.Studmix.WebApplication.ViewModels.Account;
 
 namespace AI_.Studmix.WebApplication.Controllers
 {

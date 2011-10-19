@@ -1,7 +1,7 @@
 using System.Web.Mvc;
 using Microsoft.Practices.EnterpriseLibrary.ExceptionHandling;
 
-namespace AI_.Studmix.WebApplication.Filters
+namespace AI_.Studmix.WebApplication.Infrastructure.Filters
 {
     public class LogErrorAttribute : HandleErrorAttribute
     {

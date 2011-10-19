@@ -1,8 +1,8 @@
 ﻿using AI_.Data.Repository;
 using AI_.Security.DAL;
-using AI_.Studmix.WebApplication.Models;
+using AI_.Studmix.Model.Models;
 
-namespace AI_.Studmix.WebApplication.DAL.Database
+namespace AI_.Studmix.Model.DAL.Database
 {
     public class UnitOfWork : SecurityUnitOfWork<DataContext>, IUnitOfWork
     {

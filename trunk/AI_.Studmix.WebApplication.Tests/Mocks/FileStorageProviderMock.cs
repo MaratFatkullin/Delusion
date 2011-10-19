@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using AI_.Studmix.WebApplication.DAL.FileSystem;
+using AI_.Studmix.Model.DAL.FileSystem;
 
 namespace AI_.Studmix.WebApplication.Tests.Mocks
 {

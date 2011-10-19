@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
-namespace AI_.Studmix.WebApplication.Validation
+namespace AI_.Studmix.Model.Validation
 {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
     public sealed class NotEmptyAttribute : ValidationAttribute

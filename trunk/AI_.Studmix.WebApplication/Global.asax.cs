@@ -4,10 +4,11 @@ using System.Data.Entity;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
-using AI_.Studmix.WebApplication.DAL.Database;
-using AI_.Studmix.WebApplication.DAL.FileSystem;
-using AI_.Studmix.WebApplication.Filters;
+using AI_.Studmix.Model.DAL.Database;
+using AI_.Studmix.Model.DAL.FileSystem;
 using AI_.Studmix.WebApplication.Infrastructure;
+using AI_.Studmix.WebApplication.Infrastructure.Filters;
+using AI_.Studmix.WebApplication.Infrastructure.ModelBinders;
 using Microsoft.Practices.Unity;
 
 namespace AI_.Studmix.WebApplication

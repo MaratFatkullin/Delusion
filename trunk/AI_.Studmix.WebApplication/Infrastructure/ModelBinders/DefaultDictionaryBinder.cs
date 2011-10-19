@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.Mvc;
 
-namespace AI_.Studmix.WebApplication.Infrastructure
+namespace AI_.Studmix.WebApplication.Infrastructure.ModelBinders
 {
 
     public class DefaultDictionaryBinder : DefaultModelBinder

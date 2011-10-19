@@ -1,6 +1,6 @@
 using System.IO;
 
-namespace AI_.Studmix.WebApplication.DAL.FileSystem
+namespace AI_.Studmix.Model.DAL.FileSystem
 {
     public interface IFileStorageProvider
     {
