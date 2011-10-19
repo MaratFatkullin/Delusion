@@ -241,6 +241,22 @@ table th {
     color: Red;
 }
 
+.top {
+    vertical-align: top;
+}
+
+.bottom {
+    vertical-align: bottom;
+}
+
+.left {
+    text-align: left;
+}
+
+.right {
+    text-align: right;
+}
+
 nav, 
 #menucontainer {
     margin-top: 40px;

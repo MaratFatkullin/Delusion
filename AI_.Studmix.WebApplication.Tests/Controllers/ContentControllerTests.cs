@@ -4,12 +4,15 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Web;
+using System.Web.Mvc;
 using AI_.Data.Repository.Mocks;
+using AI_.Security.Models;
 using AI_.Studmix.WebApplication.Controllers;
 using AI_.Studmix.WebApplication.Models;
 using AI_.Studmix.WebApplication.Tests.Mocks;
 using AI_.Studmix.WebApplication.ViewModels.Content;
 using FluentAssertions;
+using Moq;
 using Xunit;
 
 namespace AI_.Studmix.WebApplication.Tests.Controllers
@@ -26,6 +29,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             _unitOfWork = new UnitOfWorkMock();
             _fileStorageManager = new FileStorageManagerMock();
             _controller = new ContentController(_unitOfWork, _fileStorageManager);
+            _controller.ControllerContext = CreateControllerContext();
             InitUnitOfWork(_unitOfWork);
         }
 
@@ -80,6 +84,15 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         private HttpPostedFileMock CreateHttpPostedFile(Stream stream)
         {
             return new HttpPostedFileMock("file.txt", stream);
+        }
+
+        private ControllerContext CreateControllerContext(string username = "user")
+        {
+            _unitOfWork.UserRepository.Insert(new User {UserName = username});
+            var contextMock = new Mock<ControllerContext>();
+            contextMock.Setup(context => context.HttpContext.User.Identity.Name).Returns(username);
+            contextMock.Setup(context => context.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+            return contextMock.Object;
         }
 
         #endregion
@@ -170,6 +183,37 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             // Assert
             var viewModel = (AjaxStatesViewModel) viewResult.Data;
             viewModel.Properties.Last().States.Should().Be("state3|state4");
+        }
+
+        [Fact]
+        public void UpdateStates_SecondPropertySettedInNewStateValue_AllStatesOfFirstPropertyAvailable()
+        {
+            // Arrange
+            var uploadViewModel = new UploadViewModel();
+            uploadViewModel.States = new Dictionary<int, string> {{2, "newState"}};
+
+            // Act
+            var viewResult = _controller.UpdateStates(uploadViewModel);
+
+            // Assert
+            var viewModel = (AjaxStatesViewModel) viewResult.Data;
+            viewModel.Properties.First().States.Should().Be("state1|state2");
+        }
+
+
+        [Fact]
+        public void UpdateStates_FirstPropertySettedInNewStateValue_NoStatesOfSecondPropertyAvailable()
+        {
+            // Arrange
+            var uploadViewModel = new UploadViewModel();
+            uploadViewModel.States = new Dictionary<int, string> {{1, "newState"}};
+
+            // Act
+            var viewResult = _controller.UpdateStates(uploadViewModel);
+
+            // Assert
+            var viewModel = (AjaxStatesViewModel) viewResult.Data;
+            viewModel.Properties.Last().States.Should().Be(string.Empty);
         }
 
         [Fact]
@@ -341,6 +385,64 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
 
             // Assert
             _fileStorageManager.Package.Files.Single().Stream.Should().Be(stream);
+        }
+
+        [Fact]
+        public void UploadPost_Simple_OwnerOfPackageIsCurrentUser()
+        {
+            // Arrange
+            _controller.ControllerContext = CreateControllerContext("username");
+            var viewModel = new UploadViewModel();
+            viewModel.PreviewContentFiles = new List<HttpPostedFileBase> {CreateHttpPostedFile()};
+
+            // Act
+            _controller.Upload(viewModel);
+
+            // Assert
+            _unitOfWork.ContentPackageRepository.Get().Last().Owner.UserName.Should().Be("username");
+        }
+
+        [Fact]
+        public void UploadPost_Simple_CaptionOfPackageInitialized()
+        {
+            // Arrange
+            var viewModel = new UploadViewModel {Caption = "caption"};
+            viewModel.PreviewContentFiles = new List<HttpPostedFileBase> {CreateHttpPostedFile()};
+
+            // Act
+            _controller.Upload(viewModel);
+
+            // Assert
+            _unitOfWork.ContentPackageRepository.Get().Last().Caption.Should().Be("caption");
+        }
+
+        [Fact]
+        public void UploadPost_Simple_DescriptionOfPackageInitialized()
+        {
+            // Arrange
+            var viewModel = new UploadViewModel {Description = "description"};
+            viewModel.PreviewContentFiles = new List<HttpPostedFileBase> {CreateHttpPostedFile()};
+
+            // Act
+            _controller.Upload(viewModel);
+
+            // Assert
+            _unitOfWork.ContentPackageRepository.Get().Last().Description.Should().Be("description");
+        }
+
+
+        [Fact]
+        public void UploadPost_Simple_PriceOfPackageInitialized()
+        {
+            // Arrange
+            var viewModel = new UploadViewModel {Price = 10};
+            viewModel.PreviewContentFiles = new List<HttpPostedFileBase> {CreateHttpPostedFile()};
+
+            // Act
+            _controller.Upload(viewModel);
+
+            // Assert
+            _unitOfWork.ContentPackageRepository.Get().Last().Price.Should().Be(10);
         }
 
         [Fact]
