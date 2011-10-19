@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using AI_.Data;
 using AI_.Security.Models;
-using AI_.Studmix.WebApplication.Validation;
+using AI_.Studmix.Model.Validation;
 
-namespace AI_.Studmix.WebApplication.Models
+namespace AI_.Studmix.Model.Models
 {
     public class ContentPackage : ModelBase
     {

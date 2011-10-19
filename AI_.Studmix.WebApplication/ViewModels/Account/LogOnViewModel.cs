@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace AI_.Studmix.WebApplication.Models.ViewModels.Account
+namespace AI_.Studmix.WebApplication.ViewModels.Account
 {
     public class LogOnViewModel
     {

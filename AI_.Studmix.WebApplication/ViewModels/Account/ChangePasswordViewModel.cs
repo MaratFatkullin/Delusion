@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Web.Mvc;
 
-namespace AI_.Studmix.WebApplication.Models.ViewModels.Account
+namespace AI_.Studmix.WebApplication.ViewModels.Account
 {
     public class ChangePasswordViewModel
     {

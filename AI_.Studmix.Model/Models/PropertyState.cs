@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using AI_.Data;
-using AI_.Studmix.WebApplication.DAL.Database;
+using AI_.Studmix.Model.DAL.Database;
 
-namespace AI_.Studmix.WebApplication.Models
+namespace AI_.Studmix.Model.Models
 {
     public class PropertyState : ModelBase
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using AI_.Security.Models;
-using AI_.Studmix.WebApplication.DAL.Database;
+using AI_.Studmix.Model.DAL.Database;
 
 namespace AI_.Studmix.WebApplication.Controllers
 {

@@ -1,10 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using AI_.Studmix.WebApplication.Models;
+using AI_.Studmix.Model.Models;
 using System.Linq;
 
-namespace AI_.Studmix.WebApplication.DAL.FileSystem
+namespace AI_.Studmix.Model.DAL.FileSystem
 {
     public class FileStorageManager : IFileStorageManager
     {

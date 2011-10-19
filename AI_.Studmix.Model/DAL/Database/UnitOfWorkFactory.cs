@@ -1,6 +1,6 @@
 ﻿using AI_.Security.DAL;
 
-namespace AI_.Studmix.WebApplication.DAL.Database
+namespace AI_.Studmix.Model.DAL.Database
 {
     public class UnitOfWorkFactory : IUnitOfWorkFactory
     {

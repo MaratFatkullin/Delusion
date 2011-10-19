@@ -94,29 +94,14 @@
     <Compile Include="Controllers\ContentController.cs" />
     <Compile Include="Controllers\ControllerBase.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="DAL\Database\CustomDatabaseInitializer.asax.cs" />
-    <Compile Include="DAL\Database\DataContext.cs" />
-    <Compile Include="DAL\Database\IUnitOfWork.cs" />
-    <Compile Include="DAL\FileSystem\FileStorageProvider.cs" />
-    <Compile Include="DAL\FileSystem\IFileStorageManager.cs" />
-    <Compile Include="DAL\FileSystem\IFileStorageProvider.cs" />
-    <Compile Include="DAL\Database\UnitOfWork.cs" />
-    <Compile Include="Infrastructure\DefaultDictionaryBinder.cs" />
+    <Compile Include="Infrastructure\ModelBinders\DefaultDictionaryBinder.cs" />
     <Compile Include="Infrastructure\ControllerActivator.cs" />
     <Compile Include="Infrastructure\UnityDependencyResolver.cs" />
     <Compile Include="Infrastructure\ViewPageActivator.cs" />
-    <Compile Include="Infrastructure\Environment.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Filters\LogErrorAttribute.asax.cs" />
-    <Compile Include="DAL\FileSystem\FileStorageManager.cs" />
-    <Compile Include="Models\PropertyState.cs" />
-    <Compile Include="Models\Property.cs" />
-    <Compile Include="Models\ContentPackage.cs" />
-    <Compile Include="DAL\Database\UnitOfWorkFactory.cs" />
-    <Compile Include="Models\ContentFile.cs" />
-    <Compile Include="Validation\NotEmptyAttribute.cs" />
+    <Compile Include="Infrastructure\Filters\LogErrorAttribute.asax.cs" />
     <Compile Include="ViewModels\Content\AjaxStatesViewModel.cs" />
     <Compile Include="ViewModels\Content\DownloadViewModel.cs" />
     <Compile Include="ViewModels\Content\UploadViewModel.cs" />
@@ -211,6 +196,10 @@
     <ProjectReference Include="..\AI_.Security\AI_.Security.csproj">
       <Project>{7EB7BBAE-6081-47CE-B829-35B03CCA6AB2}</Project>
       <Name>AI_.Security</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AI_.Studmix.Model\AI_.Studmix.Model.csproj">
+      <Project>{7C691C3C-FBE4-4F02-92C0-342FF87584E8}</Project>
+      <Name>AI_.Studmix.Model</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
