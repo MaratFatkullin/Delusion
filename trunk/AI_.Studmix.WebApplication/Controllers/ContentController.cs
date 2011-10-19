@@ -34,7 +34,13 @@ namespace AI_.Studmix.WebApplication.Controllers
         [HttpPost]
         public ActionResult Upload(UploadViewModel viewModel)
         {
+
             viewModel.Properties = UnitOfWork.PropertyRepository.Get();
+
+            if (!ModelState.IsValid)
+            {
+                return View(viewModel);
+            }
 
             var package = new ContentPackage();
             package.PropertyStates = new Collection<PropertyState>();
@@ -46,12 +52,6 @@ namespace AI_.Studmix.WebApplication.Controllers
 
             InportFilesToPackage(package, viewModel.PreviewContentFiles, true);
             InportFilesToPackage(package, viewModel.ContentFiles, false);
-
-            if (package.Files.Count == 0)
-            {
-                ModelState.AddModelError("noFiles", "Должен быть добавлен хотя бы один файл");
-                return View(viewModel);
-            }
 
             var specifiedStates = viewModel.States.Where(pair => !string.IsNullOrEmpty(pair.Value));
             foreach (var pair in specifiedStates)

@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using AI_.Data;
 using AI_.Security.Models;
+using AI_.Studmix.WebApplication.Validation;
 
 namespace AI_.Studmix.WebApplication.Models
 {
@@ -11,6 +12,7 @@ namespace AI_.Studmix.WebApplication.Models
 
         public virtual User Owner { get; set; }
 
+        [NotEmpty]
         public virtual ICollection<ContentFile> Files { get; set; }
 
         public string Caption { get; set; }

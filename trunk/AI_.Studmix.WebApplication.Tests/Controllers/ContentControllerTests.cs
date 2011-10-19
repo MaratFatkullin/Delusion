@@ -449,12 +449,9 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         public void UploadPost_NoFilesPosted_ContentPackagesNotStoredToDatabase()
         {
             // Arrange
-            var viewModel = new UploadViewModel();
-            viewModel.ContentFiles = new List<HttpPostedFileBase> {null};
-            viewModel.PreviewContentFiles = new List<HttpPostedFileBase> {null};
-
+            _controller.ModelState.AddModelError("ContentFiles","errorMessage");
             // Act
-            _controller.Upload(viewModel);
+            _controller.Upload(new UploadViewModel());
 
             // Assert
             var repositoryMock = (RepositoryMock<ContentPackage>) _unitOfWork.ContentPackageRepository;
@@ -465,30 +462,13 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         public void UploadPost_NoFilesPosted_ContentPackagesNotStoredToFileSystem()
         {
             // Arrange
-            var viewModel = new UploadViewModel();
-            viewModel.ContentFiles = new List<HttpPostedFileBase> {null};
-            viewModel.PreviewContentFiles = new List<HttpPostedFileBase> {null};
+            _controller.ModelState.AddModelError("ContentFiles", "errorMessage");
 
             // Act
-            _controller.Upload(viewModel);
+            _controller.Upload(new UploadViewModel());
 
             // Assert
             _fileStorageManager.Package.Should().BeNull();
-        }
-
-        [Fact]
-        public void UploadPost_NoFilesPosted_ModelStateErrorRegistered()
-        {
-            // Arrange
-            var viewModel = new UploadViewModel();
-            viewModel.ContentFiles = new List<HttpPostedFileBase> {null};
-            viewModel.PreviewContentFiles = new List<HttpPostedFileBase> {null};
-
-            // Act
-            _controller.Upload(viewModel);
-
-            // Assert
-            _controller.ViewData.ModelState.ContainsKey("noFiles").Should().BeTrue();
         }
     }
 }

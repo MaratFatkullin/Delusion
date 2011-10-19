@@ -13,14 +13,18 @@
         <tr class="top">
             <td>
                 <p>
-                    <span>Контент</span>
+                    @Html.LabelFor(m=>m.ContentFiles)
                     <br/>
                     <input type="file" multiple="true" name="ContentFiles" />
+                    <br/>
+                    @Html.ValidationMessageFor(m => m.ContentFiles)
                 </p>
                 <p>
-                    <span>Превью</span>
+                    @Html.LabelFor(m=>m.PreviewContentFiles)
                     <br/>
                     <input type="file" multiple="true" name="PreviewContentFiles" />
+                    <br/>
+                    @Html.ValidationMessageFor(m => m.PreviewContentFiles)
                 </p>
                 <p>
                     <input type="submit" value="Сохранить"/>

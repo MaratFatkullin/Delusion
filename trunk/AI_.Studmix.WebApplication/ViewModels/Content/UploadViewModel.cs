@@ -1,25 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Web;
 using AI_.Studmix.WebApplication.Models;
 
 namespace AI_.Studmix.WebApplication.ViewModels.Content
 {
-    public class UploadViewModel
+    public class UploadViewModel : IValidatableObject
     {
         public IEnumerable<Property> Properties { get; set; }
 
         /// <summary>
-        /// Словарь пары ID свойства - состояние.
+        ///   Словарь пары ID свойства - состояние.
         /// </summary>
-        public Dictionary<int,string> States { get; set; }
+        public Dictionary<int, string> States { get; set; }
 
+        [Display(Name = "Контент")]
         public IList<HttpPostedFileBase> ContentFiles { get; set; }
 
+        [Display(Name = "Превью")]
         public IList<HttpPostedFileBase> PreviewContentFiles { get; set; }
 
-        [Required]
         [Display(Name = "Название")]
         public string Caption { get; set; }
 
@@ -36,5 +37,16 @@ namespace AI_.Studmix.WebApplication.ViewModels.Content
             ContentFiles = new List<HttpPostedFileBase>();
             PreviewContentFiles = new List<HttpPostedFileBase>();
         }
+
+        #region IValidatableObject Members
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (ContentFiles.Where(x => x != null).Count() == 0)
+                yield return new ValidationResult("Должен быть добавлен хотя бы один файл контента.",
+                                                  new[] { "ContentFiles" });
+        }
+
+        #endregion
     }
 }
