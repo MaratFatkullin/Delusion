@@ -58,6 +58,10 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
                                PropertyStates = new Collection<PropertyState> {state2, state4}
                            };
 
+            state1.ContentPackages = new Collection<ContentPackage>{package1};
+            state2.ContentPackages = new Collection<ContentPackage>{package2};
+            state3.ContentPackages = new Collection<ContentPackage>{package1};
+            state4.ContentPackages = new Collection<ContentPackage>{package2};
 
             unitOfWork.PropertyRepository.Insert(property1);
             unitOfWork.PropertyRepository.Insert(property2);
@@ -340,6 +344,22 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         }
 
         [Fact]
+        public void UploadPost_NewPropertyStates_NewPropertyStatesHasInitializedIndex()
+        {
+            // Arrange
+            var viewModel = new UploadViewModel();
+            viewModel.PreviewContentFiles = new List<HttpPostedFileBase> { CreateHttpPostedFile() };
+            viewModel.States = new Dictionary<int, string> { { 1, "newState" } };
+
+            // Act
+            _controller.Upload(viewModel);
+
+            // Assert
+            var repositoryMock = _unitOfWork.ContentPackageRepository;
+            repositoryMock.Get().Last().PropertyStates.Should().OnlyContain(x => x.Index != 0);
+        }
+
+        [Fact]
         public void UploadPost_Simple_ContentPackagesStoredToDatabase()
         {
             // Arrange
@@ -416,6 +436,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             _unitOfWork.ContentPackageRepository.Get().Last().Caption.Should().Be("caption");
         }
 
+        
         [Fact]
         public void UploadPost_Simple_DescriptionOfPackageInitialized()
         {

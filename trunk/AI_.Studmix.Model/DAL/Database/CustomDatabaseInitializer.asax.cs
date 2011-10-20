@@ -138,19 +138,22 @@ namespace AI_.Studmix.Model.DAL.Database
                          {
                              Property = countryProp,
                              Value = "Россия",
-                             CreateDate = DateTime.Now
+                             CreateDate = DateTime.Now,
+                             Index = 1
                          };
             var czech = new PropertyState
                         {
                             Property = countryProp,
                             Value = "Чешская республика",
-                            CreateDate = DateTime.Now
+                            CreateDate = DateTime.Now,
+                            Index = 2
                         };
             var french = new PropertyState
                          {
                              Property = countryProp,
                              Value = "Франция",
-                             CreateDate = DateTime.Now
+                             CreateDate = DateTime.Now,
+                             Index = 3
                          };
 
             context.PropertyStates.Add(russia);
@@ -161,31 +164,36 @@ namespace AI_.Studmix.Model.DAL.Database
                          {
                              Property = cityProp,
                              Value = "Москва",
-                             CreateDate = DateTime.Now
+                             CreateDate = DateTime.Now,
+                             Index = 1
                          };
             var kazan = new PropertyState
                         {
                             Property = cityProp,
                             Value = "Казань",
-                            CreateDate = DateTime.Now
+                            CreateDate = DateTime.Now,
+                            Index = 2
                         };
             var prague = new PropertyState
                          {
                              Property = cityProp,
                              Value = "Прага",
-                             CreateDate = DateTime.Now
+                             CreateDate = DateTime.Now,
+                             Index = 3
                          };
             var paris = new PropertyState
                         {
                             Property = cityProp,
                             Value = "Париж",
-                            CreateDate = DateTime.Now
+                            CreateDate = DateTime.Now,
+                            Index = 4
                         };
             var marsel = new PropertyState
                          {
                              Property = cityProp,
                              Value = "Марсель",
-                             CreateDate = DateTime.Now
+                             CreateDate = DateTime.Now,
+                             Index = 5
                          };
 
             context.PropertyStates.Add(moscow);
