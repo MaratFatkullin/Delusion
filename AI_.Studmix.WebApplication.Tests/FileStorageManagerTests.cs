@@ -31,8 +31,8 @@ namespace AI_.Studmix.WebApplication.Tests
 
             var property1 = new Property {ID = 1, Order = 1};
             var property2 = new Property {ID = 2, Order = 2};
-            var state1 = new PropertyState {ID = 1, Value = "prop1", Property = property1};
-            var state2 = new PropertyState {ID = 2, Value = "prop2", Property = property2};
+            var state1 = new PropertyState {ID = 1, Value = "prop1", Property = property1,Index = 1};
+            var state2 = new PropertyState {ID = 2, Value = "prop2", Property = property2,Index = 2};
 
             content.PropertyStates = new Collection<PropertyState> {state1, state2};
 
@@ -69,6 +69,22 @@ namespace AI_.Studmix.WebApplication.Tests
 
             // Assert
             fileStorageProviderMock.Storage.Should().Contain(@"1_1\2_2\file2.txt");
+        }
+
+        [Fact]
+        public void Store_Simple_FilePathContainPropertyStateIndex()
+        {
+            // Arrange
+            var fileStorageProviderMock = new FileStorageProviderMock();
+            var fileStorageManager = new FileStorageManager(fileStorageProviderMock);
+            var content = CreateContent();
+            content.PropertyStates.Last().Index = 5;
+
+            // Act
+            fileStorageManager.Store(content);
+
+            // Assert
+            fileStorageProviderMock.Storage.Should().Contain(@"1_1\2_5\file2.txt");
         }
 
         [Fact]

@@ -6,6 +6,7 @@ using System.Web.Mvc;
 using AI_.Studmix.Model.DAL.Database;
 using AI_.Studmix.Model.DAL.FileSystem;
 using AI_.Studmix.Model.Models;
+using AI_.Studmix.Model.Services;
 using AI_.Studmix.WebApplication.ViewModels.Content;
 
 namespace AI_.Studmix.WebApplication.Controllers
@@ -53,16 +54,16 @@ namespace AI_.Studmix.WebApplication.Controllers
             InportFilesToPackage(package, viewModel.PreviewContentFiles, true);
             InportFilesToPackage(package, viewModel.ContentFiles, false);
 
+            var service = new PropertyStateService();
             var specifiedStates = viewModel.States.Where(pair => !string.IsNullOrEmpty(pair.Value));
             foreach (var pair in specifiedStates)
             {
                 //получаем состояние или создаем новое если не существет
-                var propertyState = PropertyState.Get(UnitOfWork, pair.Key, pair.Value);
+                var propertyState = service.GetState(UnitOfWork, pair.Key, pair.Value);
                 if (propertyState == null)
                 {
                     var property = UnitOfWork.PropertyRepository.GetByID(pair.Key);
-                    propertyState = new PropertyState {Value = pair.Value, Property = property};
-                    UnitOfWork.PropertyStateRepository.Insert(propertyState);
+                    propertyState = service.CreateState(UnitOfWork, property, pair.Value);
                 }
 
                 package.PropertyStates.Add(propertyState);
@@ -106,10 +107,10 @@ namespace AI_.Studmix.WebApplication.Controllers
                 return Json(response);
 
             var properties = UnitOfWork.PropertyRepository.Get();
-
+            var service = new PropertyStateService();
             foreach (var statePair in specifieStatePairs)
             {
-                var state = PropertyState.Get(UnitOfWork, statePair.Key, statePair.Value);
+                var state = service.GetState(UnitOfWork, statePair.Key, statePair.Value);
 
                 var property = properties.First(x => x.ID == statePair.Key);
 
@@ -117,7 +118,7 @@ namespace AI_.Studmix.WebApplication.Controllers
                 {
                     IEnumerable<PropertyState> propertyStates = new Collection<PropertyState>();
                     if (state != null)
-                        propertyStates = prop.GetBoundedStates(UnitOfWork, state);
+                        propertyStates = service.GetBoundedStates(UnitOfWork, prop, state);
 
                     var states = string.Join(STATE_VALUES_SEPARATOR,
                                              propertyStates.Select(st => st.Value));

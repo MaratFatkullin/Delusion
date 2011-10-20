@@ -38,7 +38,7 @@ namespace AI_.Studmix.Model.DAL.FileSystem
                 var state = propertyStates.FirstOrDefault(ps => ps.Property.Order == i);
                 var folderName = state == null
                                      ? DEFAULT_FOLDER_NAME
-                                     : string.Format("{0}_{1}", state.Property.ID, state.ID);
+                                     : string.Format("{0}_{1}", state.Property.ID, state.Index);
 
                 path = Path.Combine(path, folderName);
             }
