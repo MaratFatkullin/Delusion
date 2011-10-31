@@ -35,7 +35,6 @@ namespace AI_.Studmix.WebApplication.Controllers
         [HttpPost]
         public ActionResult Upload(UploadViewModel viewModel)
         {
-
             viewModel.Properties = UnitOfWork.PropertyRepository.Get();
 
             if (!ModelState.IsValid)
@@ -92,19 +91,22 @@ namespace AI_.Studmix.WebApplication.Controllers
             }
         }
 
-        public ViewResult Download()
+        [HttpGet]
+        public ViewResult Search()
         {
-            return View();
+            var viewModel = new SearchViewModel();
+            viewModel.Properties = UnitOfWork.PropertyRepository.Get();
+            return View(viewModel);
         }
 
         [HttpPost]
-        public JsonResult UpdateStates(UploadViewModel viewModel)
+        public JsonResult UpdateStates(Dictionary<int,string> states,int targetPropertyId)
         {
-            var specifieStatePairs = viewModel.States.Where(pair => !string.IsNullOrEmpty(pair.Value));
+            var specifieStatePairs = states.Where(pair => !string.IsNullOrEmpty(pair.Value));
             var response = GetDefaultStates();
 
             if (specifieStatePairs.Count() == 0)
-                return Json(response);
+                return Json(response.Properties.Single(x => x.ID == targetPropertyId).States);
 
             var properties = UnitOfWork.PropertyRepository.Get();
             var service = new PropertyStateService();
@@ -120,16 +122,19 @@ namespace AI_.Studmix.WebApplication.Controllers
                     if (state != null)
                         propertyStates = service.GetBoundedStates(UnitOfWork, prop, state);
 
-                    var states = string.Join(STATE_VALUES_SEPARATOR,
-                                             propertyStates.Select(st => st.Value));
-                    response.Properties.Add(new PropertyViewModel {ID = prop.ID, States = states});
+                    var joinedStates = string.Join(STATE_VALUES_SEPARATOR,
+                                                   propertyStates.Select(st => st.Value));
+
+                    var existingProperty = response.Properties.Single(x => x.ID == prop.ID);
+                    response.Properties.Remove(existingProperty);
+                    response.Properties.Add(new PropertyViewModel {ID = prop.ID, States = joinedStates});
                 }
             }
 
-            return Json(response);
+            return Json(response.Properties.Single(x => x.ID == targetPropertyId).States);
         }
 
-        private dynamic GetDefaultStates()
+        private AjaxStatesViewModel GetDefaultStates()
         {
             var response = new AjaxStatesViewModel();
             var properties = UnitOfWork.PropertyRepository.Get();

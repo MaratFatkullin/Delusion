@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Web;
 using System.Web.Mvc;
-using AI_.Data.Repository.Mocks;
 using AI_.Security.Models;
 using AI_.Studmix.Model.Models;
 using AI_.Studmix.WebApplication.Controllers;
@@ -37,16 +36,16 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
 
         private void InitUnitOfWork(UnitOfWorkMock unitOfWork)
         {
-            var property1 = new Property {Name = "property1", Order = 1};
-            var property2 = new Property {Name = "property2", Order = 2};
+            var property1 = new Property {Name = "property1", Order = 1, ID = 1};
+            var property2 = new Property {Name = "property2", Order = 2, ID = 2};
 
             var state1 = new PropertyState {Property = property1, Value = "state1"};
             var state2 = new PropertyState {Property = property1, Value = "state2"};
             var state3 = new PropertyState {Property = property2, Value = "state3"};
             var state4 = new PropertyState {Property = property2, Value = "state4"};
 
-            property1.States = new List<PropertyState> {state1, state2};
-            property2.States = new List<PropertyState> {state3, state4};
+            property1.States = new List<PropertyState> { state1, state2 };
+            property2.States = new List<PropertyState> { state3, state4 };
 
             var package1 = new ContentPackage
                            {
@@ -58,10 +57,10 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
                                PropertyStates = new Collection<PropertyState> {state2, state4}
                            };
 
-            state1.ContentPackages = new Collection<ContentPackage>{package1};
-            state2.ContentPackages = new Collection<ContentPackage>{package2};
-            state3.ContentPackages = new Collection<ContentPackage>{package1};
-            state4.ContentPackages = new Collection<ContentPackage>{package2};
+            state1.ContentPackages = new Collection<ContentPackage> { package1 };
+            state2.ContentPackages = new Collection<ContentPackage> { package2 };
+            state3.ContentPackages = new Collection<ContentPackage> { package1 };
+            state4.ContentPackages = new Collection<ContentPackage> { package2 };
 
             unitOfWork.PropertyRepository.Insert(property1);
             unitOfWork.PropertyRepository.Insert(property2);
@@ -92,7 +91,9 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
 
         private ControllerContext CreateControllerContext(string username = "user")
         {
-            _unitOfWork.UserRepository.Insert(new User {UserName = username});
+            var user = new User {UserName = username};
+            _unitOfWork.UserRepository.Insert(user);
+            _unitOfWork.UserProfileRepository.Insert(new UserProfile {User = user});
             var contextMock = new Mock<ControllerContext>();
             contextMock.Setup(context => context.HttpContext.User.Identity.Name).Returns(username);
             contextMock.Setup(context => context.HttpContext.User.Identity.IsAuthenticated).Returns(true);
@@ -105,103 +106,91 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         public void UpdateStates_AllPropertiesUnspecified_AllStatesOfFirstPropertyAvailable()
         {
             // Arrange
-            var uploadViewModel = new UploadViewModel();
 
             // Act
-            var viewResult = _controller.UpdateStates(uploadViewModel);
+            var viewResult = _controller.UpdateStates(new Dictionary<int, string>(), 1);
 
             // Assert
-            var viewModel = (AjaxStatesViewModel) viewResult.Data;
-            viewModel.Properties.First().States.Should().Be("state1|state2");
+            var states = (string) viewResult.Data;
+            states.Should().Be("state1|state2");
         }
 
         [Fact]
         public void UpdateStates_AllPropertiesUnspecified_AllStatesOfSecondPropertyAvailable()
         {
             // Arrange
-            var uploadViewModel = new UploadViewModel();
 
             // Act
-            var viewResult = _controller.UpdateStates(uploadViewModel);
+            var viewResult = _controller.UpdateStates(new Dictionary<int, string>(), 2);
 
             // Assert
-            var viewModel = (AjaxStatesViewModel) viewResult.Data;
-            viewModel.Properties.Last().States.Should().Be("state3|state4");
+            var states = (string) viewResult.Data;
+            states.Should().Be("state3|state4");
         }
 
         [Fact]
         public void UpdateStates_FirstPropertySpecified_AllStatesOfFirstPropertyAvailable()
         {
             // Arrange
-            var uploadViewModel = new UploadViewModel();
-            uploadViewModel.States = new Dictionary<int, string> {{1, "state1"}};
 
             // Act
-            var viewResult = _controller.UpdateStates(uploadViewModel);
+            var viewResult = _controller.UpdateStates(new Dictionary<int, string> {{1, "state1"}}, 1);
 
             // Assert
-            var viewModel = (AjaxStatesViewModel) viewResult.Data;
-            viewModel.Properties.First().States.Should().Be("state1|state2");
+            var states = (string) viewResult.Data;
+            states.Should().Be("state1|state2");
         }
 
         [Fact]
         public void UpdateStates_FirstPropertySpecified_OnlyBoundedStatesOfSecondPropertyAvailable()
         {
             // Arrange
-            var uploadViewModel = new UploadViewModel();
-            uploadViewModel.States = new Dictionary<int, string> {{1, "state1"}};
 
             // Act
-            var viewResult = _controller.UpdateStates(uploadViewModel);
+            var viewResult = _controller.UpdateStates(new Dictionary<int, string> {{1, "state1"}}, 2);
 
             // Assert
-            var viewModel = (AjaxStatesViewModel) viewResult.Data;
-            viewModel.Properties.Last().States.Should().Be("state3");
+            var states = (string) viewResult.Data;
+            states.Should().Be("state3");
         }
 
         [Fact]
         public void UpdateStates_SecondPropertySpecified_AllStatesOfFirstPropertyAvailable()
         {
             // Arrange
-            var uploadViewModel = new UploadViewModel();
-            uploadViewModel.States = new Dictionary<int, string> {{2, "state3"}};
 
             // Act
-            var viewResult = _controller.UpdateStates(uploadViewModel);
+            var viewResult = _controller.UpdateStates(new Dictionary<int, string> {{2, "state3"}}, 1);
 
             // Assert
-            var viewModel = (AjaxStatesViewModel) viewResult.Data;
-            viewModel.Properties.First().States.Should().Be("state1|state2");
+            var states = (string) viewResult.Data;
+            states.Should().Be("state1|state2");
         }
 
         [Fact]
         public void UpdateStates_SecondPropertySpecified_AllStatesOfSecondPropertyAvailable()
         {
             // Arrange
-            var uploadViewModel = new UploadViewModel();
-            uploadViewModel.States = new Dictionary<int, string> {{2, "state3"}};
 
             // Act
-            var viewResult = _controller.UpdateStates(uploadViewModel);
+            var viewResult = _controller.UpdateStates(new Dictionary<int, string> {{2, "state3"}}, 2);
 
             // Assert
-            var viewModel = (AjaxStatesViewModel) viewResult.Data;
-            viewModel.Properties.Last().States.Should().Be("state3|state4");
+            var states = (string) viewResult.Data;
+            states.Should().Be("state3|state4");
         }
 
         [Fact]
         public void UpdateStates_SecondPropertySettedInNewStateValue_AllStatesOfFirstPropertyAvailable()
         {
             // Arrange
-            var uploadViewModel = new UploadViewModel();
-            uploadViewModel.States = new Dictionary<int, string> {{2, "newState"}};
 
             // Act
-            var viewResult = _controller.UpdateStates(uploadViewModel);
+            var viewResult = _controller.UpdateStates(new Dictionary<int, string> {{2, "newState"}}, 1);
 
             // Assert
-            var viewModel = (AjaxStatesViewModel) viewResult.Data;
-            viewModel.Properties.First().States.Should().Be("state1|state2");
+            var states = (string) viewResult.Data;
+            states.Should().Be("state1|state2");
         }
 
 
@@ -209,31 +198,27 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         public void UpdateStates_FirstPropertySettedInNewStateValue_NoStatesOfSecondPropertyAvailable()
         {
             // Arrange
-            var uploadViewModel = new UploadViewModel();
-            uploadViewModel.States = new Dictionary<int, string> {{1, "newState"}};
 
             // Act
-            var viewResult = _controller.UpdateStates(uploadViewModel);
+            var viewResult = _controller.UpdateStates(new Dictionary<int, string> {{1, "newState"}}, 2);
 
             // Assert
-            var viewModel = (AjaxStatesViewModel) viewResult.Data;
-            viewModel.Properties.Last().States.Should().Be(string.Empty);
+            var states = (string) viewResult.Data;
+            states.Should().BeEmpty();
         }
 
         [Fact]
         public void UpdateStates_NotAllPropertiesSpecifiedInPackages_NoStatesForUnspecifiedPropertieAvailable()
         {
             // Arrange
-            var uploadViewModel = new UploadViewModel();
-            _unitOfWork.PropertyRepository.Insert(new Property {Name = "property", Order = 3});
-            uploadViewModel.States = new Dictionary<int, string> {{1, "state1"}};
+            _unitOfWork.PropertyRepository.Insert(new Property {Name = "property", Order = 3,ID = 3});
 
             // Act
-            var viewResult = _controller.UpdateStates(uploadViewModel);
+            var viewResult = _controller.UpdateStates(new Dictionary<int, string> {{1, "state1"}}, 3);
 
             // Assert
-            var viewModel = (AjaxStatesViewModel) viewResult.Data;
-            viewModel.Properties.Last().States.Should().BeEmpty();
+            var states = (string) viewResult.Data;
+            states.Should().BeEmpty();
         }
 
         [Fact]
@@ -262,8 +247,8 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             _controller.Upload(viewModel);
 
             // Assert
-            var repositoryMock = (RepositoryMock<ContentPackage>) _unitOfWork.ContentPackageRepository;
-            repositoryMock.Storage.Should().HaveCount(3);
+            var result = _unitOfWork.ContentPackageRepository.Get();
+            result.Should().HaveCount(3);
         }
 
         [Fact]
@@ -339,8 +324,8 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             _controller.Upload(viewModel);
 
             // Assert
-            var repositoryMock = (RepositoryMock<PropertyState>) _unitOfWork.PropertyStateRepository;
-            repositoryMock.Storage.Last().Value.Should().Be("newState");
+            var result = _unitOfWork.PropertyStateRepository.Get();
+            result.Last().Value.Should().Be("newState");
         }
 
         [Fact]
@@ -348,8 +333,8 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         {
             // Arrange
             var viewModel = new UploadViewModel();
-            viewModel.PreviewContentFiles = new List<HttpPostedFileBase> { CreateHttpPostedFile() };
-            viewModel.States = new Dictionary<int, string> { { 1, "newState" } };
+            viewModel.PreviewContentFiles = new List<HttpPostedFileBase> {CreateHttpPostedFile()};
+            viewModel.States = new Dictionary<int, string> {{1, "newState"}};
 
             // Act
             _controller.Upload(viewModel);
@@ -370,8 +355,8 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             _controller.Upload(viewModel);
 
             // Assert
-            var repositoryMock = (RepositoryMock<ContentPackage>) _unitOfWork.ContentPackageRepository;
-            repositoryMock.Storage.Should().HaveCount(3);
+            var result = _unitOfWork.ContentPackageRepository.Get();
+            result.Should().HaveCount(3);
         }
 
         [Fact]
@@ -436,7 +421,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             _unitOfWork.ContentPackageRepository.Get().Last().Caption.Should().Be("caption");
         }
 
-        
+
         [Fact]
         public void UploadPost_Simple_DescriptionOfPackageInitialized()
         {
@@ -470,13 +455,13 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         public void UploadPost_NoFilesPosted_ContentPackagesNotStoredToDatabase()
         {
             // Arrange
-            _controller.ModelState.AddModelError("ContentFiles","errorMessage");
+            _controller.ModelState.AddModelError("ContentFiles", "errorMessage");
             // Act
             _controller.Upload(new UploadViewModel());
 
             // Assert
-            var repositoryMock = (RepositoryMock<ContentPackage>) _unitOfWork.ContentPackageRepository;
-            repositoryMock.Storage.Should().HaveCount(2);
+            var repositoryMock = _unitOfWork.ContentPackageRepository;
+            repositoryMock.Get().Should().HaveCount(2);
         }
 
         [Fact]
@@ -490,6 +475,21 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
 
             // Assert
             _fileStorageManager.Package.Should().BeNull();
+        }
+
+
+        [Fact]
+        public void Search_Simple_PropertiesInitialized()
+        {
+            // Arrange
+            _controller.ModelState.AddModelError("ContentFiles", "errorMessage");
+
+            // Act
+            var result = _controller.Search();
+
+            // Assert
+            var model = (SearchViewModel) result.Model;
+            model.Properties.Should().NotBeEmpty();
         }
     }
 }

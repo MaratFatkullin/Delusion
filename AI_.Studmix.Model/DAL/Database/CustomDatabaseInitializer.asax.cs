@@ -48,6 +48,12 @@ namespace AI_.Studmix.Model.DAL.Database
             context.Users.Add(admin);
             context.Users.Add(user);
 
+            var userProfile = new UserProfile {CreateDate = DateTime.Now,User = user};
+            var adminProfile = new UserProfile {CreateDate = DateTime.Now,User = admin};
+
+            context.UserProfiles.Add(userProfile);
+            context.UserProfiles.Add(adminProfile);
+
             var countryProp = new Property
                               {
                                   Name = "Страна",
