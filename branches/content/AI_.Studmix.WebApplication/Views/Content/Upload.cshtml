@@ -6,6 +6,7 @@
 <h2>
     Загрузка контента
 </h2>
+
 @Html.ValidationSummary()
 @using (Html.BeginForm("Upload", "Content", FormMethod.Post, new {enctype = "multipart/form-data"}))
 {
@@ -13,14 +14,14 @@
         <tr class="top">
             <td>
                 <p>
-                    @Html.LabelFor(m=>m.ContentFiles)
+                    @Html.LabelFor(m => m.ContentFiles)
                     <br/>
                     <input type="file" multiple="true" name="ContentFiles" />
                     <br/>
                     @Html.ValidationMessageFor(m => m.ContentFiles)
                 </p>
                 <p>
-                    @Html.LabelFor(m=>m.PreviewContentFiles)
+                    @Html.LabelFor(m => m.PreviewContentFiles)
                     <br/>
                     <input type="file" multiple="true" name="PreviewContentFiles" />
                     <br/>
@@ -77,18 +78,22 @@
     </table>
     @Html.Hidden("targetPropertyId")
 }
-<script src="@Url.Content("~/Scripts/jquery.ajax.form.js")" type="text/javascript"> </script>
+
+@section scripts{
+    @Url.Script("jquery.ajax.form.js")
+}
+
 <script type="text/javascript">
-    $(function () {
-        $("input[data-property-id]").each(function () {
+    $(function() {
+        $("input[data-property-id]").each(function() {
             var button = $(this).siblings("input[type=button]");
             var propertyId = $(this).attr("data-property-id");
-            button.click(function () {
+            button.click(function() {
                 UpdateAutocompleteStates(propertyId);
             });
         });
 
-        $("#btnDefault").click(function () {
+        $("#btnDefault").click(function() {
             $("#States_1_").val("Россия");
             $("#States_2_").val("Казань");
             $("#States_3_").val("Университет");
@@ -112,7 +117,7 @@
     }
 
     function OnUpdateAutocompleteStatesSuccess(response) {
-        var targetPropertyId =  $("#targetPropertyId").val();
+        var targetPropertyId = $("#targetPropertyId").val();
         var input = $("input[data-property-id=" + targetPropertyId + "]");
         input.attr("data-autocomplete", response);
 
