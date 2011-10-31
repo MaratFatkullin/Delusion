@@ -19,5 +19,7 @@ namespace AI_.Studmix.Model.Models
         public string Description { get; set; }
 
         public int Price { get; set; }
+
+        public virtual ICollection<Purchase> Purchases { get; set; }
     }
 }

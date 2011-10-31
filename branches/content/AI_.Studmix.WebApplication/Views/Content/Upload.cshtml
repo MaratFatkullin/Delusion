@@ -41,12 +41,15 @@
                             @property.Name
                         </span>
                         <br />
-                        @Html.TextBoxFor(x => x.States[property.ID], attrs)
+                        <span>
+                            @Html.TextBoxFor(x => x.States[property.ID], attrs)
+                            <input type="button"/>
+                        </span>
                     </div>
                 }
             </td>
             <td>
-               <div class="editor-label">
+                <div class="editor-label">
                     @Html.LabelFor(m => m.Caption)
                 </div>
                 <div class="editor-field">
@@ -72,15 +75,20 @@
             </td>
         </tr>
     </table>
+    @Html.Hidden("targetPropertyId")
 }
 <script src="@Url.Content("~/Scripts/jquery.ajax.form.js")" type="text/javascript"> </script>
-<script>
+<script type="text/javascript">
     $(function () {
         $("input[data-property-id]").each(function () {
-            $(this).focus(UpdateAutocompleteStates);
+            var button = $(this).siblings("input[type=button]");
+            var propertyId = $(this).attr("data-property-id");
+            button.click(function () {
+                UpdateAutocompleteStates(propertyId);
+            });
         });
 
-        $("#btnDefault").click(function() {
+        $("#btnDefault").click(function () {
             $("#States_1_").val("Россия");
             $("#States_2_").val("Казань");
             $("#States_3_").val("Университет");
@@ -89,7 +97,8 @@
         });
     });
 
-    function UpdateAutocompleteStates() {
+    function UpdateAutocompleteStates(propertyId) {
+        $("#targetPropertyId").val(propertyId);
         var formData = $("form").formSerialize();
         $.ajax(
             {
@@ -103,20 +112,21 @@
     }
 
     function OnUpdateAutocompleteStatesSuccess(response) {
-        for (var i = 0; i < response.Properties.length; i++) {
-            var input = $("input[data-property-id=" + response.Properties[i].ID + "]");
-            input.attr("data-autocomplete", response.Properties[i].States);
+        var targetPropertyId =  $("#targetPropertyId").val();
+        var input = $("input[data-property-id=" + targetPropertyId + "]");
+        input.attr("data-autocomplete", response);
 
-            input.autocomplete(
-                {
-                    matchContains: true,
-                    minLength: 0,
-                    delay: 0,
-                    autoFocus: false,
-                    source: input.attr("data-autocomplete").split("|")
-                }
-            );
-        }
+        input.autocomplete(
+            {
+                matchContains: true,
+                minLength: 0,
+                delay: 0,
+                autoFocus: false,
+                source: input.attr("data-autocomplete").split("|")
+            }
+        );
+
+        input.autocomplete("search", "");
     }
     
 </script>

@@ -103,7 +103,7 @@
     </Compile>
     <Compile Include="Infrastructure\Filters\LogErrorAttribute.asax.cs" />
     <Compile Include="ViewModels\Content\AjaxStatesViewModel.cs" />
-    <Compile Include="ViewModels\Content\DownloadViewModel.cs" />
+    <Compile Include="ViewModels\Content\SearchViewModel.cs" />
     <Compile Include="ViewModels\Content\UploadViewModel.cs" />
     <Compile Include="ViewModels\Account\RegisterViewModel.cs" />
     <Compile Include="ViewModels\Account\ChangePasswordViewModel.cs" />
@@ -206,7 +206,7 @@
     <Content Include="Views\Content\Upload.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Views\Content\Download.cshtml" />
+    <Content Include="Views\Content\Search.cshtml" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />

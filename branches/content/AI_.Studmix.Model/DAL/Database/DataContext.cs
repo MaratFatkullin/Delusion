@@ -10,6 +10,7 @@ namespace AI_.Studmix.Model.DAL.Database
         public DbSet<PropertyState> PropertyStates { get; set; }
         public DbSet<ContentFile> ContentFiles { get; set; }
         public DbSet<ContentPackage> ContentPackages { get; set; }
+        public DbSet<UserProfile> UserProfiles { get; set; }
 
         public DataContext(string nameOrConnectionString)
             : base(nameOrConnectionString)
