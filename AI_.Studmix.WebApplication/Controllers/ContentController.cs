@@ -100,13 +100,13 @@ namespace AI_.Studmix.WebApplication.Controllers
         }
 
         [HttpPost]
-        public JsonResult UpdateStates(Dictionary<int,string> states,int targetPropertyId)
+        public JsonResult UpdateStates(Dictionary<int,string> states,int id)
         {
             var specifieStatePairs = states.Where(pair => !string.IsNullOrEmpty(pair.Value));
             var response = GetDefaultStates();
 
             if (specifieStatePairs.Count() == 0)
-                return Json(response.Properties.Single(x => x.ID == targetPropertyId).States);
+                return Json(response.Properties.Single(x => x.ID == id).States);
 
             var properties = UnitOfWork.PropertyRepository.Get();
             var service = new PropertyStateService();
@@ -131,7 +131,7 @@ namespace AI_.Studmix.WebApplication.Controllers
                 }
             }
 
-            return Json(response.Properties.Single(x => x.ID == targetPropertyId).States);
+            return Json(response.Properties.Single(x => x.ID == id).States);
         }
 
         private AjaxStatesViewModel GetDefaultStates()

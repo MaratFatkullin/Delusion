@@ -42,12 +42,12 @@
                 type: 'POST',
                 data: formData,
                 dataType: 'json',
-                success: OnUpdateAutocompleteStatesSuccess
+                success: OnAjaxRequestSuccess
             }
         );
     }
 
-    function OnUpdateAutocompleteStatesSuccess(response) {
+    function OnAjaxRequestSuccess(response) {
         for (var i = 0; i < response.Properties.length; i++) {
             var select = $("select[data-property-id=" + response.Properties[i].ID + "]");
             var options = response.Properties[i].States.split("|");
