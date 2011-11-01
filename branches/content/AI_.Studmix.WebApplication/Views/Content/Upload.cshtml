@@ -35,7 +35,7 @@
                 <input type="button" value="по умолчанию" id="btnDefault"/>
                 @foreach (var property in Model.Properties)
                 {
-                    var attrs = new Dictionary<string, object> {{"data-property-id", property.ID}};
+                    var attrs = new Dictionary<string, object> { { "data-autocomplete-source-path", "/Content/UpdateStates/" + property.ID } };
                     Model.States[property.ID] = null;
                     <div class="editor-field">
                         <span>
@@ -43,8 +43,7 @@
                         </span>
                         <br />
                         <span>
-                            @Html.TextBoxFor(x => x.States[property.ID], attrs)
-                            <input type="button"/>
+                            @Html.DropDownListFor(x => x.States[property.ID], new List<SelectListItem>(),attrs)
                         </span>
                     </div>
                 }
@@ -81,19 +80,16 @@
 
 @section scripts{
     @Url.Script("jquery.ajax.form.js")
+    @Url.Script("ui.combobox.js")
 }
 
 <script type="text/javascript">
-    $(function() {
-        $("input[data-property-id]").each(function() {
-            var button = $(this).siblings("input[type=button]");
-            var propertyId = $(this).attr("data-property-id");
-            button.click(function() {
-                UpdateAutocompleteStates(propertyId);
-            });
+    $(function () {
+        $("[data-autocomplete-source-path]").each(function () {
+            $(this).combobox();
         });
 
-        $("#btnDefault").click(function() {
+        $("#btnDefault").click(function () {
             $("#States_1_").val("Россия");
             $("#States_2_").val("Казань");
             $("#States_3_").val("Университет");
@@ -103,6 +99,7 @@
     });
 
     function UpdateAutocompleteStates(propertyId) {
+        alert(propertyId);
         $("#targetPropertyId").val(propertyId);
         var formData = $("form").formSerialize();
         $.ajax(
@@ -111,27 +108,22 @@
                 type: 'POST',
                 data: formData,
                 dataType: 'json',
-                success: OnUpdateAutocompleteStatesSuccess
+                success: OnAjaxRequestSuccess
             }
         );
+        alert("out");
     }
 
-    function OnUpdateAutocompleteStatesSuccess(response) {
+    function OnAjaxRequestSuccess(response) {
+        alert(response);
         var targetPropertyId = $("#targetPropertyId").val();
-        var input = $("input[data-property-id=" + targetPropertyId + "]");
-        input.attr("data-autocomplete", response);
-
-        input.autocomplete(
-            {
-                matchContains: true,
-                minLength: 0,
-                delay: 0,
-                autoFocus: false,
-                source: input.attr("data-autocomplete").split("|")
-            }
-        );
-
-        input.autocomplete("search", "");
+        var select = $("select[data-property-id=" + targetPropertyId + "]");
+        var states = response.split("|");
+        select.text("");
+        for (var i = 0; i < states.length; i++) {
+            select.append("<option id=\"" + states[i] + "\">" + states[i] + "</option>");
+        }
+        select.combobox();
     }
     
 </script>
