@@ -111,7 +111,7 @@
     <Compile Include="ViewModels\Account\ChangePasswordViewModel.cs" />
     <Compile Include="ViewModels\Account\LogOnViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ViewModels\Content\ViewViewModel.cs" />
+    <Compile Include="ViewModels\Content\DetailsViewModel.cs" />
     <Compile Include="ViewModels\Shared\ApplicationErrorViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -218,7 +218,7 @@
     <Content Include="Views\Content\UploadSuccess.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Views\Content\View.cshtml" />
+    <Content Include="Views\Content\Details.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Shared\ApplicationError.cshtml" />

@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Web;
@@ -174,13 +173,14 @@ namespace AI_.Studmix.WebApplication.Controllers
         }
 
         [HttpGet]
-        public ViewResult View(int id)
+        public ViewResult Details(int id)
         {
             var contentPackage = UnitOfWork.ContentPackageRepository.GetByID(id);
+            var properties = UnitOfWork.PropertyRepository.Get();
             if (contentPackage == null)
-                return Error("Материал не найден", "Указаный материал отсутсвует в базе данных.");
+                return ErrorView("Материал не найден", "Указанный материал отсутствует в базе данных.");
 
-            var viewModel = new ViewViewModel {Package = contentPackage};
+            var viewModel = new DetailsViewModel {Package = contentPackage, Properties = properties};
             return View(viewModel);
         }
     }

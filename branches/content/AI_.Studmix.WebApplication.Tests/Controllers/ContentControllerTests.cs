@@ -575,26 +575,39 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         }
 
         [Fact]
-        public void View_Simple_PackageInitialized()
+        public void Details_Simple_PackageInitialized()
         {
             // Arrange
             var package = _unitOfWork.ContentPackageRepository.Get().Last();
 
             // Act
-            var result = _controller.View(package.ID);
+            var result = _controller.Details(package.ID);
 
             // Assert
-            var model = (ViewViewModel)result.Model;
+            var model = (DetailsViewModel)result.Model;
             model.Package.Should().Be(package);
         }
 
         [Fact]
-        public void View_PackageNotExists_ErrorViewShown()
+        public void Details_Simple_PropertiesInitialized()
         {
             // Arrange
 
             // Act
-            var result = _controller.View(-1);
+            var result = _controller.Details(1);
+
+            // Assert
+            var model = (DetailsViewModel)result.Model;
+            model.Properties.Should().HaveCount(2);
+        }
+
+        [Fact]
+        public void Details_PackageNotExists_ErrorViewShown()
+        {
+            // Arrange
+
+            // Act
+            var result = _controller.Details(-1);
 
             // Assert
             result.ViewName.Should().Be("ApplicationError");

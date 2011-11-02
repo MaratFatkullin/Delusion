@@ -1,0 +1,75 @@
+﻿@using AI_.Studmix.WebApplication.ViewModels.Content
+@model DetailsViewModel
+@{
+    ViewBag.Title = "Просмотр материала";
+}
+<table>
+    <tr class="top">
+        <td>
+            <fieldset>
+                <legend>Свойства</legend>
+                @foreach (var property in Model.Properties)
+                {
+                    var propertyState = Model.Package.PropertyStates.FirstOrDefault(s => s.Property.ID == property.ID);
+                    var propertyValue = propertyState != null ? propertyState.Value : string.Empty;
+
+                    <div class="editor-label">
+                        <span>@property.Name</span>
+                    </div>
+                    <div class="editor-field">
+                        <input type="text" value="@propertyValue" disabled="disabled"></input>
+                    </div>
+                }
+            </fieldset>
+        </td>
+        <td>
+            <fieldset>
+                <legend>Информация</legend>
+                <div class="editor-label">
+                    @Html.LabelFor(m => m.Package.Caption)
+                </div>
+                <div class="editor-field">
+                    @Html.TextBoxFor(m => m.Package.Caption, new {disabled = "disabled"})
+                </div>
+                <div class="editor-label">
+                    @Html.LabelFor(m => m.Package.Description)
+                </div>
+                <div class="editor-field">
+                    @Html.TextAreaFor(m => m.Package.Description, new {disabled = "disabled"})
+                </div>
+                <div class="editor-label">
+                    @Html.LabelFor(m => m.Package.Price)
+                </div>
+                <div class="editor-field">
+                    @Html.TextBoxFor(m => m.Package.Price, new {disabled = "disabled"})
+                </div>
+            </fieldset>
+        </td>
+        <td>
+            <fieldset>
+                <legend>Превью</legend>
+                <ul>
+                    @foreach (var file in Model.Package.Files.Where(f => f.IsPreview))
+                    {
+                        <li>
+                            @file.Name
+                        </li>
+                    }
+                </ul>
+            </fieldset>
+        </td>
+        <td>
+            <fieldset>
+                <legend>Файлы</legend>
+                <ul>
+                    @foreach (var file in Model.Package.Files.Where(f => !f.IsPreview))
+                    {
+                        <li>
+                            @file.Name
+                        </li>
+                    }
+                </ul>
+            </fieldset>
+        </td>
+    </tr>
+</table>
