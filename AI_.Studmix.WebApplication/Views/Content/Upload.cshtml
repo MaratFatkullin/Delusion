@@ -35,16 +35,14 @@
                 <input type="button" value="по умолчанию" id="btnDefault"/>
                 @foreach (var property in Model.Properties)
                 {
-                    var attrs = new Dictionary<string, object> { { "data-autocomplete-source-path", "/Content/UpdateStates/" + property.ID } };
                     Model.States[property.ID] = null;
                     <div class="editor-field">
                         <span>
                             @property.Name
                         </span>
                         <br />
-                        <span>
-                            @Html.DropDownListFor(x => x.States[property.ID], new List<SelectListItem>(),attrs)
-                        </span>
+                        
+                        @Html.CombBoxFor(x => x.States[property.ID], "/Content/UpdateStates/" + property.ID)
                     </div>
                 }
             </td>
@@ -97,33 +95,4 @@
             $("#States_5_").val("Заочная");
         });
     });
-
-    function UpdateAutocompleteStates(propertyId) {
-        alert(propertyId);
-        $("#targetPropertyId").val(propertyId);
-        var formData = $("form").formSerialize();
-        $.ajax(
-            {
-                url: '/Content/UpdateStates',
-                type: 'POST',
-                data: formData,
-                dataType: 'json',
-                success: OnAjaxRequestSuccess
-            }
-        );
-        alert("out");
-    }
-
-    function OnAjaxRequestSuccess(response) {
-        alert(response);
-        var targetPropertyId = $("#targetPropertyId").val();
-        var select = $("select[data-property-id=" + targetPropertyId + "]");
-        var states = response.split("|");
-        select.text("");
-        for (var i = 0; i < states.length; i++) {
-            select.append("<option id=\"" + states[i] + "\">" + states[i] + "</option>");
-        }
-        select.combobox();
-    }
-    
 </script>

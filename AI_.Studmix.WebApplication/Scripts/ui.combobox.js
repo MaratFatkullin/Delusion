@@ -2,20 +2,14 @@
     $.widget("ui.combobox", {
         _create: function () {
             var self = this,
-                    name = this.element.attr("name"),
-					select = this.element.hide().attr("name",""),
-					selected = select.children(":selected"),
-					value = selected.val() ? selected.text() : "";
-            var input = this.input = $("<input>")
-                    .attr("name", name)
-					.insertAfter(select)
-					.val(value)
+					element = this.element;
+            var input = this.input = element
 					.autocomplete({
 					    delay: 0,
 					    minLength: 0,
 					    source:
 					        function (request, response) {
-					            var url = select.attr("data-autocomplete-source-path");
+					            var url = element.attr("data-autocomplete-source-path");
 					            var formData = $("form").formSerialize();
 					            $.ajax(
 					                {
@@ -24,17 +18,13 @@
 					                    data: formData,
 					                    dataType: 'json',
 					                    success:
-					                        function (responceData) {
-					                            var states = responceData.split("|");
-					                            select.text("");
-					                            for (var i = 0; i < states.length; i++) {
-					                                select.append($("<option>").val(states[i]).attr("title", states[i]).html(states[i]));
-					                            }
+					                        function (responseData) {
+					                            element.attr("data-autocomplete-states", responseData);
 
 					                            var matcher = new RegExp($.ui.autocomplete.escapeRegex(request.term), "i");
-					                            response(select.children("option").map(function () {
-					                                var text = $(this).text();
-					                                if (this.value && (!request.term || matcher.test(text)))
+					                            response(element.attr("data-autocomplete-states").split("|").map(function (state) {
+					                                var text = state;
+					                                if (state && (!request.term || matcher.test(text)))
 					                                    return {
 					                                        label: text.replace(
 					                                            new RegExp("(?![^&;]+;)(?!<[^<>]*)(" +
@@ -42,14 +32,14 @@
         					                                                ")(?![^<>]*>)(?![^&;]+;)", "gi"
 											                ), "<strong>$1</strong>"),
 					                                        value: text,
-					                                        option: this
+					                                        option: state
 					                                    };
 					                            }));
 					                        }
 					                }
                                 );
 
-					            
+
 					        },
 					    select: function (event, ui) {
 					        ui.item.option.selected = true;
@@ -61,7 +51,7 @@
 					        if (!ui.item) {
 					            var matcher = new RegExp("^" + $.ui.autocomplete.escapeRegex($(this).val()) + "$", "i"),
 									valid = false;
-					            select.children("option").each(function () {
+					            element.attr("data-autocomplete-states").split("|").each(function () {
 					                if ($(this).text().match(matcher)) {
 					                    this.selected = valid = true;
 					                    return false;
@@ -70,7 +60,7 @@
 					            if (!valid) {
 					                // remove invalid value, as it didn't match anything
 					                $(this).val("");
-					                select.val("");
+					                element.val("");
 					                input.data("autocomplete").term = "";
 					                return false;
 					            }
