@@ -7,45 +7,30 @@
 @Html.ValidationSummary()
 @using (Html.BeginForm("Upload", "Content", FormMethod.Post, new {enctype = "multipart/form-data"}))
 {
-    <fieldset>
-        <legend>Информация о контенте</legend>
-        <table>
-            <tr class="top">
-                <td>
-                    <p>
-                        @Html.LabelFor(m => m.ContentFiles)
-                        <br/>
-                        <input type="file" multiple="true" name="ContentFiles" />
-                        <br/>
-                        @Html.ValidationMessageFor(m => m.ContentFiles)
-                    </p>
-                    <p>
-                        @Html.LabelFor(m => m.PreviewContentFiles)
-                        <br/>
-                        <input type="file" multiple="true" name="PreviewContentFiles" />
-                        <br/>
-                        @Html.ValidationMessageFor(m => m.PreviewContentFiles)
-                    </p>
-                    <p>
-                        <input type="submit" value="Сохранить"/>
-                    </p>
-                </td>
-                <td >
+    <p>
+        <input type="submit" value="Сохранить"/>
+    </p>
+    <table>
+        <tr class="top">
+            <td >
+                <fieldset>
+                    <legend>Свойства</legend>
                     <input type="button" value="по умолчанию" id="btnDefault"/>
-                    @foreach (var property in Model.Properties)
-                    {
-                        Model.States[property.ID] = null;
-                        <div class="editor-field">
-                            <span>
-                                @property.Name
-                            </span>
-                            <br />
-                        
-                            @Html.CombBoxFor(x => x.States[property.ID], "/Content/UpdateStates/" + property.ID)
-                        </div>
-                    }
-                </td>
-                <td>
+                                @foreach (var property in Model.Properties)
+                                {
+                                    Model.States[property.ID] = null;
+                                    <div class="editor-label">
+                                        <span>@property.Name</span>
+                                    </div>
+                                    <div class="editor-field">
+                                        @Html.CombBoxFor(x => x.States[property.ID], "/Content/UpdateStates/" + property.ID)
+                                    </div>
+                                }
+                </fieldset>
+            </td>
+            <td>
+                <fieldset>
+                    <legend>Информация</legend>
                     <div class="editor-label">
                         @Html.LabelFor(m => m.Caption)
                     </div>
@@ -69,10 +54,29 @@
                         @Html.TextBoxFor(m => m.Price)
                         @Html.ValidationMessageFor(m => m.Price)
                     </div>
-                </td>
-            </tr>
-        </table>
-    </fieldset>
+                </fieldset>
+            </td>
+            <td>
+                <fieldset>
+                    <legend>Файлы</legend>
+                    <div class="editor-label">
+                             @Html.LabelFor(m => m.ContentFiles)
+                         </div>
+                    <div class="editor-field">
+                        <input type="file" multiple="true" name="ContentFiles" />
+                             @Html.ValidationMessageFor(m => m.ContentFiles)
+                    </div>
+                    <div class="editor-label">
+                             @Html.LabelFor(m => m.PreviewContentFiles)
+                         </div>
+                    <div class="editor-field">
+                        <input type="file" multiple="true" name="PreviewContentFiles" />
+                             @Html.ValidationMessageFor(m => m.PreviewContentFiles)
+                    </div>
+                </fieldset>
+            </td>
+        </tr>
+    </table>
 }
 
 @section scripts{
@@ -81,12 +85,12 @@
 }
 
 <script type="text/javascript">
-    $(function () {
-        $("[data-autocomplete-source-path]").each(function () {
+    $(function() {
+        $("[data-autocomplete-source-path]").each(function() {
             $(this).combobox();
         });
 
-        $("#btnDefault").click(function () {
+        $("#btnDefault").click(function() {
             $("#States_1_").val("Россия");
             $("#States_2_").val("Казань");
             $("#States_3_").val("Университет");

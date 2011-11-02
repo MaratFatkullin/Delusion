@@ -13,7 +13,7 @@ namespace AI_.Studmix.WebApplication.Controllers
             TempData["Message"] = message;
         }
 
-        public ViewResult Error(string title,string message)
+        public ViewResult ErrorView(string title,string message)
         {
             var viewModel = new ApplicationErrorViewModel
                                             {

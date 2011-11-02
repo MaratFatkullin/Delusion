@@ -19,11 +19,10 @@
                     @foreach (var property in Model.Properties)
                     {
                         Model.States[property.ID] = null;
+                        <div class="editor-label">
+                            <span>@property.Name</span>
+                        </div>
                         <div class="editor-field">
-                            <span>
-                                @property.Name
-                            </span>
-                            <br />
                             @Html.CombBoxFor(x => x.States[property.ID], "/Content/UpdateStates/" + property.ID, true)
                         </div>
                     }
@@ -40,8 +39,8 @@
                                 {
                                     <li>
                                         @Html.ActionLink(string.Format("{0}-{1}", package.Caption, package.CreateDate.ToShortDateString()),
-                                                           "View",
-                                                           new {id = package.ID})
+                                                           "Details",
+                                                           new { id = package.ID })
                                         
                                     </li>
                                 }
