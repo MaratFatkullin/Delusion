@@ -3,7 +3,7 @@ using System.Web.Mvc;
 
 namespace AI_.Studmix.WebApplication.Helpers
 {
-    public static class ContentHelper
+    public static class UrlHelperExtension
     {
         public static HtmlString Script(this UrlHelper urlHelper, string filename)
         {

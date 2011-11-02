@@ -94,7 +94,8 @@
     <Compile Include="Controllers\ContentController.cs" />
     <Compile Include="Controllers\ControllerBase.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Helpers\UrlHelper.cs" />
+    <Compile Include="Helpers\HtmlHelperExtension.cs" />
+    <Compile Include="Helpers\UrlHelperExtension.cs" />
     <Compile Include="Infrastructure\ModelBinders\DefaultDictionaryBinder.cs" />
     <Compile Include="Infrastructure\ControllerActivator.cs" />
     <Compile Include="Infrastructure\UnityDependencyResolver.cs" />
