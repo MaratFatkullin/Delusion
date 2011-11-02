@@ -1,79 +1,78 @@
 ﻿@using AI_.Studmix.WebApplication.ViewModels.Content
 @model UploadViewModel
 @{
-    ViewBag.Title = "Upload";
+    ViewBag.Title = "Загрузка контента";
 }
-<h2>
-    Загрузка контента
-</h2>
 
 @Html.ValidationSummary()
 @using (Html.BeginForm("Upload", "Content", FormMethod.Post, new {enctype = "multipart/form-data"}))
 {
-    <table>
-        <tr class="top">
-            <td>
-                <p>
-                    @Html.LabelFor(m => m.ContentFiles)
-                    <br/>
-                    <input type="file" multiple="true" name="ContentFiles" />
-                    <br/>
-                    @Html.ValidationMessageFor(m => m.ContentFiles)
-                </p>
-                <p>
-                    @Html.LabelFor(m => m.PreviewContentFiles)
-                    <br/>
-                    <input type="file" multiple="true" name="PreviewContentFiles" />
-                    <br/>
-                    @Html.ValidationMessageFor(m => m.PreviewContentFiles)
-                </p>
-                <p>
-                    <input type="submit" value="Сохранить"/>
-                </p>
-            </td>
-            <td >
-                <input type="button" value="по умолчанию" id="btnDefault"/>
-                @foreach (var property in Model.Properties)
-                {
-                    Model.States[property.ID] = null;
-                    <div class="editor-field">
-                        <span>
-                            @property.Name
-                        </span>
-                        <br />
+    <fieldset>
+        <legend>Информация о контенте</legend>
+        <table>
+            <tr class="top">
+                <td>
+                    <p>
+                        @Html.LabelFor(m => m.ContentFiles)
+                        <br/>
+                        <input type="file" multiple="true" name="ContentFiles" />
+                        <br/>
+                        @Html.ValidationMessageFor(m => m.ContentFiles)
+                    </p>
+                    <p>
+                        @Html.LabelFor(m => m.PreviewContentFiles)
+                        <br/>
+                        <input type="file" multiple="true" name="PreviewContentFiles" />
+                        <br/>
+                        @Html.ValidationMessageFor(m => m.PreviewContentFiles)
+                    </p>
+                    <p>
+                        <input type="submit" value="Сохранить"/>
+                    </p>
+                </td>
+                <td >
+                    <input type="button" value="по умолчанию" id="btnDefault"/>
+                    @foreach (var property in Model.Properties)
+                    {
+                        Model.States[property.ID] = null;
+                        <div class="editor-field">
+                            <span>
+                                @property.Name
+                            </span>
+                            <br />
                         
-                        @Html.CombBoxFor(x => x.States[property.ID], "/Content/UpdateStates/" + property.ID)
+                            @Html.CombBoxFor(x => x.States[property.ID], "/Content/UpdateStates/" + property.ID)
+                        </div>
+                    }
+                </td>
+                <td>
+                    <div class="editor-label">
+                        @Html.LabelFor(m => m.Caption)
                     </div>
-                }
-            </td>
-            <td>
-                <div class="editor-label">
-                    @Html.LabelFor(m => m.Caption)
-                </div>
-                <div class="editor-field">
-                    @Html.TextBoxFor(m => m.Caption)
-                    @Html.ValidationMessageFor(m => m.Caption)
-                </div>
+                    <div class="editor-field">
+                        @Html.TextBoxFor(m => m.Caption)
+                        @Html.ValidationMessageFor(m => m.Caption)
+                    </div>
 
-                <div class="editor-label">
-                    @Html.LabelFor(m => m.Description)
-                </div>
-                <div class="editor-field">
-                    @Html.TextAreaFor(m => m.Description)
-                    @Html.ValidationMessageFor(m => m.Description)
-                </div>
+                    <div class="editor-label">
+                        @Html.LabelFor(m => m.Description)
+                    </div>
+                    <div class="editor-field">
+                        @Html.TextAreaFor(m => m.Description)
+                        @Html.ValidationMessageFor(m => m.Description)
+                    </div>
 
-                <div class="editor-label">
-                    @Html.LabelFor(m => m.Price)
-                </div>
-                <div class="editor-field">
-                    @Html.TextBoxFor(m => m.Price)
-                    @Html.ValidationMessageFor(m => m.Price)
-                </div>
-            </td>
-        </tr>
-    </table>
-    @Html.Hidden("targetPropertyId")
+                    <div class="editor-label">
+                        @Html.LabelFor(m => m.Price)
+                    </div>
+                    <div class="editor-field">
+                        @Html.TextBoxFor(m => m.Price)
+                        @Html.ValidationMessageFor(m => m.Price)
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </fieldset>
 }
 
 @section scripts{

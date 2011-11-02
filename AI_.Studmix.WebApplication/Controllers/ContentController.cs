@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Web;
@@ -50,8 +51,8 @@ namespace AI_.Studmix.WebApplication.Controllers
             package.Price = viewModel.Price;
             package.Owner = CurrentUser;
 
-            InportFilesToPackage(package, viewModel.PreviewContentFiles, true);
-            InportFilesToPackage(package, viewModel.ContentFiles, false);
+            ImportFilesToPackage(package, viewModel.PreviewContentFiles, true);
+            ImportFilesToPackage(package, viewModel.ContentFiles, false);
 
             var service = new PropertyStateService();
             var specifiedStates = viewModel.States.Where(pair => !string.IsNullOrEmpty(pair.Value));
@@ -71,10 +72,12 @@ namespace AI_.Studmix.WebApplication.Controllers
             _fileStorageManager.Store(package);
             UnitOfWork.ContentPackageRepository.Insert(package);
             UnitOfWork.Save();
-            return View(viewModel);
+
+            SetMessage("Контент успешно загружен. Благодарим за использование ресурсом.");
+            return View("UploadSuccess");
         }
 
-        private void InportFilesToPackage(ContentPackage package,
+        private void ImportFilesToPackage(ContentPackage package,
                                           IEnumerable<HttpPostedFileBase> files,
                                           bool isPreview)
         {
@@ -96,6 +99,23 @@ namespace AI_.Studmix.WebApplication.Controllers
         {
             var viewModel = new SearchViewModel();
             viewModel.Properties = UnitOfWork.PropertyRepository.Get();
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public ViewResult Search(SearchViewModel viewModel)
+        {
+            viewModel.Properties = UnitOfWork.PropertyRepository.Get();
+
+            var stateService = new PropertyStateService();
+            var propertyStates = viewModel.States
+                .Select(pair => stateService.GetState(UnitOfWork, pair.Key, pair.Value))
+                .Where(propertyState => propertyState != null)
+                .ToList();
+
+            var searchService = new SearchService();
+            viewModel.Packages = searchService.FindPackageWithSamePropertyStates(UnitOfWork, propertyStates);
+
             return View(viewModel);
         }
 
@@ -151,6 +171,17 @@ namespace AI_.Studmix.WebApplication.Controllers
             }
 
             return response;
+        }
+
+        [HttpGet]
+        public ViewResult View(int id)
+        {
+            var contentPackage = UnitOfWork.ContentPackageRepository.GetByID(id);
+            if (contentPackage == null)
+                return Error("Материал не найден", "Указаный материал отсутсвует в базе данных.");
+
+            var viewModel = new ViewViewModel {Package = contentPackage};
+            return View(viewModel);
         }
     }
 }

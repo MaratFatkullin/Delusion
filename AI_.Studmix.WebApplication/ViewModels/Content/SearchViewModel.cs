@@ -9,6 +9,8 @@ namespace AI_.Studmix.WebApplication.ViewModels.Content
 
         public Dictionary<int,string> States { get; set; }
 
+        public IEnumerable<ContentPackage> Packages { get; set; }
+
         public SearchViewModel()
         {
             States = new Dictionary<int, string>();

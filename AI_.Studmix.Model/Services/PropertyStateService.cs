@@ -10,8 +10,8 @@ namespace AI_.Studmix.Model.Services
     public class PropertyStateService
     {
         public PropertyState GetState(IUnitOfWork unitOfWork,
-                                 int propertyId,
-                                 string stateValue)
+                                      int propertyId,
+                                      string stateValue)
         {
             return unitOfWork.PropertyStateRepository
                 .Get(x => x.Property.ID == propertyId
@@ -19,7 +19,6 @@ namespace AI_.Studmix.Model.Services
                 .FirstOrDefault();
         }
 
-        //todo: не покрыто тестами
         public IEnumerable<PropertyState> GetBoundedStates(IUnitOfWork unitOfWork,
                                                            Property property,
                                                            PropertyState state)
@@ -34,8 +33,8 @@ namespace AI_.Studmix.Model.Services
 
         public PropertyState CreateState(IUnitOfWork unitOfWork, Property property, string value)
         {
-            var existingPropertyStates = property.States.Where(state=>state.Value == value).FirstOrDefault();
-            if(existingPropertyStates!=null)
+            var existingPropertyStates = property.States.Where(state => state.Value == value).FirstOrDefault();
+            if (existingPropertyStates != null)
                 throw new InvalidOperationException("Property state already exists.");
 
             int index = property.States.Count == 0 ? 1 : property.States.Max(x => x.Index) + 1;
