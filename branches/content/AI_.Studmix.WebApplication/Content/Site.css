@@ -67,8 +67,13 @@ h4 {
     font-size: 1.1em;
 }
 
-h5, h6 {
+h5 {
     font-size: 1em;
+}
+
+h6 {
+    font-size: 1em;
+    color: gray;
 }
 
 /* PRIMARY LAYOUT ELEMENTS   
@@ -188,6 +193,7 @@ legend {
 
 textarea {
     min-height: 75px;
+    width: 200px;
 }
 
 input[type="text"], 

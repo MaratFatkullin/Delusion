@@ -49,11 +49,13 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
 
             var package1 = new ContentPackage
                            {
+                               ID = 1,
                                PropertyStates = new Collection<PropertyState> {state1, state3}
                            };
 
             var package2 = new ContentPackage
                            {
+                               ID = 2,
                                PropertyStates = new Collection<PropertyState> {state2, state4}
                            };
 
@@ -482,14 +484,120 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         public void Search_Simple_PropertiesInitialized()
         {
             // Arrange
-            _controller.ModelState.AddModelError("ContentFiles", "errorMessage");
 
             // Act
             var result = _controller.Search();
 
             // Assert
             var model = (SearchViewModel) result.Model;
-            model.Properties.Should().NotBeEmpty();
+            model.Properties.Should().HaveCount(2);
+        }
+
+        [Fact]
+        public void SearchPost_AllPropertySpecified_PackageFound()
+        {
+            // Arrange
+            var viewModel = new SearchViewModel();
+            viewModel.States = new Dictionary<int, string> {{1, "state1"}, {2, "state2"}};
+
+            // Act
+            var result = _controller.Search(viewModel);
+
+            // Assert
+            var model = (SearchViewModel )result.Model;
+            model.Packages.Single().ID.Should().Be(1);
+        }
+
+        [Fact]
+        public void SearchPost_NotAllPropertySpecified_PackageFound()
+        {
+            // Arrange
+            var viewModel = new SearchViewModel();
+            viewModel.States = new Dictionary<int, string> { { 1, "" }, { 2, "state4" } };
+
+            // Act
+            var result = _controller.Search(viewModel);
+
+            // Assert
+            var model = (SearchViewModel)result.Model;
+            model.Packages.Single().ID.Should().Be(2);
+        }
+
+        [Fact]
+        public void SearchPost_ManyMatchedPackages_AllMatchedPackagesFound()
+        {
+            // Arrange
+            var property = _unitOfWork.PropertyRepository.GetByID(1);
+            var state1 = property.States.First();
+            var state2 = property.States.Last();
+            var newPackage = new ContentPackage {ID = 3, PropertyStates = new Collection<PropertyState> {state1, state2}};
+            state1.ContentPackages.Add(newPackage);
+            state2.ContentPackages.Add(newPackage);
+            _unitOfWork.ContentPackageRepository.Insert(newPackage);
+
+            var viewModel = new SearchViewModel();
+            viewModel.States = new Dictionary<int, string> { { 1, "state1" }, { 2, "" } };
+
+            // Act
+            var result = _controller.Search(viewModel);
+
+            // Assert
+            var model = (SearchViewModel)result.Model;
+            model.Packages.Should().HaveCount(2);
+        }
+
+        [Fact]
+        public void SearchPost_NoMatchedPackages_NoPackageFound()
+        {
+            // Arrange
+            var viewModel = new SearchViewModel();
+            viewModel.States = new Dictionary<int, string> { { 1, "state1" }, { 2, "state4" } };
+
+            // Act
+            var result = _controller.Search(viewModel);
+
+            // Assert
+            var model = (SearchViewModel)result.Model;
+            model.Packages.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void SearchPost_Simple_PropertiesInitialized()
+        {
+            // Arrange
+
+            // Act
+            var result = _controller.Search(new SearchViewModel());
+
+            // Assert
+            var model = (SearchViewModel)result.Model;
+            model.Properties.Should().HaveCount(2);
+        }
+
+        [Fact]
+        public void View_Simple_PackageInitialized()
+        {
+            // Arrange
+            var package = _unitOfWork.ContentPackageRepository.Get().Last();
+
+            // Act
+            var result = _controller.View(package.ID);
+
+            // Assert
+            var model = (ViewViewModel)result.Model;
+            model.Package.Should().Be(package);
+        }
+
+        [Fact]
+        public void View_PackageNotExists_ErrorViewShown()
+        {
+            // Arrange
+
+            // Act
+            var result = _controller.View(-1);
+
+            // Assert
+            result.ViewName.Should().Be("ApplicationError");
         }
     }
 }

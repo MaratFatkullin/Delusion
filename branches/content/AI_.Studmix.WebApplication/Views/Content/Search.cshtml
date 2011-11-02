@@ -2,64 +2,67 @@
 @model SearchViewModel
 
 @{
-    ViewBag.Title = "Поиск";
+    ViewBag.Title = "Поиск контента";
 }
-
-<h2>title</h2>
 
 @Html.ValidationSummary()
-
 @using (Html.BeginForm())
 {
-    foreach (var property in Model.Properties)
-    {
-        var attrs = new Dictionary<string, object> { { "data-property-id", property.ID } };
-        Model.States.Add(property.ID, "");
-
-        <p>
-            <span>
-                @property.Name :
-            </span>
-            <br/>
-            @Html.DropDownListFor(x => x.States[property.ID],
-                                    new SelectList(property.States, "ID", "Value"), "-",attrs)
-        </p>
-    }
+    <p>
+        <input type="submit" value="Поиск"/>
+    </p>
+    <table>
+        <tr class="top">
+            <td>
+                <fieldset>
+                    <legend>Параметры поиска</legend>
+                    @foreach (var property in Model.Properties)
+                    {
+                        Model.States[property.ID] = null;
+                        <div class="editor-field">
+                            <span>
+                                @property.Name
+                            </span>
+                            <br />
+                            @Html.CombBoxFor(x => x.States[property.ID], "/Content/UpdateStates/" + property.ID, true)
+                        </div>
+                    }
+                </fieldset>
+            </td>
+            <td>
+                <fieldset>
+                    <legend>Результат поиска</legend>
+                    <div>
+                        <ul>
+                            @if (Model.Packages != null)
+                            {
+                                foreach (var package in Model.Packages)
+                                {
+                                    <li>
+                                        @Html.ActionLink(string.Format("{0}-{1}", package.Caption, package.CreateDate.ToShortDateString()),
+                                                           "View",
+                                                           new {id = package.ID})
+                                        
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                </fieldset>            
+            </td>
+        </tr>
+    </table>
 }
-<script src="@Url.Content("~/Scripts/jquery.ajax.form.js")" type="text/javascript"> </script>
+
+@section scripts{
+    @Url.Script("jquery.ajax.form.js")
+    @Url.Script("ui.combobox.js")
+}
+
 <script type="text/javascript">
-    $(function () {
-        $("select[data-property-id]").each(function () {
-            $(this).focus(UpdateStates);
+    $(function() {
+        $("[data-autocomplete-source-path]").each(function() {
+            $(this).combobox();
         });
     });
-
-    function UpdateStates() {
-        var formData = $("form").formSerialize();
-        $.ajax(
-            {
-                url: '/Content/UpdateStates',
-                type: 'POST',
-                data: formData,
-                dataType: 'json',
-                success: OnAjaxRequestSuccess
-            }
-        );
-    }
-
-    function OnAjaxRequestSuccess(response) {
-        for (var i = 0; i < response.Properties.length; i++) {
-            var select = $("select[data-property-id=" + response.Properties[i].ID + "]");
-            var options = response.Properties[i].States.split("|");
-            select.text("");
-            
-            $.each(options, function () {
-                select.append("<option>" + this + "</option>");
-            });
-            
-//            input.attr("data-autocomplete", response.Properties[i].States);
-
-        }
-    }
-    
 </script>
