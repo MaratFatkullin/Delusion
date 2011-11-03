@@ -12,7 +12,7 @@ namespace AI_.Studmix.WebApplication.Tests.Mocks
         private IRepository<ContentPackage> _contentPackageRepository;
         private IRepository<Property> _propertyRepository;
         private IRepository<PropertyState> _propertyStateRepository;
-        private IRepository<Purchase> _purchaseRepository;
+        private IRepository<Order> _orderRepository;
         private IRepository<Role> _roleRepository;
         private IRepository<UserProfile> _userProfileRepository;
         private IRepository<User> _userRepository;
@@ -70,12 +70,12 @@ namespace AI_.Studmix.WebApplication.Tests.Mocks
             }
         }
 
-        public IRepository<Purchase> PurchaseRepository
+        public IRepository<Order> OrderRepository
         {
             get
             {
-                return _purchaseRepository ??
-                       (_purchaseRepository = new RepositoryMock<Purchase>());
+                return _orderRepository ??
+                       (_orderRepository = new RepositoryMock<Order>());
             }
         }
 

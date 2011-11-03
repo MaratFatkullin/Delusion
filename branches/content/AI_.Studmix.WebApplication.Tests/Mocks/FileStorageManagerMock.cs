@@ -15,13 +15,14 @@ namespace AI_.Studmix.WebApplication.Tests.Mocks
 
         public Stream GetFileStream(ContentFile contentFile)
         {
-            File = contentFile;
+            GetOperationArgument = contentFile;
 
             var streamMock = new Mock<Stream>().Object;
             return streamMock;
         }
 
         public ContentPackage Package { get; private set; }
-        public ContentFile File { get; private set; }
+
+        public ContentFile GetOperationArgument { get; private set; }
     }
 }

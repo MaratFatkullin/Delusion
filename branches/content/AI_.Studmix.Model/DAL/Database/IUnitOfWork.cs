@@ -11,6 +11,6 @@ namespace AI_.Studmix.Model.DAL.Database
         IRepository<ContentFile> ContentFileRepository { get; }
         IRepository<ContentPackage> ContentPackageRepository { get; }
         IRepository<UserProfile> UserProfileRepository { get;}
-        IRepository<Purchase> PurchaseRepository { get; }
+        IRepository<Order> OrderRepository { get; }
     }
 }

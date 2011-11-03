@@ -2,10 +2,10 @@
 
 namespace AI_.Studmix.Model.Models
 {
-    public class Purchase : ModelBase
+    public class Order : ModelBase
     {
         public virtual ContentPackage ContentPackage { get; set; }
 
-        public virtual UserProfile User { get; set; }
+        public virtual UserProfile UserProfile { get; set; }
     }
 }

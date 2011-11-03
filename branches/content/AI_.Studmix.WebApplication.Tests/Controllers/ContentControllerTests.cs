@@ -6,7 +6,10 @@ using System.Text;
 using System.Web;
 using System.Web.Mvc;
 using AI_.Security.Models;
+using AI_.Studmix.Model.DAL.Database;
 using AI_.Studmix.Model.Models;
+using AI_.Studmix.Model.Services;
+using AI_.Studmix.Model.Services.Abstractions;
 using AI_.Studmix.WebApplication.Controllers;
 using AI_.Studmix.WebApplication.Tests.Mocks;
 using AI_.Studmix.WebApplication.ViewModels.Content;
@@ -18,16 +21,24 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
 {
     public class ContentControllerTests
     {
-        private readonly ContentController _controller;
+        private ContentController _controller;
         private readonly FileStorageManagerMock _fileStorageManager;
         private readonly UnitOfWorkMock _unitOfWork;
+        private User _currentUser;
+        private UserProfile _currentUserProfile;
 
 
         public ContentControllerTests()
         {
             _unitOfWork = new UnitOfWorkMock();
             _fileStorageManager = new FileStorageManagerMock();
-            _controller = new ContentController(_unitOfWork, _fileStorageManager);
+
+            _currentUser = new User { UserName = "currentUsername" };
+            _currentUserProfile = new UserProfile { User = _currentUser };
+            _unitOfWork.UserRepository.Insert(_currentUser);
+            _unitOfWork.UserProfileRepository.Insert(_currentUserProfile);
+
+            _controller = new ContentController(_unitOfWork, _fileStorageManager,new FinanceService());
             _controller.ControllerContext = CreateControllerContext();
             InitUnitOfWork(_unitOfWork);
         }
@@ -91,15 +102,24 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             return new HttpPostedFileMock("file.txt", stream);
         }
 
-        private ControllerContext CreateControllerContext(string username = "user")
+        private ControllerContext CreateControllerContext(string role = "user")
         {
-            var user = new User {UserName = username};
-            _unitOfWork.UserRepository.Insert(user);
-            _unitOfWork.UserProfileRepository.Insert(new UserProfile {User = user});
             var contextMock = new Mock<ControllerContext>();
-            contextMock.Setup(context => context.HttpContext.User.Identity.Name).Returns(username);
+            contextMock.Setup(context => context.HttpContext.User.Identity.Name).Returns(_currentUser.UserName);
             contextMock.Setup(context => context.HttpContext.User.Identity.IsAuthenticated).Returns(true);
+            contextMock.Setup(context => context.HttpContext.User.IsInRole(role)).Returns(true);
             return contextMock.Object;
+        }
+
+        private static Mock<IFinanceService> GetFinanceServiceMock(bool isPermissionsGranted = true)
+        {
+            var serviceMock = new Mock<IFinanceService>();
+            serviceMock.Setup(m =>
+                              m.UserHasPermissions(It.IsAny<IUnitOfWork>(),
+                                                   It.IsAny<User>(),
+                                                   It.IsAny<ContentPackage>()))
+                .Returns(isPermissionsGranted);
+            return serviceMock;
         }
 
         #endregion
@@ -398,7 +418,6 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         public void UploadPost_Simple_OwnerOfPackageIsCurrentUser()
         {
             // Arrange
-            _controller.ControllerContext = CreateControllerContext("username");
             var viewModel = new UploadViewModel();
             viewModel.PreviewContentFiles = new List<HttpPostedFileBase> {CreateHttpPostedFile()};
 
@@ -406,7 +425,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             _controller.Upload(viewModel);
 
             // Assert
-            _unitOfWork.ContentPackageRepository.Get().Last().Owner.UserName.Should().Be("username");
+            _unitOfWork.ContentPackageRepository.Get().Last().Owner.Should().Be(_currentUser);
         }
 
         [Fact]
@@ -593,6 +612,9 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         {
             // Arrange
             var package = _unitOfWork.ContentPackageRepository.Get().Last();
+            var serviceMock = GetFinanceServiceMock();
+            _controller = new ContentController(_unitOfWork,_fileStorageManager,serviceMock.Object);
+            _controller.ControllerContext = CreateControllerContext();
 
             // Act
             var result = _controller.Details(package.ID);
@@ -606,6 +628,9 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         public void Details_Simple_PropertiesInitialized()
         {
             // Arrange
+            var serviceMock = GetFinanceServiceMock();
+            _controller = new ContentController(_unitOfWork, _fileStorageManager, serviceMock.Object);
+            _controller.ControllerContext = CreateControllerContext();
 
             // Act
             var result = _controller.Details(1);
@@ -613,6 +638,54 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             // Assert
             var model = (DetailsViewModel)result.Model;
             model.Properties.Should().HaveCount(2);
+        }
+
+        [Fact]
+        public void Details_PermissionsNotGranted_LimitedAccess()
+        {
+            // Arrange
+            var serviceMock = GetFinanceServiceMock(false);
+            _controller = new ContentController(_unitOfWork, _fileStorageManager, serviceMock.Object);
+            _controller.ControllerContext = CreateControllerContext();
+
+            // Act
+            var result = _controller.Details(1);
+
+            // Assert
+            var model = (DetailsViewModel)result.Model;
+            model.IsFullAccessGranted.Should().BeFalse();
+        }
+
+        [Fact]
+        public void Details_UserIsAdmin_FullAccess()
+        {
+            // Arrange
+            var serviceMock = GetFinanceServiceMock(false);
+            _controller = new ContentController(_unitOfWork, _fileStorageManager, serviceMock.Object);
+            _controller.ControllerContext = CreateControllerContext("admin");
+
+            // Act
+            var result = _controller.Details(1);
+
+            // Assert
+            var model = (DetailsViewModel)result.Model;
+            model.IsFullAccessGranted.Should().BeTrue();
+        }
+
+        [Fact]
+        public void Details_PermissionsGranted_FullAccess()
+        {
+            // Arrange
+            var serviceMock = GetFinanceServiceMock(true);
+            _controller = new ContentController(_unitOfWork, _fileStorageManager, serviceMock.Object);
+            _controller.ControllerContext = CreateControllerContext();
+
+            // Act
+            var result = _controller.Details(1);
+
+            // Assert
+            var model = (DetailsViewModel)result.Model;
+            model.IsFullAccessGranted.Should().BeTrue();
         }
 
         [Fact]
@@ -627,10 +700,14 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             result.ViewName.Should().Be("ApplicationError");
         }
 
+
         [Fact]
         public void Download_FileNotExists_ErrorViewShown()
         {
             // Arrange
+            var serviceMock = GetFinanceServiceMock();
+            _controller = new ContentController(_unitOfWork, _fileStorageManager, serviceMock.Object);
+            _controller.ControllerContext = CreateControllerContext();
 
             // Act
             var result = _controller.Download(-1);
@@ -644,16 +721,55 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         public void Download_FileExists_FileStreamReturned()
         {
             // Arrange
-            var contentFile = new ContentFile {ID = 2};
-            _unitOfWork.ContentFileRepository.Insert(new ContentFile {ID = 1});
+            var serviceMock = GetFinanceServiceMock();
+            _controller = new ContentController(_unitOfWork, _fileStorageManager, serviceMock.Object);
+            _controller.ControllerContext = CreateControllerContext();
+
+            var contentFile = new ContentFile();
             _unitOfWork.ContentFileRepository.Insert(contentFile);
-            _unitOfWork.ContentFileRepository.Insert(new ContentFile {ID = 3});
 
             // Act
             _controller.Download(contentFile.ID);
 
             // Assert
-            _fileStorageManager.File.Should().Be(contentFile);
+            _fileStorageManager.GetOperationArgument.Should().Be(contentFile);
+        }
+
+        [Fact]
+        public void Download_PermissionsNotGranted_ErrorMessageShown()
+        {
+            // Arrange
+            var serviceMock = GetFinanceServiceMock(false);
+            _controller = new ContentController(_unitOfWork, _fileStorageManager, serviceMock.Object);
+            _controller.ControllerContext = CreateControllerContext();
+
+            var contentFile = new ContentFile();
+            _unitOfWork.ContentFileRepository.Insert(contentFile);
+
+            // Act
+            var result = _controller.Download(contentFile.ID);
+
+            // Assert
+            var viewResult = (ViewResult)result;
+            viewResult.ViewName.Should().Be("ApplicationError");
+        }
+
+        [Fact]
+        public void Download_UserIsAdmin_PermissionsGranted()
+        {
+            // Arrange
+            var serviceMock = GetFinanceServiceMock(false);
+            _controller = new ContentController(_unitOfWork, _fileStorageManager, serviceMock.Object);
+            _controller.ControllerContext = CreateControllerContext("admin");
+
+            var contentFile = new ContentFile();
+            _unitOfWork.ContentFileRepository.Insert(contentFile);
+
+            // Act
+            var result = _controller.Download(contentFile.ID);
+
+            // Assert
+            result.Should().BeOfType<FileStreamResult>();
         }
     }
 }

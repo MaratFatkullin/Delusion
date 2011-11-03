@@ -14,12 +14,21 @@ namespace AI_.Studmix.WebApplication.Helpers
             string url,
             bool isReadOnly = false)
         {
-            var attrs = new Dictionary<string, object> { { "data-autocomplete-source-path", url } };
-            if(isReadOnly)
-                attrs.Add("readonly", "readonly");
-            var textBoxHtmlString = htmlHelper.TextBoxFor(expression, attrs);
+            var htmlAttributes = new Dictionary<string, object> {{"data-autocomplete-source-path", url}};
+            if (isReadOnly)
+                htmlAttributes.Add("readonly", "readonly");
+            var textBoxHtmlString = htmlHelper.TextBoxFor(expression, htmlAttributes);
             var str = string.Format("<span>{0}</span>", textBoxHtmlString);
             return MvcHtmlString.Create(str);
+        }
+
+        public static MvcHtmlString DisabledTextBoxFor<TModel, TProperty>(
+            this HtmlHelper<TModel> htmlHelper,
+            Expression<Func<TModel, TProperty>> expression)
+        {
+            var htmlAttributes = new Dictionary<string, object> {{"disabled", "disabled"}};
+            var textBoxHtmlString = htmlHelper.TextBoxFor(expression, htmlAttributes);
+            return textBoxHtmlString;
         }
     }
 }

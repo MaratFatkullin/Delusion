@@ -11,7 +11,7 @@ namespace AI_.Studmix.Model.DAL.Database
         private IRepository<ContentFile> _contentFileRepository;
         private IRepository<ContentPackage> _contentPackageRepository;
         private IRepository<UserProfile> _userProfileRepository;
-        private IRepository<Purchase> _purchaseRepository;
+        private IRepository<Order> _orderRepository;
 
         #region IUnitOfWork Members
 
@@ -57,12 +57,12 @@ namespace AI_.Studmix.Model.DAL.Database
                 ?? (_userProfileRepository = new Repository<UserProfile>(Context)); }
         }
 
-        public IRepository<Purchase> PurchaseRepository
+        public IRepository<Order> OrderRepository
         {
             get
             {
-                return _purchaseRepository
-                    ?? (_purchaseRepository = new Repository<Purchase>(Context));
+                return _orderRepository
+                    ?? (_orderRepository = new Repository<Order>(Context));
             }
         }
 

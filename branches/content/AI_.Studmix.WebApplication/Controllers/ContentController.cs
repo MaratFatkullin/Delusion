@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Web;
@@ -8,7 +7,9 @@ using AI_.Studmix.Model.DAL.Database;
 using AI_.Studmix.Model.DAL.FileSystem;
 using AI_.Studmix.Model.Models;
 using AI_.Studmix.Model.Services;
+using AI_.Studmix.Model.Services.Abstractions;
 using AI_.Studmix.WebApplication.ViewModels.Content;
+using AI_.Studmix.WebApplication.ViewModels.Shared;
 
 namespace AI_.Studmix.WebApplication.Controllers
 {
@@ -17,11 +18,15 @@ namespace AI_.Studmix.WebApplication.Controllers
     {
         private const string STATE_VALUES_SEPARATOR = "|";
         private readonly IFileStorageManager _fileStorageManager;
+        private readonly IFinanceService _financeService;
 
-        public ContentController(IUnitOfWork unitOfWork, IFileStorageManager fileStorageManager)
+        public ContentController(IUnitOfWork unitOfWork,
+                                 IFileStorageManager fileStorageManager,
+                                 IFinanceService financeService)
             : base(unitOfWork)
         {
             _fileStorageManager = fileStorageManager;
+            _financeService = financeService;
         }
 
         [HttpGet]
@@ -73,8 +78,9 @@ namespace AI_.Studmix.WebApplication.Controllers
             UnitOfWork.ContentPackageRepository.Insert(package);
             UnitOfWork.Save();
 
-            SetMessage("Контент успешно загружен. Благодарим за использование ресурсом.");
-            return View("UploadSuccess");
+            return InformationView("Загрузка завершена",
+                                   "Контент успешно загружен. Благодарим за использование нашего ресурса.",
+                                   new ActionLinkInfo("Content", "Upload", "Вернуться"));
         }
 
         private void ImportFilesToPackage(ContentPackage package,
@@ -182,6 +188,12 @@ namespace AI_.Studmix.WebApplication.Controllers
                 return ErrorView("Материал не найден", "Указанный материал отсутствует в базе данных.");
 
             var viewModel = new DetailsViewModel {Package = contentPackage, Properties = properties};
+
+            var userHasPermissions = _financeService.UserHasPermissions(UnitOfWork,CurrentUser,contentPackage);
+            var userIsAdmin = User.IsInRole("admin");
+
+            viewModel.IsFullAccessGranted = userHasPermissions || userIsAdmin;
+
             return View(viewModel);
         }
 
@@ -190,6 +202,11 @@ namespace AI_.Studmix.WebApplication.Controllers
             var contentFile = UnitOfWork.ContentFileRepository.GetByID(id);
             if (contentFile == null)
                 return ErrorView("Файл не найден", "Указаный файл отсутствует или был удален.");
+            var accessGranted = _financeService.UserHasPermissions(UnitOfWork,CurrentUser,contentFile.ContentPackage);
+            var userIsAdmin = User.IsInRole("admin");
+            if (!accessGranted && !userIsAdmin)
+                return ErrorView("Ошибка доступа", "Доступ к скачиванию файла закрыт.");
+
             return new FileStreamResult(_fileStorageManager.GetFileStream(contentFile), "image/jpeg");
         }
     }

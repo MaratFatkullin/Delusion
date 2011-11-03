@@ -22,5 +22,13 @@ namespace AI_.Studmix.WebApplication.Controllers
                                             };
             return View("ApplicationError", viewModel);
         }
+
+        public ViewResult InformationView(string title, string message, ActionLinkInfo link)
+        {
+            SetMessage(message);
+            var viewModel = new InformationViewModel(title);
+            viewModel.ActionLinks.Add(link);
+            return View("Information", viewModel);
+        }
     }
 }
