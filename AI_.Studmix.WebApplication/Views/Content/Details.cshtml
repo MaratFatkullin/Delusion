@@ -3,6 +3,18 @@
 @{
     ViewBag.Title = "Просмотр материала";
 }
+
+@if (!Model.IsFullAccessGranted)
+{
+    <p>
+        Доступ ограничен просмотром превью файлов.
+        <br/>
+        Для полного доступа 
+        @Html.ActionLink("Преобретите", "Order", "Finance", new {id = Model.Package.ID}, null)
+        этот материал.
+    </p>
+}
+
 <table>
     <tr class="top">
         <td>
@@ -29,19 +41,19 @@
                     @Html.LabelFor(m => m.Package.Caption)
                 </div>
                 <div class="editor-field">
-                    @Html.TextBoxFor(m => m.Package.Caption, new {disabled = "disabled"})
+                    @Html.DisabledTextBoxFor(m => m.Package.Caption)
                 </div>
                 <div class="editor-label">
                     @Html.LabelFor(m => m.Package.Description)
                 </div>
                 <div class="editor-field">
-                    @Html.TextAreaFor(m => m.Package.Description, new {disabled = "disabled"})
+                    @Html.DisabledTextBoxFor(m => m.Package.Description)
                 </div>
                 <div class="editor-label">
                     @Html.LabelFor(m => m.Package.Price)
                 </div>
                 <div class="editor-field">
-                    @Html.TextBoxFor(m => m.Package.Price, new {disabled = "disabled"})
+                    @Html.DisabledTextBoxFor(m => m.Package.Price)
                 </div>
             </fieldset>
         </td>
@@ -65,7 +77,14 @@
                     @foreach (var file in Model.Package.Files.Where(f => !f.IsPreview))
                     {
                         <li>
-                            @file.Name
+                            @if (Model.IsFullAccessGranted)
+                            {
+                                @Html.ActionLink(file.Name, "Download", new { id = file.ID })
+                            }
+                            else
+                            {
+                                @file.Name
+                            }
                         </li>
                     }
                 </ul>

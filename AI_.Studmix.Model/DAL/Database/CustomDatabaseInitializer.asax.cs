@@ -48,8 +48,8 @@ namespace AI_.Studmix.Model.DAL.Database
             context.Users.Add(admin);
             context.Users.Add(user);
 
-            var userProfile = new UserProfile {CreateDate = DateTime.Now,User = user};
-            var adminProfile = new UserProfile {CreateDate = DateTime.Now,User = admin};
+            var userProfile = new UserProfile {CreateDate = DateTime.Now, User = user, Balance = 50};
+            var adminProfile = new UserProfile {CreateDate = DateTime.Now, User = admin, Balance = 100};
 
             context.UserProfiles.Add(userProfile);
             context.UserProfiles.Add(adminProfile);
@@ -208,13 +208,13 @@ namespace AI_.Studmix.Model.DAL.Database
             context.PropertyStates.Add(paris);
             context.PropertyStates.Add(marsel);
 
-            var contentPackage1 = new ContentPackage {CreateDate = DateTime.Now};
+            var contentPackage1 = new ContentPackage {CreateDate = DateTime.Now, Price = 70, Owner = user};
             contentPackage1.PropertyStates = new Collection<PropertyState> {russia, moscow};
 
-            var contentPackage2 = new ContentPackage {CreateDate = DateTime.Now};
+            var contentPackage2 = new ContentPackage {CreateDate = DateTime.Now, Owner = user};
             contentPackage2.PropertyStates = new Collection<PropertyState> {russia, kazan};
 
-            var contentPackage3 = new ContentPackage {CreateDate = DateTime.Now};
+            var contentPackage3 = new ContentPackage {CreateDate = DateTime.Now, Owner = admin};
             contentPackage3.PropertyStates = new Collection<PropertyState> {czech, prague};
 
             context.ContentPackages.Add(contentPackage1);

@@ -16,16 +16,16 @@
                 <fieldset>
                     <legend>Свойства</legend>
                     <input type="button" value="по умолчанию" id="btnDefault"/>
-                                @foreach (var property in Model.Properties)
-                                {
-                                    Model.States[property.ID] = null;
-                                    <div class="editor-label">
-                                        <span>@property.Name</span>
-                                    </div>
-                                    <div class="editor-field">
-                                        @Html.CombBoxFor(x => x.States[property.ID], "/Content/UpdateStates/" + property.ID)
-                                    </div>
-                                }
+                    @foreach (var property in Model.Properties)
+                    {
+                        Model.States[property.ID] = null;
+                        <div class="editor-label">
+                            <span>@property.Name</span>
+                        </div>
+                        <div class="editor-field">
+                            @Html.CombBoxFor(x => x.States[property.ID], "/Content/UpdateStates/" + property.ID)
+                        </div>
+                    }
                 </fieldset>
             </td>
             <td>
@@ -60,18 +60,18 @@
                 <fieldset>
                     <legend>Файлы</legend>
                     <div class="editor-label">
-                             @Html.LabelFor(m => m.ContentFiles)
-                         </div>
+                        @Html.LabelFor(m => m.ContentFiles)
+                    </div>
                     <div class="editor-field">
                         <input type="file" multiple="true" name="ContentFiles" />
-                             @Html.ValidationMessageFor(m => m.ContentFiles)
+                        @Html.ValidationMessageFor(m => m.ContentFiles)
                     </div>
                     <div class="editor-label">
-                             @Html.LabelFor(m => m.PreviewContentFiles)
-                         </div>
+                        @Html.LabelFor(m => m.PreviewContentFiles)
+                    </div>
                     <div class="editor-field">
                         <input type="file" multiple="true" name="PreviewContentFiles" />
-                             @Html.ValidationMessageFor(m => m.PreviewContentFiles)
+                        @Html.ValidationMessageFor(m => m.PreviewContentFiles)
                     </div>
                 </fieldset>
             </td>
