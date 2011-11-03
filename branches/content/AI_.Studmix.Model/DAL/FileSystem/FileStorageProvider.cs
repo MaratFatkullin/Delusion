@@ -23,6 +23,11 @@ namespace AI_.Studmix.Model.DAL.FileSystem
             inputStream.Dispose();
         }
 
+        public Stream Read(string path)
+        {
+            return File.OpenRead(Path.Combine(FileStoragePath,path));
+        }
+
         private void CopyStream(Stream input, Stream output)
         {
             var buffer = new byte[8 * 1024];

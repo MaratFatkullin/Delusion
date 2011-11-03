@@ -21,5 +21,7 @@ namespace AI_.Studmix.Model.Models
         public int Price { get; set; }
 
         public virtual ICollection<Purchase> Purchases { get; set; }
+
+        public string Path { get; set; }
     }
 }

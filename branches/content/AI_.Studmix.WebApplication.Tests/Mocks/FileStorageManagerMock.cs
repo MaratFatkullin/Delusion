@@ -1,5 +1,7 @@
-﻿using AI_.Studmix.Model.DAL.FileSystem;
+﻿using System.IO;
+using AI_.Studmix.Model.DAL.FileSystem;
 using AI_.Studmix.Model.Models;
+using Moq;
 
 namespace AI_.Studmix.WebApplication.Tests.Mocks
 {
@@ -10,6 +12,16 @@ namespace AI_.Studmix.WebApplication.Tests.Mocks
             Package = package;
         }
 
+
+        public Stream GetFileStream(ContentFile contentFile)
+        {
+            File = contentFile;
+
+            var streamMock = new Mock<Stream>().Object;
+            return streamMock;
+        }
+
         public ContentPackage Package { get; private set; }
+        public ContentFile File { get; private set; }
     }
 }

@@ -10,12 +10,7 @@ namespace AI_.Studmix.WebApplication.Tests.Mocks
 
         public List<string> Storage { get; set; }
         public List<string> FileData { get; set; }
-
-        public string StoragePath
-        {
-            get { throw new NotSupportedException(); }
-            set { throw new NotSupportedException(); }
-        }
+        public string ReadOperationPathArgument { get; private set; }
 
         public FileStorageProviderMock()
         {
@@ -33,6 +28,12 @@ namespace AI_.Studmix.WebApplication.Tests.Mocks
                 var text = streamReader.ReadToEnd();
                 FileData.Add(text);
             }
+        }
+
+        public Stream Read(string path)
+        {
+            ReadOperationPathArgument = path;
+            return null;
         }
 
         #endregion
