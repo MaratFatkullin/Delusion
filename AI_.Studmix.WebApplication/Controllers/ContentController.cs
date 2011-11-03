@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Web;
@@ -182,6 +183,14 @@ namespace AI_.Studmix.WebApplication.Controllers
 
             var viewModel = new DetailsViewModel {Package = contentPackage, Properties = properties};
             return View(viewModel);
+        }
+
+        public ActionResult Download(int id)
+        {
+            var contentFile = UnitOfWork.ContentFileRepository.GetByID(id);
+            if (contentFile == null)
+                return ErrorView("Файл не найден", "Указаный файл отсутствует или был удален.");
+            return new FileStreamResult(_fileStorageManager.GetFileStream(contentFile), "image/jpeg");
         }
     }
 }

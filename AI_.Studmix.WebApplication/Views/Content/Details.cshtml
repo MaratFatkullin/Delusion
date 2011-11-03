@@ -52,7 +52,7 @@
                     @foreach (var file in Model.Package.Files.Where(f => f.IsPreview))
                     {
                         <li>
-                            @file.Name
+                            @Html.ActionLink(file.Name, "Download", new {id = file.ID})
                         </li>
                     }
                 </ul>

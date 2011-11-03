@@ -575,6 +575,20 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         }
 
         [Fact]
+        public void SearchPost_NoPropertiesSpecified_NoPackagesFound()
+        {
+            // Arrange
+
+            // Act
+            var result = _controller.Search(new SearchViewModel());
+
+            // Assert
+            var model = (SearchViewModel)result.Model;
+            model.Packages.Should().BeEmpty();
+        }
+
+
+        [Fact]
         public void Details_Simple_PackageInitialized()
         {
             // Arrange
@@ -611,6 +625,35 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
 
             // Assert
             result.ViewName.Should().Be("ApplicationError");
+        }
+
+        [Fact]
+        public void Download_FileNotExists_ErrorViewShown()
+        {
+            // Arrange
+
+            // Act
+            var result = _controller.Download(-1);
+
+            // Assert
+            var viewResult = (ViewResult) result;
+            viewResult.ViewName.Should().Be("ApplicationError");
+        }
+
+        [Fact]
+        public void Download_FileExists_FileStreamReturned()
+        {
+            // Arrange
+            var contentFile = new ContentFile {ID = 2};
+            _unitOfWork.ContentFileRepository.Insert(new ContentFile {ID = 1});
+            _unitOfWork.ContentFileRepository.Insert(contentFile);
+            _unitOfWork.ContentFileRepository.Insert(new ContentFile {ID = 3});
+
+            // Act
+            _controller.Download(contentFile.ID);
+
+            // Assert
+            _fileStorageManager.File.Should().Be(contentFile);
         }
     }
 }
