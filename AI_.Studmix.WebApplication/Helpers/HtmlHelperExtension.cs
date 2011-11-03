@@ -30,5 +30,14 @@ namespace AI_.Studmix.WebApplication.Helpers
             var textBoxHtmlString = htmlHelper.TextBoxFor(expression, htmlAttributes);
             return textBoxHtmlString;
         }
+
+        public static MvcHtmlString DisabledTextAreaFor<TModel, TProperty>(
+            this HtmlHelper<TModel> htmlHelper,
+            Expression<Func<TModel, TProperty>> expression)
+        {
+            var htmlAttributes = new Dictionary<string, object> {{"disabled", "disabled"}};
+            var textBoxHtmlString = htmlHelper.TextAreaFor(expression, htmlAttributes);
+            return textBoxHtmlString;
+        }
     }
 }
