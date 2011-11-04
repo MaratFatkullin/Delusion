@@ -2,12 +2,15 @@
 using System.Linq;
 using AI_.Security.Models;
 using AI_.Studmix.Model.DAL.Database;
+using AI_.Studmix.Model.Models;
+using AI_.Studmix.Model.Services;
 
 namespace AI_.Studmix.WebApplication.Controllers
 {
     public abstract class DataControllerBase : ControllerBase
     {
         private User _currentUser;
+        private UserProfile _currentUserProfile;
 
         protected IUnitOfWork UnitOfWork { get; private set; }
 
@@ -18,9 +21,17 @@ namespace AI_.Studmix.WebApplication.Controllers
                 if (!User.Identity.IsAuthenticated)
                     throw new InvalidOperationException("User is not authenticated.");
 
-                return _currentUser ?? (_currentUser = UnitOfWork.UserRepository
-                                                           .Get(user => user.UserName == User.Identity.Name)
-                                                           .Single());
+                return _currentUser ?? (_currentUser = new MembershipService().GetUser(UnitOfWork,User.Identity.Name));
+            }
+        }
+
+        protected UserProfile CurrentUserProfile
+        {
+            get
+            {
+                if(_currentUserProfile == null)
+                    _currentUserProfile = new MembershipService().GetUserProfile(UnitOfWork, CurrentUser);
+                return _currentUserProfile;
             }
         }
 

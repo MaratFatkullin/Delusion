@@ -18,13 +18,18 @@ namespace AI_.Studmix.Model.DAL.FileSystem
         public void Store(ContentPackage package)
         {
             var propertyStates = package.PropertyStates;
-            var path = GetDirectoryPath(propertyStates);
-
+            package.Path = GetDirectoryPath(propertyStates);
             foreach (var file in package.Files)
             {
-                var fullFilePath = Path.Combine(path, file.Name);
-                Provider.Write(fullFilePath, file.Stream);
+                var filePath = Path.Combine(package.Path, file.Name);
+                Provider.Write(filePath, file.Stream);
             }
+        }
+
+        public Stream GetFileStream(ContentFile contentFile)
+        {
+            var path = Path.Combine(contentFile.ContentPackage.Path,contentFile.Name);
+            return Provider.Read(path);
         }
 
         private string GetDirectoryPath(IEnumerable<PropertyState> propertyStates)

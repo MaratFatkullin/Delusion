@@ -3,10 +3,12 @@ using AI_.Studmix.Model.Models;
 
 namespace AI_.Studmix.WebApplication.ViewModels.Content
 {
-    public class DownloadViewModel
+    public class DetailsViewModel
     {
+        public ContentPackage Package { get; set; }
+
         public IEnumerable<Property> Properties { get; set; }
 
-        public Dictionary<int,string> States { get; set; }
+        public bool IsFullAccessGranted { get; set; }
     }
 }

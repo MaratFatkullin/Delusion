@@ -1,0 +1,67 @@
+﻿@using AI_.Studmix.WebApplication.ViewModels.Content
+@model SearchViewModel
+
+@{
+    ViewBag.Title = "Поиск контента";
+}
+
+@Html.ValidationSummary()
+@using (Html.BeginForm())
+{
+    <p>
+        <input type="submit" value="Поиск"/>
+    </p>
+    <table>
+        <tr class="top">
+            <td>
+                <fieldset>
+                    <legend>Параметры поиска</legend>
+                    @foreach (var property in Model.Properties)
+                    {
+                        Model.States[property.ID] = null;
+                        <div class="editor-label">
+                            <span>@property.Name</span>
+                        </div>
+                        <div class="editor-field">
+                            @Html.CombBoxFor(x => x.States[property.ID], "/Content/UpdateStates/" + property.ID, true)
+                        </div>
+                    }
+                </fieldset>
+            </td>
+            <td>
+                <fieldset>
+                    <legend>Результат поиска</legend>
+                    <div>
+                        <ul>
+                            @if (Model.Packages != null)
+                            {
+                                foreach (var package in Model.Packages)
+                                {
+                                    <li>
+                                        @Html.ActionLink(string.Format("{0}-{1}", package.Caption, package.CreateDate.ToShortDateString()),
+                                                           "Details",
+                                                           new { id = package.ID })
+                                        
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                </fieldset>            
+            </td>
+        </tr>
+    </table>
+}
+
+@section scripts{
+    @Url.Script("jquery.ajax.form.js")
+    @Url.Script("ui.combobox.js")
+}
+
+<script type="text/javascript">
+    $(function() {
+        $("[data-autocomplete-source-path]").each(function() {
+            $(this).combobox();
+        });
+    });
+</script>

@@ -6,6 +6,8 @@ using System.Web.Mvc;
 using System.Web.Routing;
 using AI_.Studmix.Model.DAL.Database;
 using AI_.Studmix.Model.DAL.FileSystem;
+using AI_.Studmix.Model.Services;
+using AI_.Studmix.Model.Services.Abstractions;
 using AI_.Studmix.WebApplication.Infrastructure;
 using AI_.Studmix.WebApplication.Infrastructure.Filters;
 using AI_.Studmix.WebApplication.Infrastructure.ModelBinders;
@@ -71,9 +73,10 @@ namespace AI_.Studmix.WebApplication
             container.RegisterType<IControllerActivator, ControllerActivator>();
             container.RegisterType<IViewPageActivator, ViewPageActivator>();
             container.RegisterType<ModelMetadataProvider, DataAnnotationsModelMetadataProvider>();
+            container.RegisterType<IUnitOfWork, UnitOfWork>();
             container.RegisterType<IFileStorageManager, FileStorageManager>();
             container.RegisterType<IFileStorageProvider, FileStorageProvider>();
-            container.RegisterType<IUnitOfWork, UnitOfWork>();
+            container.RegisterType<IFinanceService, FinanceService>();
         }
     }
 }

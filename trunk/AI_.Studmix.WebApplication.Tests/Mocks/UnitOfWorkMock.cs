@@ -12,8 +12,9 @@ namespace AI_.Studmix.WebApplication.Tests.Mocks
         private IRepository<ContentPackage> _contentPackageRepository;
         private IRepository<Property> _propertyRepository;
         private IRepository<PropertyState> _propertyStateRepository;
-        
+        private IRepository<Order> _orderRepository;
         private IRepository<Role> _roleRepository;
+        private IRepository<UserProfile> _userProfileRepository;
         private IRepository<User> _userRepository;
 
         #region IUnitOfWork Members
@@ -30,9 +31,11 @@ namespace AI_.Studmix.WebApplication.Tests.Mocks
 
         public IRepository<PropertyState> PropertyStateRepository
         {
-            get { return _propertyStateRepository 
-                ?? (_propertyStateRepository = new RepositoryMock<PropertyState>()); }
-
+            get
+            {
+                return _propertyStateRepository
+                       ?? (_propertyStateRepository = new RepositoryMock<PropertyState>());
+            }
         }
 
         public IRepository<Property> PropertyRepository
@@ -55,6 +58,24 @@ namespace AI_.Studmix.WebApplication.Tests.Mocks
             {
                 return _contentPackageRepository ??
                        (_contentPackageRepository = new RepositoryMock<ContentPackage>());
+            }
+        }
+
+        public IRepository<UserProfile> UserProfileRepository
+        {
+            get
+            {
+                return _userProfileRepository ??
+                       (_userProfileRepository = new RepositoryMock<UserProfile>());
+            }
+        }
+
+        public IRepository<Order> OrderRepository
+        {
+            get
+            {
+                return _orderRepository ??
+                       (_orderRepository = new RepositoryMock<Order>());
             }
         }
 
