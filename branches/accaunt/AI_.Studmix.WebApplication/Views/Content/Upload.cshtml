@@ -1,0 +1,101 @@
+﻿@using AI_.Studmix.WebApplication.ViewModels.Content
+@model UploadViewModel
+@{
+    ViewBag.Title = "Загрузка контента";
+}
+
+@Html.ValidationSummary()
+@using (Html.BeginForm("Upload", "Content", FormMethod.Post, new {enctype = "multipart/form-data"}))
+{
+    <p>
+        <input type="submit" value="Сохранить"/>
+    </p>
+    <table>
+        <tr class="top">
+            <td >
+                <fieldset>
+                    <legend>Свойства</legend>
+                    <input type="button" value="по умолчанию" id="btnDefault"/>
+                    @foreach (var property in Model.Properties)
+                    {
+                        Model.States[property.ID] = null;
+                        <div class="editor-label">
+                            <span>@property.Name</span>
+                        </div>
+                        <div class="editor-field">
+                            @Html.CombBoxFor(x => x.States[property.ID], "/Content/UpdateStates/" + property.ID)
+                        </div>
+                    }
+                </fieldset>
+            </td>
+            <td>
+                <fieldset>
+                    <legend>Информация</legend>
+                    <div class="editor-label">
+                        @Html.LabelFor(m => m.Caption)
+                    </div>
+                    <div class="editor-field">
+                        @Html.TextBoxFor(m => m.Caption)
+                        @Html.ValidationMessageFor(m => m.Caption)
+                    </div>
+
+                    <div class="editor-label">
+                        @Html.LabelFor(m => m.Description)
+                    </div>
+                    <div class="editor-field">
+                        @Html.TextAreaFor(m => m.Description)
+                        @Html.ValidationMessageFor(m => m.Description)
+                    </div>
+
+                    <div class="editor-label">
+                        @Html.LabelFor(m => m.Price)
+                    </div>
+                    <div class="editor-field">
+                        @Html.TextBoxFor(m => m.Price)
+                        @Html.ValidationMessageFor(m => m.Price)
+                    </div>
+                </fieldset>
+            </td>
+            <td>
+                <fieldset>
+                    <legend>Файлы</legend>
+                    <div class="editor-label">
+                        @Html.LabelFor(m => m.ContentFiles)
+                    </div>
+                    <div class="editor-field">
+                        <input type="file" multiple="true" name="ContentFiles" />
+                        @Html.ValidationMessageFor(m => m.ContentFiles)
+                    </div>
+                    <div class="editor-label">
+                        @Html.LabelFor(m => m.PreviewContentFiles)
+                    </div>
+                    <div class="editor-field">
+                        <input type="file" multiple="true" name="PreviewContentFiles" />
+                        @Html.ValidationMessageFor(m => m.PreviewContentFiles)
+                    </div>
+                </fieldset>
+            </td>
+        </tr>
+    </table>
+}
+
+@section scripts{
+    @Url.Script("jquery.ajax.form.js")
+    @Url.Script("ui.combobox.js")
+}
+
+<script type="text/javascript">
+    $(function() {
+        $("[data-autocomplete-source-path]").each(function() {
+            $(this).combobox();
+        });
+
+        $("#btnDefault").click(function() {
+            $("#States_1_").val("Россия");
+            $("#States_2_").val("Казань");
+            $("#States_3_").val("Университет");
+            $("#States_4_").val("КНИТУ им. А. Н. Туполева (бывш. КГТУ-КАИ им. Туполева)");
+            $("#States_5_").val("Заочная");
+        });
+    });
+</script>

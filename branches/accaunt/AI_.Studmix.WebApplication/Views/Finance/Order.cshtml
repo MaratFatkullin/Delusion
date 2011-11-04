@@ -1,0 +1,41 @@
+﻿@using AI_.Studmix.WebApplication.ViewModels.Finance
+@model OrderViewModel
+
+@{
+    ViewBag.Title = "Приобретение материала";
+}
+
+@using (Html.BeginForm("MakeOrder","Finance"))
+{
+    @Html.ValidationSummary()
+    <fieldset>
+        <legend>Атрибуты заказа</legend>
+        <div class="editor-label">
+            @Html.LabelFor(m => m.UserBalance)
+        </div>
+        <div class="editor-field">
+            @Html.DisabledTextBoxFor(m => m.UserBalance)
+        </div>
+
+        <div class="editor-label">
+            @Html.LabelFor(m => m.OrderPrice)
+        </div>
+        <div class="editor-field">
+            @Html.DisabledTextBoxFor(m => m.OrderPrice)
+        </div>
+    </fieldset>
+
+    @Html.HiddenFor(m=>m.ContentPackageId)
+    
+    if (ViewData.ModelState.IsValid)
+    {
+        <input type="submit" value="Совершить покупку"/>
+    }
+}
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("input:submit").click(function () { return confirm("Вы уверены что хотите совершить покупку?"); });
+    })
+</script>
