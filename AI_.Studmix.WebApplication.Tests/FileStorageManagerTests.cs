@@ -72,6 +72,21 @@ namespace AI_.Studmix.WebApplication.Tests
         }
 
         [Fact]
+        public void Store_Simple_PackagePathInitialized()
+        {
+            // Arrange
+            var fileStorageProviderMock = new FileStorageProviderMock();
+            var fileStorageManager = new FileStorageManager(fileStorageProviderMock);
+            var content = CreateContent();
+
+            // Act
+            fileStorageManager.Store(content);
+
+            // Assert
+            content.Path.Should().Be(@"1_1\2_2");
+        }
+
+        [Fact]
         public void Store_Simple_FilePathContainPropertyStateIndex()
         {
             // Arrange
@@ -150,6 +165,22 @@ namespace AI_.Studmix.WebApplication.Tests
 
             // Assert
             fileStorageProviderMock.Storage.Should().Contain(@"file1.txt");
+        }
+
+        [Fact]
+        public void GetFileStream_Simple_FilePathProvidedToReadOperation()
+        {
+            // Arrange
+            var fileStorageProviderMock = new FileStorageProviderMock();
+            var fileStorageManager = new FileStorageManager(fileStorageProviderMock);
+            var content = CreateContent();
+            content.Path = "path";
+
+            // Act
+            fileStorageManager.GetFileStream(content.Files.First());
+
+            // Assert
+            fileStorageProviderMock.ReadOperationPathArgument.Should().Be(@"path\file1.txt");
         }
     }
 }

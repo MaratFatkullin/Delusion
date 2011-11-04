@@ -1,0 +1,94 @@
+﻿@using AI_.Studmix.WebApplication.ViewModels.Content
+@model DetailsViewModel
+@{
+    ViewBag.Title = "Просмотр материала";
+}
+
+@if (!Model.IsFullAccessGranted)
+{
+    <p>
+        Доступ ограничен просмотром превью файлов.
+        <br/>
+        Для полного доступа 
+        @Html.ActionLink("Преобретите", "Order", "Finance", new {id = Model.Package.ID}, null)
+        этот материал.
+    </p>
+}
+
+<table>
+    <tr class="top">
+        <td>
+            <fieldset>
+                <legend>Свойства</legend>
+                @foreach (var property in Model.Properties)
+                {
+                    var propertyState = Model.Package.PropertyStates.FirstOrDefault(s => s.Property.ID == property.ID);
+                    var propertyValue = propertyState != null ? propertyState.Value : string.Empty;
+
+                    <div class="editor-label">
+                        <span>@property.Name</span>
+                    </div>
+                    <div class="editor-field">
+                        <input type="text" value="@propertyValue" disabled="disabled"></input>
+                    </div>
+                }
+            </fieldset>
+        </td>
+        <td>
+            <fieldset>
+                <legend>Информация</legend>
+                <div class="editor-label">
+                    @Html.LabelFor(m => m.Package.Caption)
+                </div>
+                <div class="editor-field">
+                    @Html.DisabledTextBoxFor(m => m.Package.Caption)
+                </div>
+                <div class="editor-label">
+                    @Html.LabelFor(m => m.Package.Description)
+                </div>
+                <div class="editor-field">
+                    @Html.DisabledTextAreaFor(m => m.Package.Description)
+                </div>
+                <div class="editor-label">
+                    @Html.LabelFor(m => m.Package.Price)
+                </div>
+                <div class="editor-field">
+                    @Html.DisabledTextBoxFor(m => m.Package.Price)
+                </div>
+            </fieldset>
+        </td>
+        <td>
+            <fieldset>
+                <legend>Превью</legend>
+                <ul>
+                    @foreach (var file in Model.Package.Files.Where(f => f.IsPreview))
+                    {
+                        <li>
+                            @Html.ActionLink(file.Name, "Download", new {id = file.ID})
+                        </li>
+                    }
+                </ul>
+            </fieldset>
+        </td>
+        <td>
+            <fieldset>
+                <legend>Файлы</legend>
+                <ul>
+                    @foreach (var file in Model.Package.Files.Where(f => !f.IsPreview))
+                    {
+                        <li>
+                            @if (Model.IsFullAccessGranted)
+                            {
+                                @Html.ActionLink(file.Name, "Download", new { id = file.ID })
+                            }
+                            else
+                            {
+                                @file.Name
+                            }
+                        </li>
+                    }
+                </ul>
+            </fieldset>
+        </td>
+    </tr>
+</table>

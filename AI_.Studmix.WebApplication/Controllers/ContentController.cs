@@ -7,7 +7,9 @@ using AI_.Studmix.Model.DAL.Database;
 using AI_.Studmix.Model.DAL.FileSystem;
 using AI_.Studmix.Model.Models;
 using AI_.Studmix.Model.Services;
+using AI_.Studmix.Model.Services.Abstractions;
 using AI_.Studmix.WebApplication.ViewModels.Content;
+using AI_.Studmix.WebApplication.ViewModels.Shared;
 
 namespace AI_.Studmix.WebApplication.Controllers
 {
@@ -16,11 +18,15 @@ namespace AI_.Studmix.WebApplication.Controllers
     {
         private const string STATE_VALUES_SEPARATOR = "|";
         private readonly IFileStorageManager _fileStorageManager;
+        private readonly IFinanceService _financeService;
 
-        public ContentController(IUnitOfWork unitOfWork, IFileStorageManager fileStorageManager)
+        public ContentController(IUnitOfWork unitOfWork,
+                                 IFileStorageManager fileStorageManager,
+                                 IFinanceService financeService)
             : base(unitOfWork)
         {
             _fileStorageManager = fileStorageManager;
+            _financeService = financeService;
         }
 
         [HttpGet]
@@ -35,7 +41,6 @@ namespace AI_.Studmix.WebApplication.Controllers
         [HttpPost]
         public ActionResult Upload(UploadViewModel viewModel)
         {
-
             viewModel.Properties = UnitOfWork.PropertyRepository.Get();
 
             if (!ModelState.IsValid)
@@ -51,8 +56,8 @@ namespace AI_.Studmix.WebApplication.Controllers
             package.Price = viewModel.Price;
             package.Owner = CurrentUser;
 
-            InportFilesToPackage(package, viewModel.PreviewContentFiles, true);
-            InportFilesToPackage(package, viewModel.ContentFiles, false);
+            ImportFilesToPackage(package, viewModel.PreviewContentFiles, true);
+            ImportFilesToPackage(package, viewModel.ContentFiles, false);
 
             var service = new PropertyStateService();
             var specifiedStates = viewModel.States.Where(pair => !string.IsNullOrEmpty(pair.Value));
@@ -72,10 +77,13 @@ namespace AI_.Studmix.WebApplication.Controllers
             _fileStorageManager.Store(package);
             UnitOfWork.ContentPackageRepository.Insert(package);
             UnitOfWork.Save();
-            return View(viewModel);
+
+            return InformationView("Загрузка завершена",
+                                   "Контент успешно загружен. Благодарим за использование нашего ресурса.",
+                                   new ActionLinkInfo("Content", "Upload", "Вернуться"));
         }
 
-        private void InportFilesToPackage(ContentPackage package,
+        private void ImportFilesToPackage(ContentPackage package,
                                           IEnumerable<HttpPostedFileBase> files,
                                           bool isPreview)
         {
@@ -92,19 +100,39 @@ namespace AI_.Studmix.WebApplication.Controllers
             }
         }
 
-        public ViewResult Download()
+        [HttpGet]
+        public ViewResult Search()
         {
-            return View();
+            var viewModel = new SearchViewModel();
+            viewModel.Properties = UnitOfWork.PropertyRepository.Get();
+            return View(viewModel);
         }
 
         [HttpPost]
-        public JsonResult UpdateStates(UploadViewModel viewModel)
+        public ViewResult Search(SearchViewModel viewModel)
         {
-            var specifieStatePairs = viewModel.States.Where(pair => !string.IsNullOrEmpty(pair.Value));
+            viewModel.Properties = UnitOfWork.PropertyRepository.Get();
+
+            var stateService = new PropertyStateService();
+            var propertyStates = viewModel.States
+                .Select(pair => stateService.GetState(UnitOfWork, pair.Key, pair.Value))
+                .Where(propertyState => propertyState != null)
+                .ToList();
+
+            var searchService = new SearchService();
+            viewModel.Packages = searchService.FindPackageWithSamePropertyStates(UnitOfWork, propertyStates);
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public JsonResult UpdateStates(Dictionary<int,string> states,int id)
+        {
+            var specifieStatePairs = states.Where(pair => !string.IsNullOrEmpty(pair.Value));
             var response = GetDefaultStates();
 
             if (specifieStatePairs.Count() == 0)
-                return Json(response);
+                return Json(response.Properties.Single(x => x.ID == id).States);
 
             var properties = UnitOfWork.PropertyRepository.Get();
             var service = new PropertyStateService();
@@ -120,16 +148,19 @@ namespace AI_.Studmix.WebApplication.Controllers
                     if (state != null)
                         propertyStates = service.GetBoundedStates(UnitOfWork, prop, state);
 
-                    var states = string.Join(STATE_VALUES_SEPARATOR,
-                                             propertyStates.Select(st => st.Value));
-                    response.Properties.Add(new PropertyViewModel {ID = prop.ID, States = states});
+                    var joinedStates = string.Join(STATE_VALUES_SEPARATOR,
+                                                   propertyStates.Select(st => st.Value));
+
+                    var existingProperty = response.Properties.Single(x => x.ID == prop.ID);
+                    response.Properties.Remove(existingProperty);
+                    response.Properties.Add(new PropertyViewModel {ID = prop.ID, States = joinedStates});
                 }
             }
 
-            return Json(response);
+            return Json(response.Properties.Single(x => x.ID == id).States);
         }
 
-        private dynamic GetDefaultStates()
+        private AjaxStatesViewModel GetDefaultStates()
         {
             var response = new AjaxStatesViewModel();
             var properties = UnitOfWork.PropertyRepository.Get();
@@ -146,6 +177,37 @@ namespace AI_.Studmix.WebApplication.Controllers
             }
 
             return response;
+        }
+
+        [HttpGet]
+        public ViewResult Details(int id)
+        {
+            var contentPackage = UnitOfWork.ContentPackageRepository.GetByID(id);
+            var properties = UnitOfWork.PropertyRepository.Get();
+            if (contentPackage == null)
+                return ErrorView("Материал не найден", "Указанный материал отсутствует в базе данных.");
+
+            var viewModel = new DetailsViewModel {Package = contentPackage, Properties = properties};
+
+            var userHasPermissions = _financeService.UserHasPermissions(UnitOfWork,CurrentUser,contentPackage);
+            var userIsAdmin = User.IsInRole("admin");
+
+            viewModel.IsFullAccessGranted = userHasPermissions || userIsAdmin;
+
+            return View(viewModel);
+        }
+
+        public ActionResult Download(int id)
+        {
+            var contentFile = UnitOfWork.ContentFileRepository.GetByID(id);
+            if (contentFile == null)
+                return ErrorView("Файл не найден", "Указаный файл отсутствует или был удален.");
+            var accessGranted = _financeService.UserHasPermissions(UnitOfWork,CurrentUser,contentFile.ContentPackage);
+            var userIsAdmin = User.IsInRole("admin");
+            if (!accessGranted && !userIsAdmin)
+                return ErrorView("Ошибка доступа", "Доступ к скачиванию файла закрыт.");
+
+            return new FileStreamResult(_fileStorageManager.GetFileStream(contentFile), "image/jpeg");
         }
     }
 }
