@@ -39,6 +39,7 @@ namespace AI_.Studmix.WebApplication.Tests.Model.Services
 
             var order = new Order {ContentPackage = package, UserProfile = userProfile};
             unitOfWork.OrderRepository.Insert(order);
+            unitOfWork.Save();
 
             // Act
             var financeService = new FinanceService();
@@ -59,6 +60,7 @@ namespace AI_.Studmix.WebApplication.Tests.Model.Services
             unitOfWork.UserRepository.Insert(user);
             unitOfWork.UserProfileRepository.Insert(userProfile);
             unitOfWork.ContentPackageRepository.Insert(package);
+            unitOfWork.Save();
 
             // Act
             var financeService = new FinanceService();

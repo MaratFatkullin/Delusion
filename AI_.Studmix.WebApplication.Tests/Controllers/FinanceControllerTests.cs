@@ -52,6 +52,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         {
             profile.User = user;
             _unitOfWork.UserRepository.Insert(user);
+            _unitOfWork.Save();
             _unitOfWork.UserProfileRepository.Insert(profile);
 
             var contextMock = new Mock<ControllerContext>();
@@ -67,6 +68,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             // Arrange
             var package = CreatePackage();
             _unitOfWork.ContentPackageRepository.Insert(package);
+            _unitOfWork.Save();
             _currentUserProfile.Balance = 100;
 
             // Act
@@ -85,6 +87,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             // Arrange
             var package = CreatePackage();
             _unitOfWork.ContentPackageRepository.Insert(package);
+            _unitOfWork.Save();
             _currentUserProfile.Balance = 50;
 
             // Act
@@ -110,6 +113,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             // Arrange
             var package = CreatePackage();
             _unitOfWork.ContentPackageRepository.Insert(package);
+            _unitOfWork.Save();
             _currentUserProfile.Balance = 150;
 
             // Act
@@ -127,6 +131,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             // Arrange
             var package = CreatePackage();
             _unitOfWork.ContentPackageRepository.Insert(package);
+            _unitOfWork.Save();
             _currentUserProfile.Balance = 150;
 
             // Act

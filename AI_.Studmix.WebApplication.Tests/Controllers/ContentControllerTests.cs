@@ -85,6 +85,8 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
 
             unitOfWork.ContentPackageRepository.Insert(package1);
             unitOfWork.ContentPackageRepository.Insert(package2);
+
+            unitOfWork.Save();
         }
 
         private static MemoryStream CreateInputStream(string data = "mockedData")
@@ -234,6 +236,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         {
             // Arrange
             _unitOfWork.PropertyRepository.Insert(new Property {Name = "property", Order = 3,ID = 3});
+            _unitOfWork.Save();
 
             // Act
             var viewResult = _controller.UpdateStates(new Dictionary<int, string> {{1, "state1"}}, 3);
@@ -727,6 +730,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
 
             var contentFile = new ContentFile();
             _unitOfWork.ContentFileRepository.Insert(contentFile);
+            _unitOfWork.Save();
 
             // Act
             _controller.Download(contentFile.ID);
@@ -764,6 +768,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
 
             var contentFile = new ContentFile();
             _unitOfWork.ContentFileRepository.Insert(contentFile);
+            _unitOfWork.Save();
 
             // Act
             var result = _controller.Download(contentFile.ID);

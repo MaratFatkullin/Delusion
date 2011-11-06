@@ -45,6 +45,7 @@ namespace AI_.Studmix.Model.Services
                                     Index = index
                                 };
             unitOfWork.PropertyStateRepository.Insert(propertyState);
+            unitOfWork.Save();
             return propertyState;
         }
     }
