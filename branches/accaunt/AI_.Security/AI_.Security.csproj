@@ -53,6 +53,7 @@
     <Compile Include="DAL\IFactory.cs" />
     <Compile Include="DAL\IUnitOfWorkFactory.cs" />
     <Compile Include="Models\Role.cs" />
+    <Compile Include="Services\MembershipService.cs" />
     <Compile Include="Providers\CustomRoleProvider.cs" />
     <Compile Include="Providers\CustomMembershipProvider.cs" />
     <Compile Include="Models\User.cs" />
