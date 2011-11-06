@@ -38,7 +38,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             _unitOfWork.UserRepository.Insert(_currentUser);
             _unitOfWork.UserProfileRepository.Insert(_currentUserProfile);
 
-            _controller = new ContentController(_unitOfWork, _fileStorageManager,new FinanceService());
+            _controller = new ContentController(_unitOfWork, _fileStorageManager,new FinanceService(_unitOfWork));
             _controller.ControllerContext = CreateControllerContext();
             InitUnitOfWork(_unitOfWork);
         }
@@ -117,8 +117,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         {
             var serviceMock = new Mock<IFinanceService>();
             serviceMock.Setup(m =>
-                              m.UserHasPermissions(It.IsAny<IUnitOfWork>(),
-                                                   It.IsAny<User>(),
+                              m.UserHasPermissions(It.IsAny<User>(),
                                                    It.IsAny<ContentPackage>()))
                 .Returns(isPermissionsGranted);
             return serviceMock;

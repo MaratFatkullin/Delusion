@@ -7,8 +7,8 @@ namespace AI_.Studmix.Model.Services.Abstractions
     public interface IFinanceService
     {
         bool IsOrderAvailable(Order order);
-        void MakeOrder(IUnitOfWork unitOfWork, Order order);
-        bool UserHasPermissions(IUnitOfWork unitOfWork, User user, ContentPackage package);
-        bool UserHasOrder(IUnitOfWork unitOfWork, User user, ContentPackage package);
+        void MakeOrder(Order order);
+        bool UserHasPermissions(User user, ContentPackage package);
+        bool UserHasOrder(User user, ContentPackage package);
     }
 }

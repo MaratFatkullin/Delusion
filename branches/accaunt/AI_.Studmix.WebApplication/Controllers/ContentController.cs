@@ -59,16 +59,16 @@ namespace AI_.Studmix.WebApplication.Controllers
             ImportFilesToPackage(package, viewModel.PreviewContentFiles, true);
             ImportFilesToPackage(package, viewModel.ContentFiles, false);
 
-            var service = new PropertyStateService();
+            var service = new PropertyStateService(UnitOfWork);
             var specifiedStates = viewModel.States.Where(pair => !string.IsNullOrEmpty(pair.Value));
             foreach (var pair in specifiedStates)
             {
                 //получаем состояние или создаем новое если не существет
-                var propertyState = service.GetState(UnitOfWork, pair.Key, pair.Value);
+                var propertyState = service.GetState(pair.Key, pair.Value);
                 if (propertyState == null)
                 {
                     var property = UnitOfWork.PropertyRepository.GetByID(pair.Key);
-                    propertyState = service.CreateState(UnitOfWork, property, pair.Value);
+                    propertyState = service.CreateState(property, pair.Value);
                 }
 
                 package.PropertyStates.Add(propertyState);
@@ -113,14 +113,14 @@ namespace AI_.Studmix.WebApplication.Controllers
         {
             viewModel.Properties = UnitOfWork.PropertyRepository.Get();
 
-            var stateService = new PropertyStateService();
+            var stateService = new PropertyStateService(UnitOfWork);
             var propertyStates = viewModel.States
-                .Select(pair => stateService.GetState(UnitOfWork, pair.Key, pair.Value))
+                .Select(pair => stateService.GetState(pair.Key, pair.Value))
                 .Where(propertyState => propertyState != null)
                 .ToList();
 
-            var searchService = new SearchService();
-            viewModel.Packages = searchService.FindPackageWithSamePropertyStates(UnitOfWork, propertyStates);
+            var searchService = new SearchService(UnitOfWork);
+            viewModel.Packages = searchService.FindPackageWithSamePropertyStates(propertyStates);
 
             return View(viewModel);
         }
@@ -135,10 +135,10 @@ namespace AI_.Studmix.WebApplication.Controllers
                 return Json(response.Properties.Single(x => x.ID == id).States);
 
             var properties = UnitOfWork.PropertyRepository.Get();
-            var service = new PropertyStateService();
+            var service = new PropertyStateService(UnitOfWork);
             foreach (var statePair in specifieStatePairs)
             {
-                var state = service.GetState(UnitOfWork, statePair.Key, statePair.Value);
+                var state = service.GetState(statePair.Key, statePair.Value);
 
                 var property = properties.First(x => x.ID == statePair.Key);
 
@@ -146,7 +146,7 @@ namespace AI_.Studmix.WebApplication.Controllers
                 {
                     IEnumerable<PropertyState> propertyStates = new Collection<PropertyState>();
                     if (state != null)
-                        propertyStates = service.GetBoundedStates(UnitOfWork, prop, state);
+                        propertyStates = service.GetBoundedStates(prop, state);
 
                     var joinedStates = string.Join(STATE_VALUES_SEPARATOR,
                                                    propertyStates.Select(st => st.Value));
@@ -189,7 +189,7 @@ namespace AI_.Studmix.WebApplication.Controllers
 
             var viewModel = new DetailsViewModel {Package = contentPackage, Properties = properties};
 
-            var userHasPermissions = _financeService.UserHasPermissions(UnitOfWork,CurrentUser,contentPackage);
+            var userHasPermissions = _financeService.UserHasPermissions(CurrentUser,contentPackage);
             var userIsAdmin = User.IsInRole("admin");
 
             viewModel.IsFullAccessGranted = userHasPermissions || userIsAdmin;
@@ -202,7 +202,7 @@ namespace AI_.Studmix.WebApplication.Controllers
             var contentFile = UnitOfWork.ContentFileRepository.GetByID(id);
             if (contentFile == null)
                 return ErrorView("Файл не найден", "Указаный файл отсутствует или был удален.");
-            var accessGranted = _financeService.UserHasPermissions(UnitOfWork,CurrentUser,contentFile.ContentPackage);
+            var accessGranted = _financeService.UserHasPermissions(CurrentUser,contentFile.ContentPackage);
             var userIsAdmin = User.IsInRole("admin");
             if (!accessGranted && !userIsAdmin)
                 return ErrorView("Ошибка доступа", "Доступ к скачиванию файла закрыт.");
