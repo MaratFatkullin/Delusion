@@ -29,7 +29,7 @@ namespace AI_.Studmix.WebApplication.Controllers
                                 ContentPackageId = package.ID
                             };
 
-            var financeService = new FinanceService();
+            var financeService = new FinanceService(UnitOfWork);
             var order = new Order
                         {
                             ContentPackage = package,
@@ -53,8 +53,8 @@ namespace AI_.Studmix.WebApplication.Controllers
                             UserProfile = CurrentUserProfile
                         };
 
-            var financeService = new FinanceService();
-            financeService.MakeOrder(UnitOfWork, order);
+            var financeService = new FinanceService(UnitOfWork);
+            financeService.MakeOrder(order);
 
 
             return InformationView("Покупка успешно произведена.", "",

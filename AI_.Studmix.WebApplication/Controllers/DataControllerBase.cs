@@ -21,7 +21,7 @@ namespace AI_.Studmix.WebApplication.Controllers
                 if (!User.Identity.IsAuthenticated)
                     throw new InvalidOperationException("User is not authenticated.");
 
-                return _currentUser ?? (_currentUser = new MembershipService().GetUser(UnitOfWork,User.Identity.Name));
+                return _currentUser ?? (_currentUser = new MembershipService(UnitOfWork).GetUser(User.Identity.Name));
             }
         }
 
@@ -30,7 +30,7 @@ namespace AI_.Studmix.WebApplication.Controllers
             get
             {
                 if(_currentUserProfile == null)
-                    _currentUserProfile = new MembershipService().GetUserProfile(UnitOfWork, CurrentUser);
+                    _currentUserProfile = new MembershipService(UnitOfWork).GetUserProfile(CurrentUser);
                 return _currentUserProfile;
             }
         }

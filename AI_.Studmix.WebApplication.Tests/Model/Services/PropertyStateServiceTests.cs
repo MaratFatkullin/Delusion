@@ -32,14 +32,14 @@ namespace AI_.Studmix.WebApplication.Tests.Model.Services
         {
             // Arrange
             var unitOfWork = new UnitOfWorkMock();
-            var propertyStateService = new PropertyStateService();
+            var propertyStateService = new PropertyStateService(unitOfWork);
             var property = CreateProperty();
             var propertyState = CreatePropertyState(property);
             unitOfWork.PropertyStateRepository.Insert(propertyState);
             unitOfWork.Save();
 
             // Act
-            var state = propertyStateService.GetState(unitOfWork, property.ID, propertyState.Value);
+            var state = propertyStateService.GetState(property.ID, propertyState.Value);
 
             // Assert
             state.Should().Be(propertyState);
@@ -50,11 +50,11 @@ namespace AI_.Studmix.WebApplication.Tests.Model.Services
         {
             // Arrange
             var unitOfWork = new UnitOfWorkMock();
-            var propertyStateService = new PropertyStateService();
+            var propertyStateService = new PropertyStateService(unitOfWork);
             var property = CreateProperty();
 
             // Act
-            var state = propertyStateService.GetState(unitOfWork, property.ID, "value");
+            var state = propertyStateService.GetState(property.ID, "value");
 
             // Assert
             state.Should().BeNull();
@@ -65,13 +65,13 @@ namespace AI_.Studmix.WebApplication.Tests.Model.Services
         {
             // Arrange
             var unitOfWork = new UnitOfWorkMock();
-            var propertyStateService = new PropertyStateService();
+            var propertyStateService = new PropertyStateService(unitOfWork);
             var property = CreateProperty();
             var propertyState = CreatePropertyState(property);
             unitOfWork.PropertyStateRepository.Insert(propertyState);
 
             // Act
-            var state = propertyStateService.GetState(unitOfWork, 2, "value");
+            var state = propertyStateService.GetState(2, "value");
 
             // Assert
             state.Should().BeNull();
@@ -81,15 +81,15 @@ namespace AI_.Studmix.WebApplication.Tests.Model.Services
         public void CreatePropertyState_StateNotExists_StateCreated()
         {
             // Arrange
-            var service = new PropertyStateService();
             var unitOfWork = new UnitOfWorkMock();
+            var service = new PropertyStateService(unitOfWork);
             var property = CreateProperty();
             unitOfWork.PropertyRepository.Insert(property);
             unitOfWork.PropertyRepository.Insert(property);
             unitOfWork.Save();
 
             // Act
-            service.CreateState(unitOfWork, property, "newValue");
+            service.CreateState(property, "newValue");
 
             // Assert
             unitOfWork.PropertyStateRepository.Get().Should().Contain(x => x.Value == "newValue");
@@ -100,15 +100,15 @@ namespace AI_.Studmix.WebApplication.Tests.Model.Services
         public void CreatePropertyState_StateNotExists_NewStateReturned()
         {
             // Arrange
-            var service = new PropertyStateService();
             var unitOfWork = new UnitOfWorkMock();
+            var service = new PropertyStateService(unitOfWork);
             var property = CreateProperty();
             unitOfWork.PropertyRepository.Insert(property);
             unitOfWork.PropertyRepository.Insert(property);
             unitOfWork.Save();
 
             // Act
-            var newState = service.CreateState(unitOfWork, property, "newValue");
+            var newState = service.CreateState(property, "newValue");
 
             // Assert
             newState.Should().Be(unitOfWork.PropertyStateRepository.Get().Last());
@@ -119,14 +119,14 @@ namespace AI_.Studmix.WebApplication.Tests.Model.Services
         public void CreatePropertyState_StateExists_ExceptionThrown()
         {
             // Arrange
-            var service = new PropertyStateService();
             var unitOfWork = new UnitOfWorkMock();
+            var service = new PropertyStateService(unitOfWork);
             var property = CreateProperty();
             var propertyState = CreatePropertyState(property);
             unitOfWork.PropertyStateRepository.Insert(propertyState);
 
             // Act, Assert
-            service.Invoking(srv => srv.CreateState(unitOfWork, property, propertyState.Value))
+            service.Invoking(srv => srv.CreateState(property, propertyState.Value))
                 .ShouldThrow<InvalidOperationException>();
         }
 
@@ -134,14 +134,14 @@ namespace AI_.Studmix.WebApplication.Tests.Model.Services
         public void CreatePropertyState_StateOfSamePropertyNotExists_StateHasUniquePropertyStateIndex()
         {
             // Arrange
-            var service = new PropertyStateService();
             var unitOfWork = new UnitOfWorkMock();
+            var service = new PropertyStateService(unitOfWork);
             var propertyState = CreatePropertyState(CreateProperty(id:1));
             unitOfWork.PropertyStateRepository.Insert(propertyState);
             unitOfWork.Save();
 
             // Act
-            service.CreateState(unitOfWork, CreateProperty(id:2), "newValue");
+            service.CreateState(CreateProperty(id:2), "newValue");
 
             // Assert
             unitOfWork.PropertyStateRepository.Get().Should().Contain(x => x.Index == 1);
@@ -151,8 +151,8 @@ namespace AI_.Studmix.WebApplication.Tests.Model.Services
         public void CreatePropertyState_StateOfSamePropertyExists_StateHasUniquePropertyStateIndex()
         {
             // Arrange
-            var service = new PropertyStateService();
             var unitOfWork = new UnitOfWorkMock();
+            var service = new PropertyStateService(unitOfWork);
             var property = CreateProperty();
             var propertyState = CreatePropertyState(property);
             propertyState.Index = 2;
@@ -160,7 +160,7 @@ namespace AI_.Studmix.WebApplication.Tests.Model.Services
             unitOfWork.Save();
 
             // Act
-            service.CreateState(unitOfWork, property, "newValue");
+            service.CreateState(property, "newValue");
 
             // Assert
             unitOfWork.PropertyStateRepository.Get().Last().Index.Should().Be(3);

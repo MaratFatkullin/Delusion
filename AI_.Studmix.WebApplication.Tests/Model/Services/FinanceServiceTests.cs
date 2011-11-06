@@ -18,8 +18,8 @@ namespace AI_.Studmix.WebApplication.Tests.Model.Services
             var package = new ContentPackage {Owner = user};
 
             // Act
-            var financeService = new FinanceService();
-            var userHasPermissions = financeService.UserHasPermissions(unitOfWork, user, package);
+            var financeService = new FinanceService(unitOfWork);
+            var userHasPermissions = financeService.UserHasPermissions(user, package);
 
             // Assert
             userHasPermissions.Should().BeTrue();
@@ -42,8 +42,8 @@ namespace AI_.Studmix.WebApplication.Tests.Model.Services
             unitOfWork.Save();
 
             // Act
-            var financeService = new FinanceService();
-            var userHasPermissions = financeService.UserHasPermissions(unitOfWork, user, package);
+            var financeService = new FinanceService(unitOfWork);
+            var userHasPermissions = financeService.UserHasPermissions(user, package);
 
             // Assert
             userHasPermissions.Should().BeTrue();
@@ -63,8 +63,8 @@ namespace AI_.Studmix.WebApplication.Tests.Model.Services
             unitOfWork.Save();
 
             // Act
-            var financeService = new FinanceService();
-            var userHasPermissions = financeService.UserHasPermissions(unitOfWork, user, package);
+            var financeService = new FinanceService(unitOfWork);
+            var userHasPermissions = financeService.UserHasPermissions(user, package);
 
             // Assert
             userHasPermissions.Should().BeFalse();

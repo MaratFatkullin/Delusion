@@ -4,19 +4,25 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using AI_.Studmix.Model.DAL.Database;
 using AI_.Studmix.Model.Models;
+using AI_.Studmix.Model.Services.Abstractions;
 
 namespace AI_.Studmix.Model.Services
 {
-    public class SearchService
+    public class SearchService : ServiceBase
     {
-        public IEnumerable<ContentPackage> FindPackageWithSamePropertyStates(
-            IUnitOfWork unitOfWork,
-            IEnumerable<PropertyState> propertyStates)
+        public SearchService(IUnitOfWork unitOfWork)
+            : base(unitOfWork)
         {
-            if(propertyStates == null)
+        }
+
+        public IEnumerable<ContentPackage> FindPackageWithSamePropertyStates(
+            IEnumerable<PropertyState> propertyStates)
+
+        {
+            if (propertyStates == null)
                 throw new ArgumentNullException("propertyStates");
 
-            if(propertyStates.Count() == 0)
+            if (propertyStates.Count() == 0)
                 return new Collection<ContentPackage>();
 
             IEnumerable<ContentPackage> contentPackages = propertyStates.First().ContentPackages;

@@ -6,40 +6,45 @@ using AI_.Studmix.Model.Services.Abstractions;
 
 namespace AI_.Studmix.Model.Services
 {
-    public class FinanceService : IFinanceService
+    public class FinanceService : ServiceBase, IFinanceService
     {
+        public FinanceService(IUnitOfWork unitOfWork)
+            : base(unitOfWork)
+        {
+        }
+
         public bool IsOrderAvailable(Order order)
         {
             return order.ContentPackage.Price <= order.UserProfile.Balance;
         }
 
-        public void MakeOrder(IUnitOfWork unitOfWork, Order order)
+        public void MakeOrder(Order order)
         {
-            unitOfWork.OrderRepository.Insert(order);
+            UnitOfWork.OrderRepository.Insert(order);
             var price = order.ContentPackage.Price;
 
-            var membershipService = new MembershipService();
-            var ownerProfile = membershipService.GetUserProfile(unitOfWork, order.ContentPackage.Owner);
+            var membershipService = new MembershipService(UnitOfWork);
+            var ownerProfile = membershipService.GetUserProfile(order.ContentPackage.Owner);
 
             order.UserProfile.Balance -= price;
             ownerProfile.Balance += price;
 
-            unitOfWork.Save();
+            UnitOfWork.Save();
         }
 
-        public bool UserHasPermissions(IUnitOfWork unitOfWork, User user, ContentPackage package)
+        public bool UserHasPermissions(User user, ContentPackage package)
         {
             if (package.Owner.ID == user.ID)
                 return true;
 
-            return UserHasOrder(unitOfWork, user, package);
+            return UserHasOrder(user, package);
         }
 
-        public bool UserHasOrder(IUnitOfWork unitOfWork, User user, ContentPackage package)
+        public bool UserHasOrder(User user, ContentPackage package)
         {
-            var membershipService = new MembershipService();
-            var profile = membershipService.GetUserProfile(unitOfWork, user);
-            var order = unitOfWork.OrderRepository.Get(o => o.ContentPackage.ID == package.ID
+            var membershipService = new MembershipService(UnitOfWork);
+            var profile = membershipService.GetUserProfile(user);
+            var order = UnitOfWork.OrderRepository.Get(o => o.ContentPackage.ID == package.ID
                                                              && o.UserProfile.ID == profile.ID)
                 .FirstOrDefault();
             return order != null;
