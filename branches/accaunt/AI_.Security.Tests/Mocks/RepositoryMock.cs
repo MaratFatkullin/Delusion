@@ -28,7 +28,7 @@ namespace AI_.Security.Tests.Mocks
 
         #region IRepository<TEntity> Members
 
-        public IEnumerable<TEntity> Get(Expression<Func<TEntity, bool>> filter = null,
+        public ICollection<TEntity> Get(Expression<Func<TEntity, bool>> filter = null,
                                         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
                                         string includeProperties = "")
         {

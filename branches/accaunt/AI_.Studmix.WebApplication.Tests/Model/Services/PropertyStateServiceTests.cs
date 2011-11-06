@@ -36,6 +36,7 @@ namespace AI_.Studmix.WebApplication.Tests.Model.Services
             var property = CreateProperty();
             var propertyState = CreatePropertyState(property);
             unitOfWork.PropertyStateRepository.Insert(propertyState);
+            unitOfWork.Save();
 
             // Act
             var state = propertyStateService.GetState(unitOfWork, property.ID, propertyState.Value);
@@ -85,6 +86,7 @@ namespace AI_.Studmix.WebApplication.Tests.Model.Services
             var property = CreateProperty();
             unitOfWork.PropertyRepository.Insert(property);
             unitOfWork.PropertyRepository.Insert(property);
+            unitOfWork.Save();
 
             // Act
             service.CreateState(unitOfWork, property, "newValue");
@@ -103,6 +105,7 @@ namespace AI_.Studmix.WebApplication.Tests.Model.Services
             var property = CreateProperty();
             unitOfWork.PropertyRepository.Insert(property);
             unitOfWork.PropertyRepository.Insert(property);
+            unitOfWork.Save();
 
             // Act
             var newState = service.CreateState(unitOfWork, property, "newValue");
@@ -135,6 +138,7 @@ namespace AI_.Studmix.WebApplication.Tests.Model.Services
             var unitOfWork = new UnitOfWorkMock();
             var propertyState = CreatePropertyState(CreateProperty(id:1));
             unitOfWork.PropertyStateRepository.Insert(propertyState);
+            unitOfWork.Save();
 
             // Act
             service.CreateState(unitOfWork, CreateProperty(id:2), "newValue");
@@ -153,6 +157,7 @@ namespace AI_.Studmix.WebApplication.Tests.Model.Services
             var propertyState = CreatePropertyState(property);
             propertyState.Index = 2;
             unitOfWork.PropertyStateRepository.Insert(propertyState);
+            unitOfWork.Save();
 
             // Act
             service.CreateState(unitOfWork, property, "newValue");
