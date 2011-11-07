@@ -33,7 +33,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             _unitOfWork = new UnitOfWorkMock();
             _fileStorageManager = new FileStorageManagerMock();
 
-            _currentUser = new User { UserName = "currentUsername" };
+            _currentUser = new User { UserName = "currentusername" };
             _currentUserProfile = new UserProfile { User = _currentUser };
             _unitOfWork.UserRepository.Insert(_currentUser);
             _unitOfWork.UserProfileRepository.Insert(_currentUserProfile);
@@ -427,7 +427,8 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             _controller.Upload(viewModel);
 
             // Assert
-            _unitOfWork.ContentPackageRepository.Get().Last().Owner.Should().Be(_currentUser);
+            var package = _unitOfWork.ContentPackageRepository.Get().Last();
+            package.Owner.Should().Be(_currentUser);
         }
 
         [Fact]

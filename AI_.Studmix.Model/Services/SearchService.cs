@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using AI_.Security.Services;
 using AI_.Studmix.Model.DAL.Database;
 using AI_.Studmix.Model.Models;
-using AI_.Studmix.Model.Services.Abstractions;
 
 namespace AI_.Studmix.Model.Services
 {
-    public class SearchService : ServiceBase
+    public class SearchService : ServiceBase<IUnitOfWork>
     {
         public SearchService(IUnitOfWork unitOfWork)
             : base(unitOfWork)

@@ -1,12 +1,13 @@
 ﻿using System.Linq;
 using AI_.Security.Models;
+using AI_.Security.Services;
 using AI_.Studmix.Model.DAL.Database;
 using AI_.Studmix.Model.Models;
 using AI_.Studmix.Model.Services.Abstractions;
 
 namespace AI_.Studmix.Model.Services
 {
-    public class FinanceService : ServiceBase, IFinanceService
+    public class FinanceService : ServiceBase<IUnitOfWork>, IFinanceService
     {
         public FinanceService(IUnitOfWork unitOfWork)
             : base(unitOfWork)

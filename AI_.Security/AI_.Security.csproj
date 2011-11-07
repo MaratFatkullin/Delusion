@@ -54,13 +54,13 @@
     <Compile Include="DAL\IUnitOfWorkFactory.cs" />
     <Compile Include="Models\Role.cs" />
     <Compile Include="Services\MembershipService.cs" />
-    <Compile Include="Providers\CustomRoleProvider.cs" />
-    <Compile Include="Providers\CustomMembershipProvider.cs" />
+    <Compile Include="Services\RoleService.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DAL\SecurityDbContext.cs" />
     <Compile Include="DAL\ISecurityUnitOfWork.cs" />
     <Compile Include="DAL\SecurityUnitOfWork.cs" />
+    <Compile Include="Services\ServiceBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AI_.Data\AI_.Data.csproj">

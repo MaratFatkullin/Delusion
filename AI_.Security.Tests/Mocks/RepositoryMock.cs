@@ -59,7 +59,7 @@ namespace AI_.Security.Tests.Mocks
         public void Delete(object id)
         {
             var entityToDelete = _storage.Single(entity => entity.ID == (int) id);
-            new Command(entityToDelete, CommnadType.Delete);
+            _commands.Add(new Command(entityToDelete, CommnadType.Delete));
         }
 
         public void Delete(TEntity entityToDelete)
