@@ -9,7 +9,7 @@ namespace AI_.Security.Services
 {
     public class MembershipService
     {
-        private readonly ISecurityUnitOfWork _unitOfWork;
+        protected ISecurityUnitOfWork UnitOfWork { get; private set; }
 
         public bool RequiresUniqueEmail { get; set; }
         public int MinRequiredPasswordLength { get; set; }
@@ -20,7 +20,7 @@ namespace AI_.Security.Services
 
         public MembershipService(ISecurityUnitOfWork unitOfWork)
         {
-            _unitOfWork = unitOfWork;
+            UnitOfWork = unitOfWork;
         }
 
 
@@ -93,8 +93,8 @@ namespace AI_.Security.Services
                            LastLoginDate = DateTime.MinValue.ToLocalTime(),
                        };
 
-            _unitOfWork.UserRepository.Insert(user);
-            _unitOfWork.Save();
+            UnitOfWork.UserRepository.Insert(user);
+            UnitOfWork.Save();
 
             status = MembershipCreateStatus.Success;
             return user;
@@ -102,7 +102,7 @@ namespace AI_.Security.Services
 
         public User GetUserByEmail(string email)
         {
-            return _unitOfWork.UserRepository
+            return UnitOfWork.UserRepository
                 .Get(us => us.Email == email.ToLower())
                 .SingleOrDefault();
         }
@@ -120,8 +120,8 @@ namespace AI_.Security.Services
             user.PasswordQuestion = newPasswordQuestion;
             user.PasswordAnswer = newPasswordAnswer;
 
-            _unitOfWork.UserRepository.Update(user);
-            _unitOfWork.Save();
+            UnitOfWork.UserRepository.Update(user);
+            UnitOfWork.Save();
             return true;
         }
 
@@ -141,7 +141,7 @@ namespace AI_.Security.Services
 
             user.Password = newPassword;
 
-            _unitOfWork.Save();
+            UnitOfWork.Save();
             return true;
         }
 
@@ -166,7 +166,7 @@ namespace AI_.Security.Services
             user.Password = Membership.GeneratePassword(NewPasswordLength,
                                                         MinRequiredNonAlphanumericCharacters);
 
-            _unitOfWork.Save();
+            UnitOfWork.Save();
             return user.Password;
         }
 
@@ -186,20 +186,20 @@ namespace AI_.Security.Services
 
             user.IsLocked = false;
 
-            _unitOfWork.Save();
+            UnitOfWork.Save();
             return true;
         }
 
         public User GetUser(int id)
         {
-            return _unitOfWork.UserRepository.GetByID(id);
+            return UnitOfWork.UserRepository.GetByID(id);
         }
 
         public List<User> GetAllUsers(int pageIndex,
                                       int pageSize,
                                       out int totalRecords)
         {
-            var users = _unitOfWork.UserRepository.Get();
+            var users = UnitOfWork.UserRepository.Get();
             totalRecords = users.Count;
 
             return users.Skip(pageIndex * pageSize).Take(pageSize).ToList();
@@ -210,7 +210,7 @@ namespace AI_.Security.Services
                                            int pageSize,
                                            out int totalRecords)
         {
-            var users = _unitOfWork.UserRepository
+            var users = UnitOfWork.UserRepository
                 .Get(usr => usr.Email == emailToMatch.ToLower());
             totalRecords = users.Count;
 
@@ -219,7 +219,7 @@ namespace AI_.Security.Services
 
         public User GetUser(string username)
         {
-            return _unitOfWork.UserRepository
+            return UnitOfWork.UserRepository
                 .Get(user => user.UserName == username.ToLower())
                 .SingleOrDefault();
         }

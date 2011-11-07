@@ -2,20 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using AI_.Data;
+using AI_.Security.Services;
 using AI_.Studmix.Model.DAL.Database;
 using AI_.Studmix.Model.Models;
 using AI_.Studmix.Model.Services.Abstractions;
 
 namespace AI_.Studmix.Model.Services
 {
-    public class PropertyStateService:ServiceBase
+    public class PropertyStateService : ServiceBase<IUnitOfWork>
     {
         public PropertyStateService(IUnitOfWork unitOfWork)
             : base(unitOfWork)
         {
         }
 
-        public PropertyState GetState(int propertyId,string stateValue)
+        public PropertyState GetState(int propertyId, string stateValue)
         {
             return UnitOfWork.PropertyStateRepository
                 .Get(x => x.Property.ID == propertyId
@@ -23,7 +24,7 @@ namespace AI_.Studmix.Model.Services
                 .FirstOrDefault();
         }
 
-        public IEnumerable<PropertyState> GetBoundedStates(Property property,PropertyState state)
+        public IEnumerable<PropertyState> GetBoundedStates(Property property, PropertyState state)
         {
             var packages = state.ContentPackages;
             var propertyStates = packages.Aggregate(new List<PropertyState>().AsEnumerable(),
