@@ -1,7 +1,7 @@
 ﻿using System.Linq;
+using AI_.Data.Repository;
 using AI_.Security.Models;
 using AI_.Security.Services;
-using AI_.Studmix.Model.DAL.Database;
 using AI_.Studmix.Model.Models;
 using AI_.Studmix.Model.Services.Abstractions;
 
@@ -14,6 +14,8 @@ namespace AI_.Studmix.Model.Services
         {
         }
 
+        #region IFinanceService Members
+
         public bool IsOrderAvailable(Order order)
         {
             return order.ContentPackage.Price <= order.UserProfile.Balance;
@@ -21,7 +23,7 @@ namespace AI_.Studmix.Model.Services
 
         public void MakeOrder(Order order)
         {
-            UnitOfWork.OrderRepository.Insert(order);
+            UnitOfWork.GetRepository<Order>().Insert(order);
             var price = order.ContentPackage.Price;
 
             var membershipService = new MembershipService(UnitOfWork);
@@ -45,10 +47,12 @@ namespace AI_.Studmix.Model.Services
         {
             var membershipService = new MembershipService(UnitOfWork);
             var profile = membershipService.GetUserProfile(user);
-            var order = UnitOfWork.OrderRepository.Get(o => o.ContentPackage.ID == package.ID
-                                                             && o.UserProfile.ID == profile.ID)
+            var order = UnitOfWork.GetRepository<Order>().Get(o => o.ContentPackage.ID == package.ID
+                                                            && o.UserProfile.ID == profile.ID)
                 .FirstOrDefault();
             return order != null;
         }
+
+        #endregion
     }
 }

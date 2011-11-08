@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using AI_.Data.Repository;
 using AI_.Security.Services;
-using AI_.Studmix.Model.DAL.Database;
 using AI_.Studmix.Model.Models;
 
 namespace AI_.Studmix.Model.Services

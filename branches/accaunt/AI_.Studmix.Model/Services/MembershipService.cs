@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using AI_.Data.Repository;
 using AI_.Security.Models;
 using AI_.Studmix.Model.DAL.Database;
 using AI_.Studmix.Model.Models;
@@ -19,7 +20,7 @@ namespace AI_.Studmix.Model.Services
                 throw new ArgumentNullException("user");
 
             var unitOfWork = (IUnitOfWork) UnitOfWork;
-            return unitOfWork.UserProfileRepository
+            return unitOfWork.GetRepository<UserProfile>()
                 .Get(profile => profile.User.ID == user.ID)
                 .Single();
         }

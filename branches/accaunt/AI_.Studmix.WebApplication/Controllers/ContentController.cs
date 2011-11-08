@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using AI_.Data.Repository;
 using AI_.Studmix.Model.DAL.Database;
 using AI_.Studmix.Model.DAL.FileSystem;
 using AI_.Studmix.Model.Models;
@@ -33,7 +34,7 @@ namespace AI_.Studmix.WebApplication.Controllers
         public ViewResult Upload()
         {
             var viewModel = new UploadViewModel();
-            viewModel.Properties = UnitOfWork.PropertyRepository.Get();
+            viewModel.Properties = UnitOfWork.GetRepository<Property>().Get();
 
             return View(viewModel);
         }
@@ -41,7 +42,7 @@ namespace AI_.Studmix.WebApplication.Controllers
         [HttpPost]
         public ActionResult Upload(UploadViewModel viewModel)
         {
-            viewModel.Properties = UnitOfWork.PropertyRepository.Get();
+            viewModel.Properties = UnitOfWork.GetRepository<Property>().Get();
 
             if (!ModelState.IsValid)
             {
@@ -67,7 +68,7 @@ namespace AI_.Studmix.WebApplication.Controllers
                 var propertyState = service.GetState(pair.Key, pair.Value);
                 if (propertyState == null)
                 {
-                    var property = UnitOfWork.PropertyRepository.GetByID(pair.Key);
+                    var property = UnitOfWork.GetRepository<Property>().GetByID(pair.Key);
                     propertyState = service.CreateState(property, pair.Value);
                 }
 
@@ -75,7 +76,7 @@ namespace AI_.Studmix.WebApplication.Controllers
             }
 
             _fileStorageManager.Store(package);
-            UnitOfWork.ContentPackageRepository.Insert(package);
+            UnitOfWork.GetRepository<ContentPackage>().Insert(package);
             UnitOfWork.Save();
 
             return InformationView("Загрузка завершена",
@@ -104,14 +105,14 @@ namespace AI_.Studmix.WebApplication.Controllers
         public ViewResult Search()
         {
             var viewModel = new SearchViewModel();
-            viewModel.Properties = UnitOfWork.PropertyRepository.Get();
+            viewModel.Properties = UnitOfWork.GetRepository<Property>().Get();
             return View(viewModel);
         }
 
         [HttpPost]
         public ViewResult Search(SearchViewModel viewModel)
         {
-            viewModel.Properties = UnitOfWork.PropertyRepository.Get();
+            viewModel.Properties = UnitOfWork.GetRepository<Property>().Get();
 
             var stateService = new PropertyStateService(UnitOfWork);
             var propertyStates = viewModel.States
@@ -134,7 +135,7 @@ namespace AI_.Studmix.WebApplication.Controllers
             if (specifieStatePairs.Count() == 0)
                 return Json(response.Properties.Single(x => x.ID == id).States);
 
-            var properties = UnitOfWork.PropertyRepository.Get();
+            var properties = UnitOfWork.GetRepository<Property>().Get();
             var service = new PropertyStateService(UnitOfWork);
             foreach (var statePair in specifieStatePairs)
             {
@@ -163,7 +164,7 @@ namespace AI_.Studmix.WebApplication.Controllers
         private AjaxStatesViewModel GetDefaultStates()
         {
             var response = new AjaxStatesViewModel();
-            var properties = UnitOfWork.PropertyRepository.Get();
+            var properties = UnitOfWork.GetRepository<Property>().Get();
 
             foreach (var property in properties)
             {
@@ -182,8 +183,8 @@ namespace AI_.Studmix.WebApplication.Controllers
         [HttpGet]
         public ViewResult Details(int id)
         {
-            var contentPackage = UnitOfWork.ContentPackageRepository.GetByID(id);
-            var properties = UnitOfWork.PropertyRepository.Get();
+            var contentPackage = UnitOfWork.GetRepository<ContentPackage>().GetByID(id);
+            var properties = UnitOfWork.GetRepository<Property>().Get();
             if (contentPackage == null)
                 return ErrorView("Материал не найден", "Указанный материал отсутствует в базе данных.");
 
@@ -199,7 +200,7 @@ namespace AI_.Studmix.WebApplication.Controllers
 
         public ActionResult Download(int id)
         {
-            var contentFile = UnitOfWork.ContentFileRepository.GetByID(id);
+            var contentFile = UnitOfWork.GetRepository<ContentFile>().GetByID(id);
             if (contentFile == null)
                 return ErrorView("Файл не найден", "Указаный файл отсутствует или был удален.");
             var accessGranted = _financeService.UserHasPermissions(CurrentUser,contentFile.ContentPackage);

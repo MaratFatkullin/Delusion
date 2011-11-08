@@ -61,8 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Mocks\RepositoryMock.cs" />
-    <Compile Include="Mocks\UnitOfWorkFactoryMock.cs" />
-    <Compile Include="Mocks\SecurityUnitOfWorkMock.cs" />
+    <Compile Include="Mocks\UnitOfWorkMock.cs" />
     <Compile Include="Services\RoleServiceTests.cs" />
     <Compile Include="Services\MembershipServiceTests.cs" />
     <Compile Include="UtilityClasses\UtilityMethods.cs" />

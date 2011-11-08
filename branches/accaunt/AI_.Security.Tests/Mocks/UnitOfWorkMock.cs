@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using AI_.Data;
 using AI_.Data.Repository;
-using AI_.Security.Tests.Mocks;
 
-namespace AI_.Studmix.WebApplication.Tests.Mocks
+namespace AI_.Security.Tests.Mocks
 {
     public class UnitOfWorkMock : IUnitOfWork, IObservable<object>
     {

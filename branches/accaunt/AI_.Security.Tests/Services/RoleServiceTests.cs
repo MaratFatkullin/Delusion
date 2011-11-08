@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Configuration.Provider;
 using System.Linq;
+using AI_.Data.Repository;
 using AI_.Security.Models;
 using AI_.Security.Services;
 using AI_.Security.Tests.Mocks;
@@ -14,21 +15,21 @@ namespace AI_.Security.Tests.Services
     public class RoleServiceTests
     {
         private readonly RoleService _service;
-        private readonly SecurityUnitOfWorkMock _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
 
         protected ICollection<User> UserStorage
         {
-            get { return ((RepositoryMock<User>) _unitOfWork.UserRepository).Storage; }
+            get { return ((RepositoryMock<User>) _unitOfWork.GetRepository<User>()).Storage; }
         }
 
         protected ICollection<Role> RoleStorage
         {
-            get { return ((RepositoryMock<Role>) _unitOfWork.RoleRepository).Storage; }
+            get { return ((RepositoryMock<Role>) _unitOfWork.GetRepository<Role>()).Storage; }
         }
 
         public RoleServiceTests()
         {
-            _unitOfWork = new SecurityUnitOfWorkMock();
+            _unitOfWork = new UnitOfWorkMock();
             _service = new RoleService(_unitOfWork);
         }
 
@@ -36,13 +37,13 @@ namespace AI_.Security.Tests.Services
 
         private void AddUser(User user)
         {
-            _unitOfWork.UserRepository.Insert(user);
+            _unitOfWork.GetRepository<User>().Insert(user);
             _unitOfWork.Save();
         }
 
         private void AddRole(Role role)
         {
-            _unitOfWork.RoleRepository.Insert(role);
+            _unitOfWork.GetRepository<Role>().Insert(role);
             _unitOfWork.Save();
         }
 
