@@ -8,7 +8,7 @@ using AI_.Studmix.Model.Models;
 
 namespace AI_.Studmix.Model.Services
 {
-    public class PropertyStateService : ServiceBase<IUnitOfWork>
+    public class PropertyStateService : ServiceBase
     {
         public PropertyStateService(IUnitOfWork unitOfWork)
             : base(unitOfWork)

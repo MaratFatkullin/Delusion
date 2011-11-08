@@ -1,15 +1,24 @@
 ﻿using System;
 using System.Web.Mvc;
 using System.Web.Security;
+using AI_.Data.Repository;
+using AI_.Security.Models;
+using AI_.Security.Services.Abstractions;
 using AI_.Studmix.WebApplication.ViewModels.Account;
 
 namespace AI_.Studmix.WebApplication.Controllers
 {
-    public class AccountController : ControllerBase
+    public class AccountController : DataControllerBase
     {
-
+        public IMembershipService MembershipService { get; private set; }
         //
         // GET: /Account/LogOn
+
+        public AccountController(IUnitOfWork unitOfWork, IMembershipService membershipService)
+            : base(unitOfWork)
+        {
+            MembershipService = membershipService;
+        }
 
         public ActionResult LogOn()
         {
@@ -24,7 +33,7 @@ namespace AI_.Studmix.WebApplication.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (Membership.ValidateUser(viewModel.UserName, viewModel.Password))
+                if (MembershipService.ValidateUser(viewModel.UserName, viewModel.Password))
                 {
                     FormsAuthentication.SetAuthCookie(viewModel.UserName, viewModel.RememberMe);
                     if (Url.IsLocalUrl(returnUrl) && returnUrl.Length > 1 && returnUrl.StartsWith("/")
@@ -62,7 +71,9 @@ namespace AI_.Studmix.WebApplication.Controllers
 
         public ActionResult Register()
         {
-            return View();
+            var viewModel = new RegisterViewModel();
+            viewModel.MinRequiredPasswordLength = MembershipService.MinRequiredPasswordLength;
+            return View(viewModel);
         }
 
         //
@@ -75,7 +86,13 @@ namespace AI_.Studmix.WebApplication.Controllers
             {
                 // Attempt to register the user
                 MembershipCreateStatus createStatus;
-                Membership.CreateUser(model.UserName, model.Password, model.Email, null, null, true, null, out createStatus);
+                MembershipService.CreateUser(model.UserName,
+                                             model.Password,
+                                             model.Email,
+                                             null,
+                                             null,
+                                             true,
+                                             out createStatus);
 
                 if (createStatus == MembershipCreateStatus.Success)
                 {
@@ -110,14 +127,15 @@ namespace AI_.Studmix.WebApplication.Controllers
         {
             if (ModelState.IsValid)
             {
-
                 // ChangePassword will throw an exception rather
                 // than return false in certain failure scenarios.
                 bool changePasswordSucceeded;
                 try
                 {
-                    MembershipUser currentUser = Membership.GetUser(User.Identity.Name, true /* userIsOnline */);
-                    changePasswordSucceeded = currentUser.ChangePassword(viewModel.OldPassword, viewModel.NewPassword);
+                    User currentUser = MembershipService.GetUser(User.Identity.Name);
+                    changePasswordSucceeded = MembershipService.ChangePassword(currentUser.UserName,
+                                                                               viewModel.OldPassword,
+                                                                               viewModel.NewPassword);
                 }
                 catch (Exception)
                 {
@@ -130,7 +148,8 @@ namespace AI_.Studmix.WebApplication.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError("", "The current password is incorrect or the new password is invalid.");
+                    ModelState.AddModelError("",
+                                             "The current password is incorrect or the new password is invalid.");
                 }
             }
 
@@ -147,6 +166,7 @@ namespace AI_.Studmix.WebApplication.Controllers
         }
 
         #region Status Codes
+
         private static string ErrorCodeToString(MembershipCreateStatus createStatus)
         {
             // See http://go.microsoft.com/fwlink/?LinkID=177550 for
@@ -157,7 +177,8 @@ namespace AI_.Studmix.WebApplication.Controllers
                     return "User name already exists. Please enter a different user name.";
 
                 case MembershipCreateStatus.DuplicateEmail:
-                    return "A user name for that e-mail address already exists. Please enter a different e-mail address.";
+                    return
+                        "A user name for that e-mail address already exists. Please enter a different e-mail address.";
 
                 case MembershipCreateStatus.InvalidPassword:
                     return "The password provided is invalid. Please enter a valid password value.";
@@ -166,24 +187,30 @@ namespace AI_.Studmix.WebApplication.Controllers
                     return "The e-mail address provided is invalid. Please check the value and try again.";
 
                 case MembershipCreateStatus.InvalidAnswer:
-                    return "The password retrieval answer provided is invalid. Please check the value and try again.";
+                    return
+                        "The password retrieval answer provided is invalid. Please check the value and try again.";
 
                 case MembershipCreateStatus.InvalidQuestion:
-                    return "The password retrieval question provided is invalid. Please check the value and try again.";
+                    return
+                        "The password retrieval question provided is invalid. Please check the value and try again.";
 
                 case MembershipCreateStatus.InvalidUserName:
                     return "The user name provided is invalid. Please check the value and try again.";
 
                 case MembershipCreateStatus.ProviderError:
-                    return "The authentication provider returned an error. Please verify your entry and try again. If the problem persists, please contact your system administrator.";
+                    return
+                        "The authentication provider returned an error. Please verify your entry and try again. If the problem persists, please contact your system administrator.";
 
                 case MembershipCreateStatus.UserRejected:
-                    return "The user creation request has been canceled. Please verify your entry and try again. If the problem persists, please contact your system administrator.";
+                    return
+                        "The user creation request has been canceled. Please verify your entry and try again. If the problem persists, please contact your system administrator.";
 
                 default:
-                    return "An unknown error occurred. Please verify your entry and try again. If the problem persists, please contact your system administrator.";
+                    return
+                        "An unknown error occurred. Please verify your entry and try again. If the problem persists, please contact your system administrator.";
             }
         }
+
         #endregion
     }
 }

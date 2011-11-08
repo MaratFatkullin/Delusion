@@ -7,7 +7,7 @@ using AI_.Studmix.Model.Services.Abstractions;
 
 namespace AI_.Studmix.Model.Services
 {
-    public class FinanceService : ServiceBase<IUnitOfWork>, IFinanceService
+    public class FinanceService : ServiceBase, IFinanceService
     {
         public FinanceService(IUnitOfWork unitOfWork)
             : base(unitOfWork)
@@ -26,7 +26,7 @@ namespace AI_.Studmix.Model.Services
             UnitOfWork.GetRepository<Order>().Insert(order);
             var price = order.ContentPackage.Price;
 
-            var membershipService = new MembershipService(UnitOfWork);
+            var membershipService = new ProfileService(UnitOfWork);
             var ownerProfile = membershipService.GetUserProfile(order.ContentPackage.Owner);
 
             order.UserProfile.Balance -= price;
@@ -45,7 +45,7 @@ namespace AI_.Studmix.Model.Services
 
         public bool UserHasOrder(User user, ContentPackage package)
         {
-            var membershipService = new MembershipService(UnitOfWork);
+            var membershipService = new ProfileService(UnitOfWork);
             var profile = membershipService.GetUserProfile(user);
             var order = UnitOfWork.GetRepository<Order>().Get(o => o.ContentPackage.ID == package.ID
                                                             && o.UserProfile.ID == profile.ID)

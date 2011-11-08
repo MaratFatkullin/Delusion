@@ -4,13 +4,12 @@ using System.Linq;
 using System.Web.Security;
 using AI_.Data.Repository;
 using AI_.Security.Models;
+using AI_.Security.Services.Abstractions;
 
 namespace AI_.Security.Services
 {
-    public class MembershipService
+    public class MembershipService : ServiceBase, IMembershipService
     {
-        protected IUnitOfWork UnitOfWork { get; private set; }
-
         public bool RequiresUniqueEmail { get; set; }
         public int MinRequiredPasswordLength { get; set; }
         public int MinRequiredNonAlphanumericCharacters { get; set; }
@@ -19,8 +18,8 @@ namespace AI_.Security.Services
         public bool RequiresEmail { get; set; }
 
         public MembershipService(IUnitOfWork unitOfWork)
+            : base(unitOfWork)
         {
-            UnitOfWork = unitOfWork;
         }
 
 
