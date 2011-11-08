@@ -1,7 +1,6 @@
-﻿using System.Configuration.Provider;
+﻿using System;
 using System.Linq;
 using AI_.Data.Repository;
-using AI_.Security.DAL;
 using AI_.Security.Models;
 
 namespace AI_.Security.Services
@@ -19,7 +18,7 @@ namespace AI_.Security.Services
         {
             var role = GetRole(roleName);
             if (role == null)
-                throw new ProviderException("Role with specified name does not exists.");
+                throw new ArgumentException("Role with specified name does not exists.");
 
             return role.Users.Any(usr => usr.UserName == username);
         }
@@ -28,7 +27,7 @@ namespace AI_.Security.Services
         {
             var user = GetUser(username);
             if (user == null)
-                throw new ProviderException("User with specified name does not exists.");
+                throw new ArgumentException("User with specified name does not exists.");
             var rolenames = from role in user.Roles
                             select role.RoleName;
             return rolenames.ToArray();
@@ -37,7 +36,7 @@ namespace AI_.Security.Services
         public void CreateRole(string roleName)
         {
             if (RoleExists(roleName))
-                throw new ProviderException("Role with specified name already exists.");
+                throw new InvalidOperationException("Role with specified name already exists.");
 
             var role = new Role {RoleName = roleName};
             _unitOfWork.GetRepository<Role>().Insert(role);
@@ -52,7 +51,7 @@ namespace AI_.Security.Services
             if (role.Users.Count != 0)
             {
                 if (throwOnPopulatedRole)
-                    throw new ProviderException("Role cannot be deleted cause it has rolemembers.");
+                    throw new InvalidOperationException("Role cannot be deleted cause it has rolemembers.");
                 foreach (var user in role.Users)
                     user.Roles.Remove(role);
             }
@@ -73,15 +72,15 @@ namespace AI_.Security.Services
             {
                 var role = GetRole(roleName);
                 if (role == null)
-                    throw new ProviderException("Role with specified name does not exists.");
+                    throw new ArgumentException("Role with specified name does not exists.");
                 foreach (var username in usernames)
                 {
                     var userInRole = role.Users.Where(usr => usr.UserName == username).SingleOrDefault();
                     if (userInRole != null)
-                        throw new ProviderException("User with specified name already has specified role.");
+                        throw new InvalidOperationException("User with specified name already has specified role.");
                     var user = GetUser(username);
                     if (user == null)
-                        throw new ProviderException("User with specified name does not exists.");
+                        throw new ArgumentException("User with specified name does not exists.");
                     role.Users.Add(user);
                 }
             }
@@ -94,12 +93,12 @@ namespace AI_.Security.Services
             {
                 var role = GetRole(roleName);
                 if (role == null)
-                    throw new ProviderException("Role with specified name does not exists.");
+                    throw new ArgumentException("Role with specified name does not exists.");
                 foreach (var username in usernames)
                 {
                     var user = role.Users.Where(usr => usr.UserName == username).SingleOrDefault();
                     if (user == null)
-                        throw new ProviderException("User with specified name does not have specified role.");
+                        throw new ArgumentException("User with specified name does not have specified role.");
                     role.Users.Remove(user);
                 }
             }
@@ -110,7 +109,7 @@ namespace AI_.Security.Services
         {
             var role = GetRole(roleName);
             if (role == null)
-                throw new ProviderException("Role with specified name does not exists.");
+                throw new ArgumentException("Role with specified name does not exists.");
             var usernames = from user in role.Users
                             select user.UserName;
             return usernames.ToArray();
@@ -128,7 +127,7 @@ namespace AI_.Security.Services
         {
             var role = GetRole(roleName);
             if (role == null)
-                throw new ProviderException("Role with specified name does not exists.");
+                throw new ArgumentException("Role with specified name does not exists.");
             var usernames = from user in role.Users
                             where user.UserName.Contains(usernameToMatch)
                             select user.UserName;

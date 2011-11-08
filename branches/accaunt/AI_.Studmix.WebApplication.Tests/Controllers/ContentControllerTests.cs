@@ -6,7 +6,7 @@ using System.Text;
 using System.Web;
 using System.Web.Mvc;
 using AI_.Security.Models;
-using AI_.Studmix.Model.DAL.Database;
+using AI_.Security.Tests.Mocks;
 using AI_.Studmix.Model.Models;
 using AI_.Studmix.Model.Services;
 using AI_.Studmix.Model.Services.Abstractions;
@@ -21,11 +21,11 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
 {
     public class ContentControllerTests
     {
-        private ContentController _controller;
+        private readonly User _currentUser;
+        private readonly UserProfile _currentUserProfile;
         private readonly FileStorageManagerMock _fileStorageManager;
         private readonly UnitOfWorkMock _unitOfWork;
-        private User _currentUser;
-        private UserProfile _currentUserProfile;
+        private ContentController _controller;
 
 
         public ContentControllerTests()
@@ -33,12 +33,14 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             _unitOfWork = new UnitOfWorkMock();
             _fileStorageManager = new FileStorageManagerMock();
 
-            _currentUser = new User { UserName = "currentusername" };
-            _currentUserProfile = new UserProfile { User = _currentUser };
+            _currentUser = new User {UserName = "currentusername"};
+            _currentUserProfile = new UserProfile {User = _currentUser};
             _unitOfWork.GetRepository<User>().Insert(_currentUser);
             _unitOfWork.GetRepository<UserProfile>().Insert(_currentUserProfile);
 
-            _controller = new ContentController(_unitOfWork, _fileStorageManager,new FinanceService(_unitOfWork));
+            _controller = new ContentController(_unitOfWork,
+                                                _fileStorageManager,
+                                                new FinanceService(_unitOfWork));
             _controller.ControllerContext = CreateControllerContext();
             InitUnitOfWork(_unitOfWork);
         }
@@ -55,8 +57,8 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             var state3 = new PropertyState {Property = property2, Value = "state3"};
             var state4 = new PropertyState {Property = property2, Value = "state4"};
 
-            property1.States = new List<PropertyState> { state1, state2 };
-            property2.States = new List<PropertyState> { state3, state4 };
+            property1.States = new List<PropertyState> {state1, state2};
+            property2.States = new List<PropertyState> {state3, state4};
 
             var package1 = new ContentPackage
                            {
@@ -70,10 +72,10 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
                                PropertyStates = new Collection<PropertyState> {state2, state4}
                            };
 
-            state1.ContentPackages = new Collection<ContentPackage> { package1 };
-            state2.ContentPackages = new Collection<ContentPackage> { package2 };
-            state3.ContentPackages = new Collection<ContentPackage> { package1 };
-            state4.ContentPackages = new Collection<ContentPackage> { package2 };
+            state1.ContentPackages = new Collection<ContentPackage> {package1};
+            state2.ContentPackages = new Collection<ContentPackage> {package2};
+            state3.ContentPackages = new Collection<ContentPackage> {package1};
+            state4.ContentPackages = new Collection<ContentPackage> {package2};
 
             unitOfWork.GetRepository<Property>().Insert(property1);
             unitOfWork.GetRepository<Property>().Insert(property2);
@@ -234,7 +236,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         public void UpdateStates_NotAllPropertiesSpecifiedInPackages_NoStatesForUnspecifiedPropertieAvailable()
         {
             // Arrange
-            _unitOfWork.GetRepository<Property>().Insert(new Property {Name = "property", Order = 3,ID = 3});
+            _unitOfWork.GetRepository<Property>().Insert(new Property {Name = "property", Order = 3, ID = 3});
             _unitOfWork.Save();
 
             // Act
@@ -526,7 +528,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             var result = _controller.Search(viewModel);
 
             // Assert
-            var model = (SearchViewModel )result.Model;
+            var model = (SearchViewModel) result.Model;
             model.Packages.Single().ID.Should().Be(1);
         }
 
@@ -535,13 +537,13 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         {
             // Arrange
             var viewModel = new SearchViewModel();
-            viewModel.States = new Dictionary<int, string> { { 1, "" }, { 2, "state4" } };
+            viewModel.States = new Dictionary<int, string> {{1, ""}, {2, "state4"}};
 
             // Act
             var result = _controller.Search(viewModel);
 
             // Assert
-            var model = (SearchViewModel)result.Model;
+            var model = (SearchViewModel) result.Model;
             model.Packages.Single().ID.Should().Be(2);
         }
 
@@ -552,19 +554,20 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             var property = _unitOfWork.GetRepository<Property>().GetByID(1);
             var state1 = property.States.First();
             var state2 = property.States.Last();
-            var newPackage = new ContentPackage {ID = 3, PropertyStates = new Collection<PropertyState> {state1, state2}};
+            var newPackage = new ContentPackage
+                             {ID = 3, PropertyStates = new Collection<PropertyState> {state1, state2}};
             state1.ContentPackages.Add(newPackage);
             state2.ContentPackages.Add(newPackage);
             _unitOfWork.GetRepository<ContentPackage>().Insert(newPackage);
 
             var viewModel = new SearchViewModel();
-            viewModel.States = new Dictionary<int, string> { { 1, "state1" }, { 2, "" } };
+            viewModel.States = new Dictionary<int, string> {{1, "state1"}, {2, ""}};
 
             // Act
             var result = _controller.Search(viewModel);
 
             // Assert
-            var model = (SearchViewModel)result.Model;
+            var model = (SearchViewModel) result.Model;
             model.Packages.Should().HaveCount(2);
         }
 
@@ -573,13 +576,13 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         {
             // Arrange
             var viewModel = new SearchViewModel();
-            viewModel.States = new Dictionary<int, string> { { 1, "state1" }, { 2, "state4" } };
+            viewModel.States = new Dictionary<int, string> {{1, "state1"}, {2, "state4"}};
 
             // Act
             var result = _controller.Search(viewModel);
 
             // Assert
-            var model = (SearchViewModel)result.Model;
+            var model = (SearchViewModel) result.Model;
             model.Packages.Should().BeEmpty();
         }
 
@@ -592,7 +595,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             var result = _controller.Search(new SearchViewModel());
 
             // Assert
-            var model = (SearchViewModel)result.Model;
+            var model = (SearchViewModel) result.Model;
             model.Properties.Should().HaveCount(2);
         }
 
@@ -605,7 +608,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             var result = _controller.Search(new SearchViewModel());
 
             // Assert
-            var model = (SearchViewModel)result.Model;
+            var model = (SearchViewModel) result.Model;
             model.Packages.Should().BeEmpty();
         }
 
@@ -616,14 +619,14 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             // Arrange
             var package = _unitOfWork.GetRepository<ContentPackage>().Get().Last();
             var serviceMock = GetFinanceServiceMock();
-            _controller = new ContentController(_unitOfWork,_fileStorageManager,serviceMock.Object);
+            _controller = new ContentController(_unitOfWork, _fileStorageManager, serviceMock.Object);
             _controller.ControllerContext = CreateControllerContext();
 
             // Act
             var result = _controller.Details(package.ID);
 
             // Assert
-            var model = (DetailsViewModel)result.Model;
+            var model = (DetailsViewModel) result.Model;
             model.Package.Should().Be(package);
         }
 
@@ -639,7 +642,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             var result = _controller.Details(1);
 
             // Assert
-            var model = (DetailsViewModel)result.Model;
+            var model = (DetailsViewModel) result.Model;
             model.Properties.Should().HaveCount(2);
         }
 
@@ -655,7 +658,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             var result = _controller.Details(1);
 
             // Assert
-            var model = (DetailsViewModel)result.Model;
+            var model = (DetailsViewModel) result.Model;
             model.IsFullAccessGranted.Should().BeFalse();
         }
 
@@ -671,7 +674,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             var result = _controller.Details(1);
 
             // Assert
-            var model = (DetailsViewModel)result.Model;
+            var model = (DetailsViewModel) result.Model;
             model.IsFullAccessGranted.Should().BeTrue();
         }
 
@@ -687,7 +690,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             var result = _controller.Details(1);
 
             // Assert
-            var model = (DetailsViewModel)result.Model;
+            var model = (DetailsViewModel) result.Model;
             model.IsFullAccessGranted.Should().BeTrue();
         }
 
@@ -754,7 +757,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             var result = _controller.Download(contentFile.ID);
 
             // Assert
-            var viewResult = (ViewResult)result;
+            var viewResult = (ViewResult) result;
             viewResult.ViewName.Should().Be("ApplicationError");
         }
 

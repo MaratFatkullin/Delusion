@@ -14,6 +14,7 @@ namespace AI_.Security.Tests.Mocks
         public UnitOfWorkMock()
         {
             _observers = new Collection<IObserver<object>>();
+            Map = new Dictionary<Type, object>();
         }
 
         #region IObservable<object> Members

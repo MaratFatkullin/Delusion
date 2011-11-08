@@ -65,7 +65,6 @@
     <Compile Include="Mocks\FileStorageManagerMock.cs" />
     <Compile Include="Mocks\HttpPostedFileMock.cs" />
     <Compile Include="Mocks\FileStorageProviderMock.cs" />
-    <Compile Include="Mocks\UnitOfWorkMock.cs" />
     <Compile Include="Model\Services\FinanceServiceTests.cs" />
     <Compile Include="Model\Services\PropertyStateServiceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -1,7 +1,7 @@
 ﻿using AI_.Security.Models;
+using AI_.Security.Tests.Mocks;
 using AI_.Studmix.Model.Models;
 using AI_.Studmix.Model.Services;
-using AI_.Studmix.WebApplication.Tests.Mocks;
 using FluentAssertions;
 using Xunit;
 

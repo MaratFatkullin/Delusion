@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using AI_.Security.Tests.Mocks;
 using AI_.Studmix.Model.Models;
 using AI_.Studmix.Model.Services;
-using AI_.Studmix.WebApplication.Tests.Mocks;
 using FluentAssertions;
 using Xunit;
 
@@ -136,12 +136,12 @@ namespace AI_.Studmix.WebApplication.Tests.Model.Services
             // Arrange
             var unitOfWork = new UnitOfWorkMock();
             var service = new PropertyStateService(unitOfWork);
-            var propertyState = CreatePropertyState(CreateProperty(id:1));
+            var propertyState = CreatePropertyState(CreateProperty(id: 1));
             unitOfWork.GetRepository<PropertyState>().Insert(propertyState);
             unitOfWork.Save();
 
             // Act
-            service.CreateState(CreateProperty(id:2), "newValue");
+            service.CreateState(CreateProperty(id: 2), "newValue");
 
             // Assert
             unitOfWork.GetRepository<PropertyState>().Get().Should().Contain(x => x.Index == 1);
