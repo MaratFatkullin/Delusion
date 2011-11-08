@@ -1,10 +1,11 @@
 ﻿using System.Data.Entity;
-using AI_.Security.DAL;
+using System.Data.Entity.Infrastructure;
+using AI_.Security.Models;
 using AI_.Studmix.Model.Models;
 
 namespace AI_.Studmix.Model.DAL.Database
 {
-    public class DataContext : SecurityDbContext
+    public class DataContext : DbContext
     {
         public DataContext(string nameOrConnectionString)
             : base(nameOrConnectionString)
@@ -20,10 +21,15 @@ namespace AI_.Studmix.Model.DAL.Database
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Conventions.Remove<IncludeMetadataConvention>();
+
+            modelBuilder.Entity<User>();
+            modelBuilder.Entity<Role>();
+
             modelBuilder.Entity<ContentPackage>()
                 .HasMany<PropertyState>(package => package.PropertyStates)
                 .WithMany(state => state.ContentPackages);
-                //.Map(mapping => mapping.ToTable("ContentPackagePropertyStates"));
+            //.Map(mapping => mapping.ToTable("ContentPackagePropertyStates"));
 
             modelBuilder.Entity<PropertyState>()
                 .HasRequired<Property>(state => state.Property)
