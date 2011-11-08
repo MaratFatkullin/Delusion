@@ -5,13 +5,11 @@ using AI_.Security.Models;
 
 namespace AI_.Security.Services
 {
-    public class RoleService
+    public class RoleService : ServiceBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-
         public RoleService(IUnitOfWork unitOfWork)
+            : base(unitOfWork)
         {
-            _unitOfWork = unitOfWork;
         }
 
         public bool IsUserInRole(string username, string roleName)
@@ -39,8 +37,8 @@ namespace AI_.Security.Services
                 throw new InvalidOperationException("Role with specified name already exists.");
 
             var role = new Role {RoleName = roleName};
-            _unitOfWork.GetRepository<Role>().Insert(role);
-            _unitOfWork.Save();
+            UnitOfWork.GetRepository<Role>().Insert(role);
+            UnitOfWork.Save();
         }
 
         public bool DeleteRole(string roleName, bool throwOnPopulatedRole)
@@ -55,14 +53,14 @@ namespace AI_.Security.Services
                 foreach (var user in role.Users)
                     user.Roles.Remove(role);
             }
-            _unitOfWork.GetRepository<Role>().Delete(role);
-            _unitOfWork.Save();
+            UnitOfWork.GetRepository<Role>().Delete(role);
+            UnitOfWork.Save();
             return true;
         }
 
         public bool RoleExists(string roleName)
         {
-            var role = _unitOfWork.GetRepository<Role>().Get(r => r.RoleName == roleName).SingleOrDefault();
+            var role = UnitOfWork.GetRepository<Role>().Get(r => r.RoleName == roleName).SingleOrDefault();
             return role != null;
         }
 
@@ -84,7 +82,7 @@ namespace AI_.Security.Services
                     role.Users.Add(user);
                 }
             }
-            _unitOfWork.Save();
+            UnitOfWork.Save();
         }
 
         public void RemoveUsersFromRoles(string[] usernames, string[] roleNames)
@@ -102,7 +100,7 @@ namespace AI_.Security.Services
                     role.Users.Remove(user);
                 }
             }
-            _unitOfWork.Save();
+            UnitOfWork.Save();
         }
 
         public string[] GetUsersInRole(string roleName)
@@ -117,7 +115,7 @@ namespace AI_.Security.Services
 
         public string[] GetAllRoles()
         {
-            return _unitOfWork.GetRepository<Role>()
+            return UnitOfWork.GetRepository<Role>()
                 .Get()
                 .Select(role => role.RoleName)
                 .ToArray();
@@ -136,12 +134,12 @@ namespace AI_.Security.Services
 
         private User GetUser(string username)
         {
-            return _unitOfWork.GetRepository<User>().Get(usr => usr.UserName == username).SingleOrDefault();
+            return UnitOfWork.GetRepository<User>().Get(usr => usr.UserName == username).SingleOrDefault();
         }
 
         private Role GetRole(string roleName)
         {
-            return _unitOfWork.GetRepository<Role>()
+            return UnitOfWork.GetRepository<Role>()
                 .Get(r => r.RoleName == roleName, includeProperties: "Users").FirstOrDefault();
         }
     }

@@ -1,11 +1,12 @@
-﻿
+﻿using AI_.Data.Repository;
+
 namespace AI_.Security.Services
 {
-    public abstract class ServiceBase <TUnitOfWork>
+    public abstract class ServiceBase
     {
-        public TUnitOfWork UnitOfWork { get; private set; }
+        public IUnitOfWork UnitOfWork { get; set; }
 
-        protected ServiceBase(TUnitOfWork unitOfWork)
+        protected ServiceBase(IUnitOfWork unitOfWork)
         {
             UnitOfWork = unitOfWork;
         }

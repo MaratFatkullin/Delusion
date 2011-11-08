@@ -2,14 +2,13 @@
 using System.Linq;
 using AI_.Data.Repository;
 using AI_.Security.Models;
-using AI_.Studmix.Model.DAL.Database;
 using AI_.Studmix.Model.Models;
 
 namespace AI_.Studmix.Model.Services
 {
-    public class MembershipService : Security.Services.MembershipService
+    public class ProfileService : Security.Services.MembershipService
     {
-        public MembershipService(IUnitOfWork unitOfWork)
+        public ProfileService(IUnitOfWork unitOfWork)
             : base(unitOfWork)
         {
         }
@@ -19,7 +18,7 @@ namespace AI_.Studmix.Model.Services
             if (user == null)
                 throw new ArgumentNullException("user");
 
-            var unitOfWork = (IUnitOfWork) UnitOfWork;
+            var unitOfWork = UnitOfWork;
             return unitOfWork.GetRepository<UserProfile>()
                 .Get(profile => profile.User.ID == user.ID)
                 .Single();

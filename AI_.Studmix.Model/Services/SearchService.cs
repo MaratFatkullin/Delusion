@@ -8,7 +8,7 @@ using AI_.Studmix.Model.Models;
 
 namespace AI_.Studmix.Model.Services
 {
-    public class SearchService : ServiceBase<IUnitOfWork>
+    public class SearchService : ServiceBase
     {
         public SearchService(IUnitOfWork unitOfWork)
             : base(unitOfWork)
