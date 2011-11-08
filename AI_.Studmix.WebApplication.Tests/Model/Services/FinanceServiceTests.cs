@@ -33,12 +33,12 @@ namespace AI_.Studmix.WebApplication.Tests.Model.Services
             var user = new User();
             var userProfile = new UserProfile {User = user};
             var package = new ContentPackage {Owner = new User()};
-            unitOfWork.UserRepository.Insert(user);
-            unitOfWork.UserProfileRepository.Insert(userProfile);
-            unitOfWork.ContentPackageRepository.Insert(package);
+            unitOfWork.GetRepository<User>().Insert(user);
+            unitOfWork.GetRepository<UserProfile>().Insert(userProfile);
+            unitOfWork.GetRepository<ContentPackage>().Insert(package);
 
             var order = new Order {ContentPackage = package, UserProfile = userProfile};
-            unitOfWork.OrderRepository.Insert(order);
+            unitOfWork.GetRepository<Order>().Insert(order);
             unitOfWork.Save();
 
             // Act
@@ -57,9 +57,9 @@ namespace AI_.Studmix.WebApplication.Tests.Model.Services
             var user = new User();
             var userProfile = new UserProfile {User = user};
             var package = new ContentPackage {Owner = new User()};
-            unitOfWork.UserRepository.Insert(user);
-            unitOfWork.UserProfileRepository.Insert(userProfile);
-            unitOfWork.ContentPackageRepository.Insert(package);
+            unitOfWork.GetRepository<User>().Insert(user);
+            unitOfWork.GetRepository<UserProfile>().Insert(userProfile);
+            unitOfWork.GetRepository<ContentPackage>().Insert(package);
             unitOfWork.Save();
 
             // Act

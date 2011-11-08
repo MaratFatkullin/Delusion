@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Web.Mvc;
+using AI_.Data.Repository;
 using AI_.Security.Models;
 using AI_.Studmix.Model.Models;
 using AI_.Studmix.WebApplication.Controllers;
@@ -16,7 +17,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         private readonly FinanceController _controller;
         private readonly User _currentUser;
         private readonly UserProfile _currentUserProfile;
-        private readonly UnitOfWorkMock _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
         private UserProfile _ownerProfile;
         private User _ownerUser;
 
@@ -29,8 +30,8 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             _currentUser = new User {UserName = "currentuser"};
             _currentUserProfile = new UserProfile {User = _currentUser};
 
-            _unitOfWork.UserRepository.Insert(_currentUser);
-            _unitOfWork.UserProfileRepository.Insert(_currentUserProfile);
+            _unitOfWork.GetRepository<User>().Insert(_currentUser);
+            _unitOfWork.GetRepository<UserProfile>().Insert(_currentUserProfile);
             _unitOfWork.Save();
 
             _controller.ControllerContext = CreateControllerContext(_currentUser);
@@ -40,8 +41,8 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         {
             _ownerUser = new User {UserName = "owneruser"};
             _ownerProfile = new UserProfile {User = _ownerUser};
-            _unitOfWork.UserRepository.Insert(_ownerUser);
-            _unitOfWork.UserProfileRepository.Insert(_ownerProfile);
+            _unitOfWork.GetRepository<User>().Insert(_ownerUser);
+            _unitOfWork.GetRepository<UserProfile>().Insert(_ownerProfile);
 
             var package = new ContentPackage
                           {
@@ -66,7 +67,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         {
             // Arrange
             var package = CreatePackage();
-            _unitOfWork.ContentPackageRepository.Insert(package);
+            _unitOfWork.GetRepository<ContentPackage>().Insert(package);
             _unitOfWork.Save();
             _currentUserProfile.Balance = 100;
 
@@ -85,7 +86,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         {
             // Arrange
             var package = CreatePackage();
-            _unitOfWork.ContentPackageRepository.Insert(package);
+            _unitOfWork.GetRepository<ContentPackage>().Insert(package);
             _unitOfWork.Save();
             _currentUserProfile.Balance = 50;
 
@@ -111,7 +112,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         {
             // Arrange
             var package = CreatePackage();
-            _unitOfWork.ContentPackageRepository.Insert(package);
+            _unitOfWork.GetRepository<ContentPackage>().Insert(package);
             _unitOfWork.Save();
             _currentUserProfile.Balance = 150;
 
@@ -119,7 +120,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             _controller.MakeOrder(new OrderViewModel {ContentPackageId = package.ID});
 
             // Assert
-            var order = _unitOfWork.OrderRepository.Get().Single();
+            var order = _unitOfWork.GetRepository<Order>().Get().Single();
             order.UserProfile.Should().Be(_currentUserProfile);
             order.ContentPackage.Should().Be(package);
         }
@@ -129,7 +130,7 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
         {
             // Arrange
             var package = CreatePackage();
-            _unitOfWork.ContentPackageRepository.Insert(package);
+            _unitOfWork.GetRepository<ContentPackage>().Insert(package);
             _unitOfWork.Save();
             _currentUserProfile.Balance = 150;
 

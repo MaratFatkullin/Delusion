@@ -6,12 +6,6 @@ namespace AI_.Studmix.Model.DAL.Database
 {
     public class DataContext : SecurityDbContext
     {
-        public DbSet<Property> Properties { get; set; }
-        public DbSet<PropertyState> PropertyStates { get; set; }
-        public DbSet<ContentFile> ContentFiles { get; set; }
-        public DbSet<ContentPackage> ContentPackages { get; set; }
-        public DbSet<UserProfile> UserProfiles { get; set; }
-
         public DataContext(string nameOrConnectionString)
             : base(nameOrConnectionString)
         {

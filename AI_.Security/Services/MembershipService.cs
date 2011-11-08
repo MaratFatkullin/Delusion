@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Security;
+using AI_.Data.Repository;
 using AI_.Security.DAL;
 using AI_.Security.Models;
 
@@ -9,7 +10,7 @@ namespace AI_.Security.Services
 {
     public class MembershipService
     {
-        protected ISecurityUnitOfWork UnitOfWork { get; private set; }
+        protected IUnitOfWork UnitOfWork { get; private set; }
 
         public bool RequiresUniqueEmail { get; set; }
         public int MinRequiredPasswordLength { get; set; }
@@ -18,7 +19,7 @@ namespace AI_.Security.Services
         public bool RequiresQuestionAndAnswer { get; set; }
         public bool RequiresEmail { get; set; }
 
-        public MembershipService(ISecurityUnitOfWork unitOfWork)
+        public MembershipService(IUnitOfWork unitOfWork)
         {
             UnitOfWork = unitOfWork;
         }
@@ -93,7 +94,7 @@ namespace AI_.Security.Services
                            LastLoginDate = DateTime.MinValue.ToLocalTime(),
                        };
 
-            UnitOfWork.UserRepository.Insert(user);
+            UnitOfWork.GetRepository<User>().Insert(user);
             UnitOfWork.Save();
 
             status = MembershipCreateStatus.Success;
@@ -102,7 +103,7 @@ namespace AI_.Security.Services
 
         public User GetUserByEmail(string email)
         {
-            return UnitOfWork.UserRepository
+            return UnitOfWork.GetRepository<User>()
                 .Get(us => us.Email == email.ToLower())
                 .SingleOrDefault();
         }
@@ -120,7 +121,7 @@ namespace AI_.Security.Services
             user.PasswordQuestion = newPasswordQuestion;
             user.PasswordAnswer = newPasswordAnswer;
 
-            UnitOfWork.UserRepository.Update(user);
+            UnitOfWork.GetRepository<User>().Update(user);
             UnitOfWork.Save();
             return true;
         }
@@ -192,14 +193,14 @@ namespace AI_.Security.Services
 
         public User GetUser(int id)
         {
-            return UnitOfWork.UserRepository.GetByID(id);
+            return UnitOfWork.GetRepository<User>().GetByID(id);
         }
 
         public List<User> GetAllUsers(int pageIndex,
                                       int pageSize,
                                       out int totalRecords)
         {
-            var users = UnitOfWork.UserRepository.Get();
+            var users = UnitOfWork.GetRepository<User>().Get();
             totalRecords = users.Count;
 
             return users.Skip(pageIndex * pageSize).Take(pageSize).ToList();
@@ -210,7 +211,7 @@ namespace AI_.Security.Services
                                            int pageSize,
                                            out int totalRecords)
         {
-            var users = UnitOfWork.UserRepository
+            var users = UnitOfWork.GetRepository<User>()
                 .Get(usr => usr.Email == emailToMatch.ToLower());
             totalRecords = users.Count;
 
@@ -219,7 +220,7 @@ namespace AI_.Security.Services
 
         public User GetUser(string username)
         {
-            return UnitOfWork.UserRepository
+            return UnitOfWork.GetRepository<User>()
                 .Get(user => user.UserName == username.ToLower())
                 .SingleOrDefault();
         }

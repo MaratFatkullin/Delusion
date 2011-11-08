@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using AI_.Data;
+using AI_.Data.Repository;
 using AI_.Security.Services;
-using AI_.Studmix.Model.DAL.Database;
 using AI_.Studmix.Model.Models;
-using AI_.Studmix.Model.Services.Abstractions;
 
 namespace AI_.Studmix.Model.Services
 {
@@ -18,7 +17,7 @@ namespace AI_.Studmix.Model.Services
 
         public PropertyState GetState(int propertyId, string stateValue)
         {
-            return UnitOfWork.PropertyStateRepository
+            return UnitOfWork.GetRepository<PropertyState>()
                 .Get(x => x.Property.ID == propertyId
                           && x.Value == stateValue)
                 .FirstOrDefault();
@@ -47,7 +46,7 @@ namespace AI_.Studmix.Model.Services
                                     Value = value,
                                     Index = index
                                 };
-            UnitOfWork.PropertyStateRepository.Insert(propertyState);
+            UnitOfWork.GetRepository<PropertyState>().Insert(propertyState);
             UnitOfWork.Save();
             return propertyState;
         }

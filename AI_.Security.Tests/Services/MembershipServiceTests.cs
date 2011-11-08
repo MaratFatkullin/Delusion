@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Security;
+using AI_.Data.Repository;
 using AI_.Security.Models;
 using AI_.Security.Services;
 using AI_.Security.Tests.Mocks;
@@ -15,17 +16,17 @@ namespace AI_.Security.Tests.Services
     public class MembershipServiceTests
     {
         private readonly MembershipService _service;
-        private readonly SecurityUnitOfWorkMock _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
         private MembershipCreateStatus _membershipCreateStatus;
 
         protected ICollection<User> UserStorage
         {
-            get { return ((RepositoryMock<User>) _unitOfWork.UserRepository).Storage; }
+            get { return ((RepositoryMock<User>) _unitOfWork.GetRepository<User>()).Storage; }
         }
 
         public MembershipServiceTests()
         {
-            _unitOfWork = new SecurityUnitOfWorkMock();
+            _unitOfWork = new UnitOfWorkMock();
             _service = new MembershipService(_unitOfWork);
         }
 
@@ -64,7 +65,7 @@ namespace AI_.Security.Tests.Services
 
         private void AddUserDirectly(User user)
         {
-            _unitOfWork.UserRepository.Insert(user);
+            _unitOfWork.GetRepository<User>().Insert(user);
             _unitOfWork.Save();
         }
 

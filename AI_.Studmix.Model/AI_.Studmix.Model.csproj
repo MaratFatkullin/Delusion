@@ -47,9 +47,6 @@
   <ItemGroup>
     <Compile Include="DAL\Database\CustomDatabaseInitializer.asax.cs" />
     <Compile Include="DAL\Database\DataContext.cs" />
-    <Compile Include="DAL\Database\IUnitOfWork.cs" />
-    <Compile Include="DAL\Database\UnitOfWork.cs" />
-    <Compile Include="DAL\Database\UnitOfWorkFactory.cs" />
     <Compile Include="DAL\FileSystem\FileStorageManager.cs" />
     <Compile Include="DAL\FileSystem\FileStorageProvider.cs" />
     <Compile Include="DAL\FileSystem\IFileStorageManager.cs" />

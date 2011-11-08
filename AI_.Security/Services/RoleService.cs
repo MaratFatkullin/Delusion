@@ -1,5 +1,6 @@
 ﻿using System.Configuration.Provider;
 using System.Linq;
+using AI_.Data.Repository;
 using AI_.Security.DAL;
 using AI_.Security.Models;
 
@@ -7,9 +8,9 @@ namespace AI_.Security.Services
 {
     public class RoleService
     {
-        private readonly ISecurityUnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public RoleService(ISecurityUnitOfWork unitOfWork)
+        public RoleService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
@@ -39,7 +40,7 @@ namespace AI_.Security.Services
                 throw new ProviderException("Role with specified name already exists.");
 
             var role = new Role {RoleName = roleName};
-            _unitOfWork.RoleRepository.Insert(role);
+            _unitOfWork.GetRepository<Role>().Insert(role);
             _unitOfWork.Save();
         }
 
@@ -55,14 +56,14 @@ namespace AI_.Security.Services
                 foreach (var user in role.Users)
                     user.Roles.Remove(role);
             }
-            _unitOfWork.RoleRepository.Delete(role);
+            _unitOfWork.GetRepository<Role>().Delete(role);
             _unitOfWork.Save();
             return true;
         }
 
         public bool RoleExists(string roleName)
         {
-            var role = _unitOfWork.RoleRepository.Get(r => r.RoleName == roleName).SingleOrDefault();
+            var role = _unitOfWork.GetRepository<Role>().Get(r => r.RoleName == roleName).SingleOrDefault();
             return role != null;
         }
 
@@ -117,7 +118,7 @@ namespace AI_.Security.Services
 
         public string[] GetAllRoles()
         {
-            return _unitOfWork.RoleRepository
+            return _unitOfWork.GetRepository<Role>()
                 .Get()
                 .Select(role => role.RoleName)
                 .ToArray();
@@ -136,12 +137,12 @@ namespace AI_.Security.Services
 
         private User GetUser(string username)
         {
-            return _unitOfWork.UserRepository.Get(usr => usr.UserName == username).SingleOrDefault();
+            return _unitOfWork.GetRepository<User>().Get(usr => usr.UserName == username).SingleOrDefault();
         }
 
         private Role GetRole(string roleName)
         {
-            return _unitOfWork.RoleRepository
+            return _unitOfWork.GetRepository<Role>()
                 .Get(r => r.RoleName == roleName, includeProperties: "Users").FirstOrDefault();
         }
     }
