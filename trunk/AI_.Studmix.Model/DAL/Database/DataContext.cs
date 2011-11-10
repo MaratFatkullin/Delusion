@@ -1,17 +1,12 @@
 ﻿using System.Data.Entity;
-using AI_.Security.DAL;
+using System.Data.Entity.Infrastructure;
+using AI_.Security.Models;
 using AI_.Studmix.Model.Models;
 
 namespace AI_.Studmix.Model.DAL.Database
 {
-    public class DataContext : SecurityDbContext
+    public class DataContext : DbContext
     {
-        public DbSet<Property> Properties { get; set; }
-        public DbSet<PropertyState> PropertyStates { get; set; }
-        public DbSet<ContentFile> ContentFiles { get; set; }
-        public DbSet<ContentPackage> ContentPackages { get; set; }
-        public DbSet<UserProfile> UserProfiles { get; set; }
-
         public DataContext(string nameOrConnectionString)
             : base(nameOrConnectionString)
         {
@@ -26,10 +21,21 @@ namespace AI_.Studmix.Model.DAL.Database
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Conventions.Remove<IncludeMetadataConvention>();
+
+            modelBuilder.Entity<User>();
+            modelBuilder.Entity<Role>();
+            modelBuilder.Entity<UserProfile>();
+            modelBuilder.Entity<ContentPackage>();
+            modelBuilder.Entity<ContentFile>();
+            modelBuilder.Entity<Order>();
+            modelBuilder.Entity<Property>();
+            modelBuilder.Entity<PropertyState>();
+
             modelBuilder.Entity<ContentPackage>()
                 .HasMany<PropertyState>(package => package.PropertyStates)
                 .WithMany(state => state.ContentPackages);
-                //.Map(mapping => mapping.ToTable("ContentPackagePropertyStates"));
+            //.Map(mapping => mapping.ToTable("ContentPackagePropertyStates"));
 
             modelBuilder.Entity<PropertyState>()
                 .HasRequired<Property>(state => state.Property)

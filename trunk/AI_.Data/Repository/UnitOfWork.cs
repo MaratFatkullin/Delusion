@@ -1,19 +1,36 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 
 namespace AI_.Data.Repository
 {
-    public abstract class UnitOfWorkBase<TContext>
-        : IDisposable
+    public class UnitOfWork<TContext>
+        : IUnitOfWork
         where TContext : DbContext, new()
     {
         protected TContext Context { get; private set; }
+        private IDictionary<Type, object> Map { get; set; }
 
         private bool _disposed;
 
-        protected UnitOfWorkBase()
+        public UnitOfWork()
         {
             Context = new TContext();
+            Map = new Dictionary<Type, object>();
+        }
+
+        public IRepository<TEntity> GetRepository<TEntity>() 
+            where TEntity : ModelBase
+        {
+            var type = typeof(TEntity);
+            if (!Map.ContainsKey(type))
+                Map.Add(type, new Repository<TEntity>(Context));
+            return (IRepository<TEntity>)Map[type];
+        }
+
+        public void Save()
+        {
+            Context.SaveChanges();
         }
 
         #region IDisposable Members
@@ -25,11 +42,6 @@ namespace AI_.Data.Repository
         }
 
         #endregion
-
-        public void Save()
-        {
-            Context.SaveChanges();
-        }
 
         protected virtual void Dispose(bool disposing)
         {

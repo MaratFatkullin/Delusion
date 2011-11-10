@@ -2,26 +2,28 @@
 using System.Collections.Generic;
 using System.Linq;
 using AI_.Data;
-using AI_.Studmix.Model.DAL.Database;
+using AI_.Data.Repository;
+using AI_.Security.Services;
 using AI_.Studmix.Model.Models;
 
 namespace AI_.Studmix.Model.Services
 {
-    public class PropertyStateService
+    public class PropertyStateService : ServiceBase
     {
-        public PropertyState GetState(IUnitOfWork unitOfWork,
-                                      int propertyId,
-                                      string stateValue)
+        public PropertyStateService(IUnitOfWork unitOfWork)
+            : base(unitOfWork)
         {
-            return unitOfWork.PropertyStateRepository
+        }
+
+        public PropertyState GetState(int propertyId, string stateValue)
+        {
+            return UnitOfWork.GetRepository<PropertyState>()
                 .Get(x => x.Property.ID == propertyId
                           && x.Value == stateValue)
                 .FirstOrDefault();
         }
 
-        public IEnumerable<PropertyState> GetBoundedStates(IUnitOfWork unitOfWork,
-                                                           Property property,
-                                                           PropertyState state)
+        public IEnumerable<PropertyState> GetBoundedStates(Property property, PropertyState state)
         {
             var packages = state.ContentPackages;
             var propertyStates = packages.Aggregate(new List<PropertyState>().AsEnumerable(),
@@ -31,7 +33,7 @@ namespace AI_.Studmix.Model.Services
                 .Distinct(new DefaultModelEqualityComparer<PropertyState>());
         }
 
-        public PropertyState CreateState(IUnitOfWork unitOfWork, Property property, string value)
+        public PropertyState CreateState(Property property, string value)
         {
             var existingPropertyStates = property.States.Where(state => state.Value == value).FirstOrDefault();
             if (existingPropertyStates != null)
@@ -44,7 +46,8 @@ namespace AI_.Studmix.Model.Services
                                     Value = value,
                                     Index = index
                                 };
-            unitOfWork.PropertyStateRepository.Insert(propertyState);
+            UnitOfWork.GetRepository<PropertyState>().Insert(propertyState);
+            UnitOfWork.Save();
             return propertyState;
         }
     }
