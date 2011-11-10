@@ -203,7 +203,7 @@ namespace AI_.Studmix.WebApplication.Controllers
             var contentFile = UnitOfWork.GetRepository<ContentFile>().GetByID(id);
             if (contentFile == null)
                 return ErrorView("Файл не найден", "Указаный файл отсутствует или был удален.");
-            var accessGranted = _financeService.UserHasPermissions(CurrentUser,contentFile.ContentPackage);
+            var accessGranted = contentFile.IsPreview || _financeService.UserHasPermissions(CurrentUser,contentFile.ContentPackage);
             var userIsAdmin = User.IsInRole("admin");
             if (!accessGranted && !userIsAdmin)
                 return ErrorView("Ошибка доступа", "Доступ к скачиванию файла закрыт.");
