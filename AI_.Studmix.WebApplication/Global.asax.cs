@@ -1,14 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data.Entity;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
+using AI_.Data.Repository;
+using AI_.Security.Services;
+using AI_.Security.Services.Abstractions;
 using AI_.Studmix.Model.DAL.Database;
 using AI_.Studmix.Model.DAL.FileSystem;
 using AI_.Studmix.Model.Services;
 using AI_.Studmix.Model.Services.Abstractions;
 using AI_.Studmix.WebApplication.Infrastructure;
+using AI_.Studmix.WebApplication.Infrastructure.Authentication;
 using AI_.Studmix.WebApplication.Infrastructure.Filters;
 using AI_.Studmix.WebApplication.Infrastructure.ModelBinders;
 using Microsoft.Practices.Unity;
@@ -73,10 +76,15 @@ namespace AI_.Studmix.WebApplication
             container.RegisterType<IControllerActivator, ControllerActivator>();
             container.RegisterType<IViewPageActivator, ViewPageActivator>();
             container.RegisterType<ModelMetadataProvider, DataAnnotationsModelMetadataProvider>();
-            container.RegisterType<IUnitOfWork, UnitOfWork>();
+
+            container.RegisterType<IUnitOfWork, UnitOfWork<DataContext>>(new PerResolveLifetimeManager());
             container.RegisterType<IFileStorageManager, FileStorageManager>();
             container.RegisterType<IFileStorageProvider, FileStorageProvider>();
+
             container.RegisterType<IFinanceService, FinanceService>();
+            container.RegisterType<IMembershipService, MembershipService>();
+            container.RegisterType<ProfileService>();
+            container.RegisterType<IAuthenticationProvider,AuthenticationProvider>();
         }
     }
 }

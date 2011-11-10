@@ -1,6 +1,5 @@
-﻿using System;
-using System.Web.Mvc;
-using AI_.Studmix.Model.DAL.Database;
+﻿using System.Web.Mvc;
+using AI_.Data.Repository;
 using AI_.Studmix.Model.Models;
 using AI_.Studmix.Model.Services;
 using AI_.Studmix.WebApplication.ViewModels.Finance;
@@ -18,7 +17,7 @@ namespace AI_.Studmix.WebApplication.Controllers
         [HttpGet]
         public ViewResult Order(int id)
         {
-            var package = UnitOfWork.ContentPackageRepository.GetByID(id);
+            var package = UnitOfWork.GetRepository<ContentPackage>().GetByID(id);
             if (package == null)
                 return ErrorView("Материал не найден", "Указанный материал отсутствует в базе данных.");
 
@@ -29,14 +28,14 @@ namespace AI_.Studmix.WebApplication.Controllers
                                 ContentPackageId = package.ID
                             };
 
-            var financeService = new FinanceService();
+            var financeService = new FinanceService(UnitOfWork);
             var order = new Order
                         {
                             ContentPackage = package,
                             UserProfile = CurrentUserProfile,
                         };
-            if(!financeService.IsOrderAvailable(order))
-                ModelState.AddModelError("balance","Недостаточно средств для покупки текущего материала.");
+            if (!financeService.IsOrderAvailable(order))
+                ModelState.AddModelError("balance", "Недостаточно средств для покупки текущего материала.");
 
             return View(viewModel);
         }
@@ -45,7 +44,7 @@ namespace AI_.Studmix.WebApplication.Controllers
         public ViewResult MakeOrder(OrderViewModel viewModel)
         {
             var packageId = viewModel.ContentPackageId;
-            var package = UnitOfWork.ContentPackageRepository.GetByID(packageId);
+            var package = UnitOfWork.GetRepository<ContentPackage>().GetByID(packageId);
 
             var order = new Order
                         {
@@ -53,11 +52,12 @@ namespace AI_.Studmix.WebApplication.Controllers
                             UserProfile = CurrentUserProfile
                         };
 
-            var financeService = new FinanceService();
-            financeService.MakeOrder(UnitOfWork, order);
+            var financeService = new FinanceService(UnitOfWork);
+            financeService.MakeOrder(order);
 
 
-            return InformationView("Покупка успешно произведена.", "",
+            return InformationView("Покупка успешно произведена.",
+                                   "",
                                    new ActionLinkInfo("Content",
                                                       "Details",
                                                       "Вернуться к просмотру",

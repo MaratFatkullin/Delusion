@@ -11,5 +11,7 @@ namespace AI_.Studmix.Model.Models
         public virtual ICollection<Order> Orders { get; set; }
 
         public int Balance { get; set; }
+
+        public string PhoneNumber { get; set; }
     }
 }

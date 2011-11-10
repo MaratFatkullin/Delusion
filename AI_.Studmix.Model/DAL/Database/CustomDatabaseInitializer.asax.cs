@@ -23,8 +23,8 @@ namespace AI_.Studmix.Model.DAL.Database
                                CreateDate = DateTime.Now
                            };
 
-            context.Roles.Add(adminRole);
-            context.Roles.Add(userRole);
+            context.Set<Role>().Add(adminRole);
+            context.Set<Role>().Add(userRole);
 
             var user = new User
                        {
@@ -45,14 +45,14 @@ namespace AI_.Studmix.Model.DAL.Database
                             Roles = new Collection<Role> {adminRole}
                         };
 
-            context.Users.Add(admin);
-            context.Users.Add(user);
+            context.Set<User>().Add(admin);
+            context.Set<User>().Add(user);
 
             var userProfile = new UserProfile {CreateDate = DateTime.Now, User = user, Balance = 50};
             var adminProfile = new UserProfile {CreateDate = DateTime.Now, User = admin, Balance = 100};
 
-            context.UserProfiles.Add(userProfile);
-            context.UserProfiles.Add(adminProfile);
+            context.Set<UserProfile>().Add(userProfile);
+            context.Set<UserProfile>().Add(adminProfile);
 
             var countryProp = new Property
                               {
@@ -127,18 +127,18 @@ namespace AI_.Studmix.Model.DAL.Database
                            CreateDate = DateTime.Now
                        };
 
-            context.Properties.Add(countryProp);
-            context.Properties.Add(cityProp);
-            context.Properties.Add(instituteType);
-            context.Properties.Add(instituteName);
-            context.Properties.Add(studingForm);
-            context.Properties.Add(faculty);
-            context.Properties.Add(course);
-            context.Properties.Add(group);
-            context.Properties.Add(disciple);
-            context.Properties.Add(book);
-            context.Properties.Add(variant);
-            context.Properties.Add(data);
+            context.Set<Property>().Add(countryProp);
+            context.Set<Property>().Add(cityProp);
+            context.Set<Property>().Add(instituteType);
+            context.Set<Property>().Add(instituteName);
+            context.Set<Property>().Add(studingForm);
+            context.Set<Property>().Add(faculty);
+            context.Set<Property>().Add(course);
+            context.Set<Property>().Add(group);
+            context.Set<Property>().Add(disciple);
+            context.Set<Property>().Add(book);
+            context.Set<Property>().Add(variant);
+            context.Set<Property>().Add(data);
 
             var russia = new PropertyState
                          {
@@ -162,9 +162,9 @@ namespace AI_.Studmix.Model.DAL.Database
                              Index = 3
                          };
 
-            context.PropertyStates.Add(russia);
-            context.PropertyStates.Add(czech);
-            context.PropertyStates.Add(french);
+            context.Set<PropertyState>().Add(russia);
+            context.Set<PropertyState>().Add(czech);
+            context.Set<PropertyState>().Add(french);
 
             var moscow = new PropertyState
                          {
@@ -202,11 +202,11 @@ namespace AI_.Studmix.Model.DAL.Database
                              Index = 5
                          };
 
-            context.PropertyStates.Add(moscow);
-            context.PropertyStates.Add(kazan);
-            context.PropertyStates.Add(prague);
-            context.PropertyStates.Add(paris);
-            context.PropertyStates.Add(marsel);
+            context.Set<PropertyState>().Add(moscow);
+            context.Set<PropertyState>().Add(kazan);
+            context.Set<PropertyState>().Add(prague);
+            context.Set<PropertyState>().Add(paris);
+            context.Set<PropertyState>().Add(marsel);
 
             var contentPackage1 = new ContentPackage {CreateDate = DateTime.Now, Price = 70, Owner = user};
             contentPackage1.PropertyStates = new Collection<PropertyState> {russia, moscow};
@@ -217,9 +217,9 @@ namespace AI_.Studmix.Model.DAL.Database
             var contentPackage3 = new ContentPackage {CreateDate = DateTime.Now, Owner = admin};
             contentPackage3.PropertyStates = new Collection<PropertyState> {czech, prague};
 
-            context.ContentPackages.Add(contentPackage1);
-            context.ContentPackages.Add(contentPackage2);
-            context.ContentPackages.Add(contentPackage3);
+            context.Set<ContentPackage>().Add(contentPackage1);
+            context.Set<ContentPackage>().Add(contentPackage2);
+            context.Set<ContentPackage>().Add(contentPackage3);
 
             context.SaveChanges();
         }

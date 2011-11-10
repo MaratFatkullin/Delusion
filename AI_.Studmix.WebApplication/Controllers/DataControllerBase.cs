@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Linq;
+using AI_.Data.Repository;
 using AI_.Security.Models;
-using AI_.Studmix.Model.DAL.Database;
+using AI_.Security.Services;
 using AI_.Studmix.Model.Models;
 using AI_.Studmix.Model.Services;
 
@@ -21,7 +21,13 @@ namespace AI_.Studmix.WebApplication.Controllers
                 if (!User.Identity.IsAuthenticated)
                     throw new InvalidOperationException("User is not authenticated.");
 
-                return _currentUser ?? (_currentUser = new MembershipService().GetUser(UnitOfWork,User.Identity.Name));
+                if (_currentUser == null)
+                {
+                    var membershipService = new MembershipService(UnitOfWork);
+                    _currentUser = membershipService.GetUser(User.Identity.Name);
+                }
+
+                return _currentUser;
             }
         }
 
@@ -29,8 +35,11 @@ namespace AI_.Studmix.WebApplication.Controllers
         {
             get
             {
-                if(_currentUserProfile == null)
-                    _currentUserProfile = new MembershipService().GetUserProfile(UnitOfWork, CurrentUser);
+                if (_currentUserProfile == null)
+                {
+                    var membershipService = new ProfileService(UnitOfWork);
+                    _currentUserProfile = membershipService.GetUserProfile(CurrentUser);
+                }
                 return _currentUserProfile;
             }
         }

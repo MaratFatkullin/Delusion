@@ -38,6 +38,7 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data.Entity" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -47,9 +48,6 @@
   <ItemGroup>
     <Compile Include="DAL\Database\CustomDatabaseInitializer.asax.cs" />
     <Compile Include="DAL\Database\DataContext.cs" />
-    <Compile Include="DAL\Database\IUnitOfWork.cs" />
-    <Compile Include="DAL\Database\UnitOfWork.cs" />
-    <Compile Include="DAL\Database\UnitOfWorkFactory.cs" />
     <Compile Include="DAL\FileSystem\FileStorageManager.cs" />
     <Compile Include="DAL\FileSystem\FileStorageProvider.cs" />
     <Compile Include="DAL\FileSystem\IFileStorageManager.cs" />
@@ -63,7 +61,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\FinanceService.cs" />
     <Compile Include="Services\Abstractions\IFinanceService.cs" />
-    <Compile Include="Services\MembershipService.cs" />
+    <Compile Include="Services\ProfileService.cs" />
     <Compile Include="Services\SearchService.cs" />
     <Compile Include="Services\PropertyStateService.cs" />
     <Compile Include="Validation\NotEmptyAttribute.cs" />
