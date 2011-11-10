@@ -88,8 +88,8 @@ namespace AI_.Security.Services
                            PasswordAnswer = passwordAnswer,
                            LastPasswordChangedDate = DateTime.Now,
                            LastActivityDate = DateTime.Now,
-                           LastLockoutDate = DateTime.MinValue.ToLocalTime(),
-                           LastLoginDate = DateTime.MinValue.ToLocalTime(),
+                           LastLockoutDate = null,
+                           LastLoginDate = null,
                        };
 
             UnitOfWork.GetRepository<User>().Insert(user);

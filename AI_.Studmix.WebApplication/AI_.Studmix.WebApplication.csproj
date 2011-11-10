@@ -97,6 +97,8 @@
     <Compile Include="Controllers\FinanceController.cs" />
     <Compile Include="Helpers\HtmlHelperExtension.cs" />
     <Compile Include="Helpers\UrlHelperExtension.cs" />
+    <Compile Include="Infrastructure\Authentication\AuthenticationProvider.cs" />
+    <Compile Include="Infrastructure\Authentication\IAuthenticationProvider.cs" />
     <Compile Include="Infrastructure\ModelBinders\DefaultDictionaryBinder.cs" />
     <Compile Include="Infrastructure\ControllerActivator.cs" />
     <Compile Include="Infrastructure\UnityDependencyResolver.cs" />

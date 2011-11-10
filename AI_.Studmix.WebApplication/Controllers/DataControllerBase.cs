@@ -1,6 +1,7 @@
 ﻿using System;
 using AI_.Data.Repository;
 using AI_.Security.Models;
+using AI_.Security.Services;
 using AI_.Studmix.Model.Models;
 using AI_.Studmix.Model.Services;
 
@@ -22,7 +23,7 @@ namespace AI_.Studmix.WebApplication.Controllers
 
                 if (_currentUser == null)
                 {
-                    var membershipService = new ProfileService(UnitOfWork);
+                    var membershipService = new MembershipService(UnitOfWork);
                     _currentUser = membershipService.GetUser(User.Identity.Name);
                 }
 

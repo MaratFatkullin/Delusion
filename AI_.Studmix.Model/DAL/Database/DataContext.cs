@@ -25,6 +25,12 @@ namespace AI_.Studmix.Model.DAL.Database
 
             modelBuilder.Entity<User>();
             modelBuilder.Entity<Role>();
+            modelBuilder.Entity<UserProfile>();
+            modelBuilder.Entity<ContentPackage>();
+            modelBuilder.Entity<ContentFile>();
+            modelBuilder.Entity<Order>();
+            modelBuilder.Entity<Property>();
+            modelBuilder.Entity<PropertyState>();
 
             modelBuilder.Entity<ContentPackage>()
                 .HasMany<PropertyState>(package => package.PropertyStates)
