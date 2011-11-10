@@ -4,20 +4,29 @@ using System.Web.Security;
 using AI_.Data.Repository;
 using AI_.Security.Models;
 using AI_.Security.Services.Abstractions;
+using AI_.Studmix.Model.Services;
+using AI_.Studmix.WebApplication.Infrastructure.Authentication;
 using AI_.Studmix.WebApplication.ViewModels.Account;
 
 namespace AI_.Studmix.WebApplication.Controllers
 {
     public class AccountController : DataControllerBase
     {
-        public IMembershipService MembershipService { get; private set; }
+        protected IMembershipService MembershipService { get; private set; }
+        protected ProfileService ProfileService { get; private set; }
+        protected IAuthenticationProvider AuthenticationProvider { get; private set; }
         //
         // GET: /Account/LogOn
 
-        public AccountController(IUnitOfWork unitOfWork, IMembershipService membershipService)
+        public AccountController(IUnitOfWork unitOfWork,
+                                 IMembershipService membershipService,
+                                 ProfileService profileService,
+                                 IAuthenticationProvider authenticationProvider)
             : base(unitOfWork)
         {
             MembershipService = membershipService;
+            ProfileService = profileService;
+            AuthenticationProvider = authenticationProvider;
         }
 
         public ActionResult LogOn()
@@ -35,7 +44,7 @@ namespace AI_.Studmix.WebApplication.Controllers
             {
                 if (MembershipService.ValidateUser(viewModel.UserName, viewModel.Password))
                 {
-                    FormsAuthentication.SetAuthCookie(viewModel.UserName, viewModel.RememberMe);
+                    AuthenticationProvider.LogOn(viewModel.UserName, viewModel.RememberMe);
                     if (Url.IsLocalUrl(returnUrl) && returnUrl.Length > 1 && returnUrl.StartsWith("/")
                         && !returnUrl.StartsWith("//") && !returnUrl.StartsWith("/\\"))
                     {
@@ -61,7 +70,7 @@ namespace AI_.Studmix.WebApplication.Controllers
 
         public ActionResult LogOff()
         {
-            FormsAuthentication.SignOut();
+            AuthenticationProvider.LogOut();
 
             return RedirectToAction("Index", "Home");
         }
@@ -86,17 +95,19 @@ namespace AI_.Studmix.WebApplication.Controllers
             {
                 // Attempt to register the user
                 MembershipCreateStatus createStatus;
-                MembershipService.CreateUser(model.UserName,
-                                             model.Password,
-                                             model.Email,
-                                             null,
-                                             null,
-                                             true,
-                                             out createStatus);
+                var user = MembershipService.CreateUser(model.UserName,
+                                                        model.Password,
+                                                        model.Email,
+                                                        null,
+                                                        null,
+                                                        true,
+                                                        out createStatus);
+
 
                 if (createStatus == MembershipCreateStatus.Success)
                 {
-                    FormsAuthentication.SetAuthCookie(model.UserName, false /* createPersistentCookie */);
+                    ProfileService.CreateUserProfile(user, model.PhoneNumber);
+                    AuthenticationProvider.LogOn(model.UserName, false /* createPersistentCookie */);
                     return RedirectToAction("Index", "Home");
                 }
                 else
