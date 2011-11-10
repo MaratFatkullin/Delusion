@@ -779,5 +779,24 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             // Assert
             result.Should().BeOfType<FileStreamResult>();
         }
+
+        [Fact]
+        public void Download_FileIsPreview_PermissionsGranted()
+        {
+            // Arrange
+            var serviceMock = GetFinanceServiceMock(false);
+            _controller = new ContentController(_unitOfWork, _fileStorageManager, serviceMock.Object);
+            _controller.ControllerContext = CreateControllerContext();
+
+            var contentFile = new ContentFile {IsPreview = true};
+            _unitOfWork.GetRepository<ContentFile>().Insert(contentFile);
+            _unitOfWork.Save();
+
+            // Act
+            var result = _controller.Download(contentFile.ID);
+
+            // Assert
+            result.Should().BeOfType<FileStreamResult>();
+        }
     }
 }
