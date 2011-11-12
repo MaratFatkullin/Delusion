@@ -57,6 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\AccauntControllerTests.cs" />
+    <Compile Include="Controllers\AdminControllerTests.cs" />
     <Compile Include="Controllers\ContentControllerTests.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -68,6 +69,7 @@
     <Compile Include="Mocks\HttpPostedFileMock.cs" />
     <Compile Include="Mocks\FileStorageProviderMock.cs" />
     <Compile Include="Model\Services\FinanceServiceTests.cs" />
+    <Compile Include="Model\Services\ProfileServiceTests.cs" />
     <Compile Include="Model\Services\PropertyStateServiceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModels\UploadViewModelTests.cs" />

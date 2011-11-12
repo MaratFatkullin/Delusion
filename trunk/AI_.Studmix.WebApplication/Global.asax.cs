@@ -82,8 +82,9 @@ namespace AI_.Studmix.WebApplication
             container.RegisterType<IFileStorageProvider, FileStorageProvider>();
 
             container.RegisterType<IFinanceService, FinanceService>();
+            container.RegisterType<IRoleService, RoleService>();
             container.RegisterType<IMembershipService, MembershipService>();
-            container.RegisterType<ProfileService>();
+            container.RegisterType<IProfileService,ProfileService>();
             container.RegisterType<IAuthenticationProvider,AuthenticationProvider>();
         }
     }

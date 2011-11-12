@@ -37,8 +37,8 @@ namespace AI_.Studmix.WebApplication.Controllers
             {
                 if (_currentUserProfile == null)
                 {
-                    var membershipService = new ProfileService(UnitOfWork);
-                    _currentUserProfile = membershipService.GetUserProfile(CurrentUser);
+                    var profileService = new ProfileService(UnitOfWork);
+                    _currentUserProfile = profileService.GetUserProfile(CurrentUser);
                 }
                 return _currentUserProfile;
             }

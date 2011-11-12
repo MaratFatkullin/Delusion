@@ -41,10 +41,12 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             var unitOfWork = new UnitOfWorkMock();
             var user = new User();
             var membershipServiceMock = MembershipServiceMock(user, MembershipCreateStatus.Success);
+            var roleService = new Mock<IRoleService>().Object;
             var authenticationProvider = new Mock<IAuthenticationProvider>().Object;
 
             var controller = new AccountController(unitOfWork,
                                                    membershipServiceMock.Object,
+                                                   roleService,
                                                    new ProfileService(unitOfWork),
                                                    authenticationProvider);
             var viewModel = new RegisterViewModel
@@ -77,11 +79,13 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             // Arrange
             var unitOfWork = new UnitOfWorkMock();
             var user = new User();
+            var roleService = new Mock<IRoleService>().Object;
             var membershipServiceMock = MembershipServiceMock(user, MembershipCreateStatus.Success);
             var authenticationProvider = new Mock<IAuthenticationProvider>().Object;
 
             var controller = new AccountController(unitOfWork,
                                                    membershipServiceMock.Object,
+                                                   roleService,
                                                    new ProfileService(unitOfWork),
                                                    authenticationProvider);
             var viewModel = new RegisterViewModel
@@ -98,6 +102,30 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             userProfile.PhoneNumber.Should().Be(viewModel.PhoneNumber);
         }
 
+
+        [Fact]
+        public void Register_UserCreationSucceded_UserRoleAssignedToUser()
+        {
+            // Arrange
+            var unitOfWork = new UnitOfWorkMock();
+            var user = new User();
+            var membershipServiceMock = MembershipServiceMock(user, MembershipCreateStatus.Success);
+            var roleService = new Mock<IRoleService>();
+            var authenticationProvider = new Mock<IAuthenticationProvider>().Object;
+
+            var controller = new AccountController(unitOfWork,
+                                                   membershipServiceMock.Object,
+                                                   roleService.Object,
+                                                   new ProfileService(unitOfWork),
+                                                   authenticationProvider);
+
+            // Act
+            controller.Register(new RegisterViewModel());
+
+            // Assert
+            roleService.Verify(rs => rs.AddUsersToRoles(new[] { user.UserName }, new[] { "user" }));
+        }
+
         [Fact]
         public void Register_UserCreationFailed_UserProfileNotCreated()
         {
@@ -105,10 +133,12 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             var unitOfWork = new UnitOfWorkMock();
             var user = new User();
             var membershipServiceMock = MembershipServiceMock(user, MembershipCreateStatus.ProviderError);
+            var roleService = new Mock<IRoleService>().Object;
             var authenticationProvider = new Mock<IAuthenticationProvider>().Object;
 
             var controller = new AccountController(unitOfWork,
                                                    membershipServiceMock.Object,
+                                                   roleService,
                                                    new ProfileService(unitOfWork),
                                                    authenticationProvider);
 
@@ -127,10 +157,12 @@ namespace AI_.Studmix.WebApplication.Tests.Controllers
             // Arrange
             var unitOfWork = new UnitOfWorkMock();
             var membershipService = new Mock<IMembershipService>(MockBehavior.Strict).Object;
+            var roleService = new Mock<IRoleService>().Object;
             var authenticationProvider = new Mock<IAuthenticationProvider>(MockBehavior.Strict).Object;
 
             var controller = new AccountController(unitOfWork,
                                                    membershipService,
+                                                   roleService,
                                                    new ProfileService(unitOfWork),
                                                    authenticationProvider);
             controller.ModelState.AddModelError("", "");
