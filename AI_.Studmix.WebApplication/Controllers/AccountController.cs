@@ -3,8 +3,10 @@ using System.Web.Mvc;
 using System.Web.Security;
 using AI_.Data.Repository;
 using AI_.Security.Models;
+using AI_.Security.Services;
 using AI_.Security.Services.Abstractions;
 using AI_.Studmix.Model.Services;
+using AI_.Studmix.Model.Services.Abstractions;
 using AI_.Studmix.WebApplication.Infrastructure.Authentication;
 using AI_.Studmix.WebApplication.ViewModels.Account;
 
@@ -13,18 +15,21 @@ namespace AI_.Studmix.WebApplication.Controllers
     public class AccountController : DataControllerBase
     {
         protected IMembershipService MembershipService { get; private set; }
-        protected ProfileService ProfileService { get; private set; }
+        protected IRoleService RoleService { get; private set; }
+        protected IProfileService ProfileService { get; private set; }
         protected IAuthenticationProvider AuthenticationProvider { get; private set; }
         //
         // GET: /Account/LogOn
 
         public AccountController(IUnitOfWork unitOfWork,
                                  IMembershipService membershipService,
-                                 ProfileService profileService,
+                                 IRoleService roleService,
+                                 IProfileService profileService,
                                  IAuthenticationProvider authenticationProvider)
             : base(unitOfWork)
         {
             MembershipService = membershipService;
+            RoleService = roleService;
             ProfileService = profileService;
             AuthenticationProvider = authenticationProvider;
         }
@@ -107,6 +112,7 @@ namespace AI_.Studmix.WebApplication.Controllers
                 if (createStatus == MembershipCreateStatus.Success)
                 {
                     ProfileService.CreateUserProfile(user, model.PhoneNumber);
+                    RoleService.AddUsersToRoles(new[] { user.UserName }, new[] { "user" });
                     AuthenticationProvider.LogOn(model.UserName, false /* createPersistentCookie */);
                     return RedirectToAction("Index", "Home");
                 }

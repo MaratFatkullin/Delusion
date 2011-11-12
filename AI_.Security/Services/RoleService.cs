@@ -2,10 +2,11 @@
 using System.Linq;
 using AI_.Data.Repository;
 using AI_.Security.Models;
+using AI_.Security.Services.Abstractions;
 
 namespace AI_.Security.Services
 {
-    public class RoleService : ServiceBase
+    public class RoleService : ServiceBase, IRoleService
     {
         public RoleService(IUnitOfWork unitOfWork)
             : base(unitOfWork)

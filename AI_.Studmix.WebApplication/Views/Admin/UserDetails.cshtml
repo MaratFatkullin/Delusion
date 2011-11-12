@@ -1,0 +1,93 @@
+﻿@using AI_.Studmix.WebApplication.ViewModels.Admin
+@model UserDetailsViewModel
+
+@{
+    ViewBag.Title = @Model.User.UserName;
+}
+
+<p>
+    @Html.ActionLink("Вернуться", "Users", new {id = 0})
+</p>
+@using (@Html.BeginForm())
+{
+    @Html.HiddenFor(m => m.User.ID)
+    <fieldset>
+        <legend>Информация о учетной записи</legend>
+
+        <div class="display-label">Email</div>
+        <div class="display-field">
+            @Html.DisabledTextBoxFor(model => model.User.Email)
+        </div>
+
+        <div class="display-label">PhoneNumber</div>
+        <div class="display-field">
+            @Html.DisabledTextBoxFor(model => model.UserProfile.PhoneNumber)
+        </div>
+
+        <div class="display-label">PasswordQuestion</div>
+        <div class="display-field">
+            @Html.DisabledTextBoxFor(model => model.User.PasswordQuestion)
+        </div>
+
+        <div class="display-label">PasswordAnswer</div>
+        <div class="display-field">
+            @Html.DisabledTextBoxFor(model => model.User.PasswordAnswer)
+        </div>
+
+        <div class="display-label">LastActivityDate</div>
+        <div class="display-field">
+            @Html.DisabledTextBoxFor(model => model.User.LastActivityDate)
+        </div>
+
+        <div class="display-label">LastLoginDate</div>
+        <div class="display-field">
+            @Html.DisabledTextBoxFor(model => model.User.LastLoginDate)
+        </div>
+
+        <div class="display-label">LastLockoutDate</div>
+        <div class="display-field">
+            @Html.DisabledTextBoxFor(model => model.User.LastLockoutDate)
+        </div>
+
+        <div class="display-label">LastPasswordChangedDate</div>
+        <div class="display-field">
+            @Html.DisabledTextBoxFor(model => model.User.LastPasswordChangedDate)
+        </div>
+
+        <div class="display-label">CreateDate</div>
+        <div class="display-field">
+            @Html.DisabledTextBoxFor(model => model.User.CreateDate)
+        </div>
+
+        <div class="display-label">UpdateDate</div>
+        <div class="display-field">
+            @Html.DisabledTextBoxFor(model => model.User.UpdateDate)
+        </div>
+
+        <div class="display-label">IsApproved</div>
+        <div class="display-field">
+            @Html.DisplayFor(model => model.User.IsApproved)
+        </div>
+
+        <div class="display-label">IsLocked</div>
+        <div class="display-field">
+            @Html.DisplayFor(model => model.User.IsLocked)
+        </div>
+
+        <div class="editor-label">Balance</div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.UserProfile.Balance)
+        </div>
+    </fieldset>
+
+
+    <p>
+        <input type="submit" value="Сохранить"/>
+    </p>
+}
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("input:submit").click(function() { return confirm("Вы уверены что хотите сохранить изменения?"); });
+    });
+</script>

@@ -26,8 +26,8 @@ namespace AI_.Studmix.Model.Services
             UnitOfWork.GetRepository<Order>().Insert(order);
             var price = order.ContentPackage.Price;
 
-            var membershipService = new ProfileService(UnitOfWork);
-            var ownerProfile = membershipService.GetUserProfile(order.ContentPackage.Owner);
+            var profileService = new ProfileService(UnitOfWork);
+            var ownerProfile = profileService.GetUserProfile(order.ContentPackage.Owner);
 
             order.UserProfile.Balance -= price;
             ownerProfile.Balance += price;
@@ -45,8 +45,8 @@ namespace AI_.Studmix.Model.Services
 
         public bool UserHasOrder(User user, ContentPackage package)
         {
-            var membershipService = new ProfileService(UnitOfWork);
-            var profile = membershipService.GetUserProfile(user);
+            var profileService = new ProfileService(UnitOfWork);
+            var profile = profileService.GetUserProfile(user);
             var order = UnitOfWork.GetRepository<Order>().Get(o => o.ContentPackage.ID == package.ID
                                                             && o.UserProfile.ID == profile.ID)
                 .FirstOrDefault();

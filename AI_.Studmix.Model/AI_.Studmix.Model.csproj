@@ -61,6 +61,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\FinanceService.cs" />
     <Compile Include="Services\Abstractions\IFinanceService.cs" />
+    <Compile Include="Services\Abstractions\IProfileService.cs" />
     <Compile Include="Services\ProfileService.cs" />
     <Compile Include="Services\SearchService.cs" />
     <Compile Include="Services\PropertyStateService.cs" />

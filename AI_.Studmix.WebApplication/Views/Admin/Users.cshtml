@@ -1,0 +1,23 @@
+﻿@using AI_.Studmix.WebApplication.ViewModels.Admin
+@model UsersViewModel
+
+@{
+    ViewBag.Title = "Администрирование пользователями";
+}
+
+<table>
+    <tr>
+        <th>Список пользователей системы</th>
+    </tr>
+
+@foreach (var user in Model.Users) {
+    <tr>
+        <td>
+            <div>Логин: <strong>@user.UserName</strong> </div>
+            <div>ID: <strong>@user.ID</strong></div>
+            @Html.ActionLink("Details", "UserDetails", new {id = user.ID})
+        </td>
+    </tr>
+}
+
+</table>
