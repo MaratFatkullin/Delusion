@@ -4,7 +4,7 @@ using System.Data.Entity;
 
 namespace AI_.Data.Repository
 {
-    public class UnitOfWork<TContext>
+    public class EntityFrameworkUnitOfWork<TContext>
         : IUnitOfWork
         where TContext : DbContext, new()
     {
@@ -13,18 +13,18 @@ namespace AI_.Data.Repository
 
         private bool _disposed;
 
-        public UnitOfWork()
+        public EntityFrameworkUnitOfWork()
         {
             Context = new TContext();
             Map = new Dictionary<Type, object>();
         }
 
         public IRepository<TEntity> GetRepository<TEntity>() 
-            where TEntity : ModelBase
+            where TEntity : Entity
         {
             var type = typeof(TEntity);
             if (!Map.ContainsKey(type))
-                Map.Add(type, new Repository<TEntity>(Context));
+                Map.Add(type, new EntityFrameworkRepository<TEntity>(Context));
             return (IRepository<TEntity>)Map[type];
         }
 

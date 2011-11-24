@@ -1,22 +1,21 @@
 ﻿using System.Web.Mvc;
-using AI_.Security.Services.Abstractions;
-using AI_.Studmix.Model.Services.Abstractions;
-using AI_.Studmix.WebApplication.Infrastructure.Filters;
+using AI_.Data.Repository;
+using AI_.Studmix.ApplicationServices.Services.Abstractions;
+using AI_.Studmix.Domain.Entities;
 using AI_.Studmix.WebApplication.ViewModels.Admin;
 
 namespace AI_.Studmix.WebApplication.Controllers
 {
-    [RestrictedAccess(Roles = "admin")]
-    public class AdminController : ControllerBase
+    //[RestrictedAccess(Roles = "admin")]
+    public class AdminController : DataControllerBase
     {
         private const int PAGE_SIZE = 20;
         protected IMembershipService MembershipService { get; private set; }
-        protected IProfileService ProfileService { get; private set; }
 
-        public AdminController(IMembershipService membershipService , IProfileService profileService)
+        public AdminController(IUnitOfWork unitOfWork, IMembershipService membershipService)
+            : base(unitOfWork)
         {
             MembershipService = membershipService;
-            ProfileService = profileService;
         }
 
         [HttpGet]
@@ -29,7 +28,7 @@ namespace AI_.Studmix.WebApplication.Controllers
         public ViewResult Users(int id /*pageIndex*/)
         {
             int totalRecords;
-            var users = MembershipService.GetAllUsers(id,PAGE_SIZE, out totalRecords);
+            var users = MembershipService.GetAllUsers(id, PAGE_SIZE, out totalRecords);
             var viewModel = new UsersViewModel {Users = users, PageSize = PAGE_SIZE};
             return View(viewModel);
         }
@@ -37,12 +36,10 @@ namespace AI_.Studmix.WebApplication.Controllers
         [HttpGet]
         public ViewResult UserDetails(int id)
         {
-            var user = MembershipService.GetUser(id);
-            var userProfile = ProfileService.GetUserProfile(user);
+            var user = UnitOfWork.GetRepository<User>().GetByID(id);
             var viewModel = new UserDetailsViewModel
                             {
                                 User = user,
-                                UserProfile = userProfile
                             };
             return View(viewModel);
         }
@@ -52,12 +49,11 @@ namespace AI_.Studmix.WebApplication.Controllers
         {
             if (!ModelState.IsValid)
                 return View(viewModel);
-            var profile = ProfileService.GetUserProfile(viewModel.User.ID);
-            profile.Balance = viewModel.UserProfile.Balance;
-            ProfileService.Save();
+            var user = UnitOfWork.GetRepository<User>().GetByID(viewModel.User.ID);
+            user.Balance = viewModel.User.Balance;
+            UnitOfWork.Save();
 
             return RedirectToAction("Users", new {id = 0});
         }
-               
     }
 }

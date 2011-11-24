@@ -7,12 +7,13 @@ using System.Linq.Expressions;
 
 namespace AI_.Data.Repository
 {
-    public class Repository<TEntity> : IRepository<TEntity> where TEntity : ModelBase
+    public class EntityFrameworkRepository<TEntity> : IRepository<TEntity> 
+        where TEntity : Entity
     {
         internal DbContext Context { get; set; }
         internal DbSet<TEntity> DbSet { get; set; }
 
-        public Repository(DbContext context)
+        public EntityFrameworkRepository(DbContext context)
         {
             Context = context;
             DbSet = context.Set<TEntity>();
@@ -20,7 +21,10 @@ namespace AI_.Data.Repository
 
         #region IRepository<TEntity> Members
 
-        public virtual ICollection<TEntity> Get(Expression<Func<TEntity, bool>> filter = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null, string includeProperties = "")
+        public virtual ICollection<TEntity> Get(
+            Expression<Func<TEntity, bool>> filter = null,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
+            string includeProperties = "")
         {
             IQueryable<TEntity> query = DbSet;
 
@@ -30,7 +34,7 @@ namespace AI_.Data.Repository
             }
 
             foreach (var includeProperty in includeProperties.Split
-                (new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                (new[] {','}, StringSplitOptions.RemoveEmptyEntries))
             {
                 query = query.Include(includeProperty);
             }
@@ -40,6 +44,11 @@ namespace AI_.Data.Repository
                 return orderBy(query).ToList();
             }
             return query.ToList();
+        }
+
+        public virtual ICollection<TEntity> Get(Specification<TEntity> specification)
+        {
+            return Get(specification.Filter, specification.OrderBy, specification.IncludeProperties);
         }
 
         public virtual TEntity GetByID(object id)

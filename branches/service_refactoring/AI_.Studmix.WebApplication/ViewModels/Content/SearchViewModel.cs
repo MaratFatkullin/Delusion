@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using AI_.Studmix.Model.Models;
+using AI_.Studmix.Domain.Entities;
 
 namespace AI_.Studmix.WebApplication.ViewModels.Content
 {
@@ -7,7 +7,7 @@ namespace AI_.Studmix.WebApplication.ViewModels.Content
     {
         public IEnumerable<Property> Properties { get; set; }
 
-        public Dictionary<int,string> States { get; set; }
+        public Dictionary<int, string> States { get; set; }
 
         public IEnumerable<ContentPackage> Packages { get; set; }
 

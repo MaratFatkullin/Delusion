@@ -1,58 +1,43 @@
 ﻿using System;
 using AI_.Data.Repository;
-using AI_.Security.Models;
-using AI_.Security.Services;
-using AI_.Studmix.Model.Models;
-using AI_.Studmix.Model.Services;
+using AI_.Studmix.ApplicationServices.Services.Abstractions;
+using AI_.Studmix.Domain.Entities;
+using AI_.Studmix.WebApplication.Infrastructure;
 
 namespace AI_.Studmix.WebApplication.Controllers
 {
     public abstract class DataControllerBase : ControllerBase
     {
-        private User _currentUser;
-        private UserProfile _currentUserProfile;
 
-        protected IUnitOfWork UnitOfWork { get; private set; }
+        //protected override void OnActionExecuting(System.Web.Mvc.ActionExecutingContext filterContext)
+        //{
+        //    base.OnActionExecuting(filterContext);
+        //    var username = User.Identity.Name;
+        //    var user = MembershipService.GetUser(username);
+        //    filterContext.HttpContext.User = new Principle(user);
+        //}
+
+        protected IMembershipService MembershipService { get; private set; }
 
         protected User CurrentUser
         {
             get
             {
-                if (!User.Identity.IsAuthenticated)
-                    throw new InvalidOperationException("User is not authenticated.");
-
-                if (_currentUser == null)
-                {
-                    var membershipService = new MembershipService(UnitOfWork);
-                    _currentUser = membershipService.GetUser(User.Identity.Name);
-                }
-
-                return _currentUser;
+                if(!User.Identity.IsAuthenticated)
+                    throw new InvalidOperationException("User not autorized");
+                return User as User;
             }
         }
 
-        protected UserProfile CurrentUserProfile
+        protected DataControllerBase(IMembershipService membershipService)
         {
-            get
-            {
-                if (_currentUserProfile == null)
-                {
-                    var profileService = new ProfileService(UnitOfWork);
-                    _currentUserProfile = profileService.GetUserProfile(CurrentUser);
-                }
-                return _currentUserProfile;
-            }
+            MembershipService = membershipService;
         }
 
-        protected DataControllerBase(IUnitOfWork unitOfWork)
-        {
-            UnitOfWork = unitOfWork;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
-            UnitOfWork.Dispose();
-        }
+        //protected override void Dispose(bool disposing)
+        //{
+        //    base.Dispose(disposing);
+        //    UnitOfWork.Dispose();
+        //}
     }
 }

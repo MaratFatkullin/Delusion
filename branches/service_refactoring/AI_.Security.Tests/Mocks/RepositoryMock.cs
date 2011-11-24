@@ -9,7 +9,7 @@ namespace AI_.Security.Tests.Mocks
 {
     public class RepositoryMock<TEntity>
         : IRepository<TEntity>, IObserver<object>
-        where TEntity : ModelBase
+        where TEntity : Entity
     {
         private readonly IList<TEntity> _storage;
         private readonly IList<Command> _commands;
@@ -96,16 +96,16 @@ namespace AI_.Security.Tests.Mocks
 
     internal class Command
     {
-        public ModelBase Argument { get; private set; }
+        public Entity Argument { get; private set; }
         public CommnadType Type { get; private set; }
 
-        public Command(ModelBase argument, CommnadType type)
+        public Command(Entity argument, CommnadType type)
         {
             Argument = argument;
             Type = type;
         }
 
-        public void Execute<TEntity>(IList<TEntity> storage) where TEntity : ModelBase
+        public void Execute<TEntity>(IList<TEntity> storage) where TEntity : Entity
         {
             var enityt = Argument as TEntity;
             switch (Type)

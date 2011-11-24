@@ -3,9 +3,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
-using AI_.Studmix.Model.DAL.FileSystem;
-using AI_.Studmix.Model.Models;
-using AI_.Studmix.WebApplication.Tests.Mocks;
+using AI_.Studmix.Domain.Entities;
 using FluentAssertions;
 using Xunit;
 
@@ -31,8 +29,8 @@ namespace AI_.Studmix.WebApplication.Tests
 
             var property1 = new Property {ID = 1, Order = 1};
             var property2 = new Property {ID = 2, Order = 2};
-            var state1 = new PropertyState {ID = 1, Value = "prop1", Property = property1,Index = 1};
-            var state2 = new PropertyState {ID = 2, Value = "prop2", Property = property2,Index = 2};
+            var state1 = new PropertyState {ID = 1, Value = "prop1", Property = property1, Index = 1};
+            var state2 = new PropertyState {ID = 2, Value = "prop2", Property = property2, Index = 2};
 
             content.PropertyStates = new Collection<PropertyState> {state1, state2};
 

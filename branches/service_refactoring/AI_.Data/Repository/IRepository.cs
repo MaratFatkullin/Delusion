@@ -12,6 +12,7 @@ namespace AI_.Data.Repository
                                  Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
                                  string includeProperties = "");
 
+        ICollection<TEntity> Get(Specification<TEntity> specification);
         TEntity GetByID(object id);
         void Insert(TEntity entity);
         void Delete(object id);

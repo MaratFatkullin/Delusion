@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using AI_.Studmix.Model.Models;
 
 namespace AI_.Studmix.WebApplication.ViewModels.Finance
 {

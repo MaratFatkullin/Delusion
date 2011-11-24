@@ -56,21 +56,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controllers\AccauntControllerTests.cs" />
-    <Compile Include="Controllers\AdminControllerTests.cs" />
     <Compile Include="Controllers\ContentControllerTests.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Controllers\FinanceControllerTests.cs" />
-    <Compile Include="FileStorageManagerTests.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Mocks\FileStorageManagerMock.cs" />
     <Compile Include="Mocks\HttpPostedFileMock.cs" />
-    <Compile Include="Mocks\FileStorageProviderMock.cs" />
-    <Compile Include="Model\Services\FinanceServiceTests.cs" />
-    <Compile Include="Model\Services\ProfileServiceTests.cs" />
-    <Compile Include="Model\Services\PropertyStateServiceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModels\UploadViewModelTests.cs" />
   </ItemGroup>
@@ -86,13 +75,13 @@
       <Project>{B3B53467-BD87-4CBF-9CC0-29F74854F17B}</Project>
       <Name>AI_.Security.Tests</Name>
     </ProjectReference>
-    <ProjectReference Include="..\AI_.Security\AI_.Security.csproj">
-      <Project>{7EB7BBAE-6081-47CE-B829-35B03CCA6AB2}</Project>
-      <Name>AI_.Security</Name>
+    <ProjectReference Include="..\AI_.Studmix.ApplicationServices\AI_.Studmix.ApplicationServices.csproj">
+      <Project>{182AD66D-8E0E-4500-97AD-65CE190C467E}</Project>
+      <Name>AI_.Studmix.ApplicationServices</Name>
     </ProjectReference>
-    <ProjectReference Include="..\AI_.Studmix.Model\AI_.Studmix.Model.csproj">
-      <Project>{7C691C3C-FBE4-4F02-92C0-342FF87584E8}</Project>
-      <Name>AI_.Studmix.Model</Name>
+    <ProjectReference Include="..\AI_.Studmix.Domain\AI_.Studmix.Domain.csproj">
+      <Project>{E48D109E-5DA2-44B2-8CFA-925E586A47E4}</Project>
+      <Name>AI_.Studmix.Domain</Name>
     </ProjectReference>
     <ProjectReference Include="..\AI_.Studmix.WebApplication\AI_.Studmix.WebApplication.csproj">
       <Project>{3E226B5B-B15F-4A58-8521-CF7522DD0568}</Project>

@@ -2,7 +2,7 @@ using System;
 
 namespace AI_.Data
 {
-    public abstract class ModelBase : IIdentifiable<int>
+    public abstract class Entity : IIdentifiable<int>
     {
         #region IIdentifiable<int> Members
 
@@ -10,11 +10,11 @@ namespace AI_.Data
 
         #endregion
 
-        public DateTime CreateDate { get; set; }
+        public DateTime CreateDate { get; private set; }
 
         public DateTime? UpdateDate { get; set; }
 
-        protected ModelBase()
+        protected Entity()
         {
             CreateDate = DateTime.Now;
         }
