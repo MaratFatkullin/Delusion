@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using AI_.Studmix.Model.Models;
+using AI_.Studmix.Domain.Entities;
 
 namespace AI_.Studmix.WebApplication.ViewModels.Content
 {

@@ -69,10 +69,6 @@
       <Project>{470062CF-2970-4CC2-8F66-665D2DB88562}</Project>
       <Name>AI_.Data</Name>
     </ProjectReference>
-    <ProjectReference Include="..\AI_.Security\AI_.Security.csproj">
-      <Project>{7EB7BBAE-6081-47CE-B829-35B03CCA6AB2}</Project>
-      <Name>AI_.Security</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

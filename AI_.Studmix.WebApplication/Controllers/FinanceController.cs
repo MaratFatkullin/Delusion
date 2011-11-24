@@ -1,7 +1,8 @@
 ﻿using System.Web.Mvc;
 using AI_.Data.Repository;
-using AI_.Studmix.Model.Models;
-using AI_.Studmix.Model.Services;
+using AI_.Studmix.Domain.Entities;
+using AI_.Studmix.Domain.Services;
+using AI_.Studmix.Domain.Services.Abstractions;
 using AI_.Studmix.WebApplication.ViewModels.Finance;
 using AI_.Studmix.WebApplication.ViewModels.Shared;
 
@@ -9,9 +10,12 @@ namespace AI_.Studmix.WebApplication.Controllers
 {
     public class FinanceController : DataControllerBase
     {
-        public FinanceController(IUnitOfWork unitOfWork)
+        public IFinanceService FinanceService { get; set; }
+
+        public FinanceController(IUnitOfWork unitOfWork, IFinanceService financeService)
             : base(unitOfWork)
         {
+            FinanceService = financeService;
         }
 
         [HttpGet]
@@ -24,16 +28,12 @@ namespace AI_.Studmix.WebApplication.Controllers
             var viewModel = new OrderViewModel
                             {
                                 OrderPrice = package.Price,
-                                UserBalance = CurrentUserProfile.Balance,
+                                UserBalance = CurrentUser.Balance,
                                 ContentPackageId = package.ID
                             };
 
-            var financeService = new FinanceService(UnitOfWork);
-            var order = new Order
-                        {
-                            ContentPackage = package,
-                            UserProfile = CurrentUserProfile,
-                        };
+            var financeService = new FinanceService();
+            var order = new Order(CurrentUser, package);
             if (!financeService.IsOrderAvailable(order))
                 ModelState.AddModelError("balance", "Недостаточно средств для покупки текущего материала.");
 
@@ -46,14 +46,9 @@ namespace AI_.Studmix.WebApplication.Controllers
             var packageId = viewModel.ContentPackageId;
             var package = UnitOfWork.GetRepository<ContentPackage>().GetByID(packageId);
 
-            var order = new Order
-                        {
-                            ContentPackage = package,
-                            UserProfile = CurrentUserProfile
-                        };
+            var order = new Order(CurrentUser, package);
 
-            var financeService = new FinanceService(UnitOfWork);
-            financeService.MakeOrder(order);
+            FinanceService.MakeOrder(order);
 
 
             return InformationView("Покупка успешно произведена.",

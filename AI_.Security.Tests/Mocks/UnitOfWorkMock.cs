@@ -34,7 +34,7 @@ namespace AI_.Security.Tests.Mocks
         }
 
         public IRepository<TEntity> GetRepository<TEntity>()
-            where TEntity : ModelBase
+            where TEntity : Entity
         {
             var type = typeof (TEntity);
             if (!Map.ContainsKey(type))

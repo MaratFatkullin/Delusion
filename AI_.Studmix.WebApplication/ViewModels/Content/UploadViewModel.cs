@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
-using AI_.Studmix.Model.Models;
+using AI_.Studmix.Domain.Entities;
 
 namespace AI_.Studmix.WebApplication.ViewModels.Content
 {
@@ -44,7 +44,7 @@ namespace AI_.Studmix.WebApplication.ViewModels.Content
         {
             if (ContentFiles.Where(x => x != null).Count() == 0)
                 yield return new ValidationResult("Должен быть добавлен хотя бы один файл контента.",
-                                                  new[] { "ContentFiles" });
+                                                  new[] {"ContentFiles"});
         }
 
         #endregion
